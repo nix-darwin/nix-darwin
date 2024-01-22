@@ -9,13 +9,12 @@ let
     blacklist = cfg.caCertificateBlacklist;
   };
 
-  caCertificates = pkgs.runCommand "ca-certificates.crt"
-    { files =
-        cfg.certificateFiles ++
-        [ (builtins.toFile "extra.crt" (concatStringsSep "\n" cfg.certificates)) ];
-     }
+  caCertificates = pkgs.runCommand "ca-certificates.crt" {}
     ''
-      cat $files > $out
+      cat ${escapeShellArgs (
+        cfg.certificateFiles ++
+        [ (builtins.toFile "extra.crt" (concatStringsSep "\n" cfg.certificates)) ]
+      )} > $out
     '';
 in
 
