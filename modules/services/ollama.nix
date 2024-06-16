@@ -45,8 +45,6 @@ in {
         example = "/home/foo";
         description = ''
           The home directory that the ollama service is started in.
-
-          See also `services.ollama.writablePaths` and `services.ollama.sandbox`.
         '';
       };
 
