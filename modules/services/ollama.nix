@@ -30,6 +30,8 @@ in {
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [ cfg.package ];
+
     launchd.daemons.ollama = {
       path = [ config.environment.systemPath ];
       serviceConfig.ProgramArguments =
