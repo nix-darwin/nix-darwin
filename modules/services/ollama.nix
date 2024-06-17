@@ -41,7 +41,7 @@ in {
 
       home = lib.mkOption {
         type = types.str;
-        default = "%S/ollama";
+        default = "$HOME";
         example = "/home/foo";
         description = ''
           The home directory that the ollama service is started in.
@@ -50,7 +50,7 @@ in {
 
       models = mkOption {
         type = types.str;
-        default = "%S/ollama/models";
+        default = "$HOME/.ollama/models";
         example = "/path/to/ollama/models";
         description = ''
           The directory that the ollama service will read models from and download new models to.
