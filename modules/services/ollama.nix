@@ -79,7 +79,7 @@ in {
 
     environment.systemPackages = [ cfg.package ];
 
-    launchd.daemons.ollama = {
+    launchd.user.agents.ollama = {
       path = [ config.environment.systemPath ];
 
       environment = cfg.environmentVariables // {
