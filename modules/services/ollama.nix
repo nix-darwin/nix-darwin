@@ -72,6 +72,16 @@ in {
           Since `ollama run` is mostly a shell around the ollama server, this is usually sufficient.
         '';
       };
+
+      logFile = mkOption {
+        type = types.nullOr types.path;
+        default = null;
+        example = "/var/tmp/ollama.log";
+        description = ''
+          The file to write the ollama server logs to.
+          If not set, logs are written to stdout.
+        '';
+      };
     };
   };
 
@@ -86,6 +96,9 @@ in {
         KeepAlive = true;
         RunAtLoad = true;
         ProgramArguments = [ "${cfg.package}/bin/ollama" "serve" ];
+
+        StandardOutPath = cfg.logFile;
+        StandardErrorPath = cfg.logFile;
 
         EnvironmentVariables = cfg.environmentVariables // {
           HOME = cfg.home;
