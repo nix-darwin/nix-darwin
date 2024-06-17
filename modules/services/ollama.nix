@@ -85,7 +85,6 @@ in {
       serviceConfig = {
         KeepAlive = true;
         RunAtLoad = true;
-        ProcessType = "Background";
         ProgramArguments = [ "${cfg.package}/bin/ollama" "serve" ];
 
         EnvironmentVariables = cfg.environmentVariables // {
