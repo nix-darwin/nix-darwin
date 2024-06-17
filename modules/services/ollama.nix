@@ -82,14 +82,18 @@ in {
     launchd.user.agents.ollama = {
       path = [ config.environment.systemPath ];
 
-      environment = cfg.environmentVariables // {
-        HOME = cfg.home;
-        OLLAMA_MODELS = cfg.models;
-        OLLAMA_HOST = "${cfg.host}:${toString cfg.port}";
-      };
+      serviceConfig = {
+        KeepAlive = true;
+        RunAtLoad = true;
+        ProcessType = "Background";
+        ProgramArguments = [ "${cfg.package}/bin/ollama" "serve" ];
 
-      serviceConfig.ProgramArguments = [ "${cfg.package}/bin/ollama" "serve" ];
-      serviceConfig.RunAtLoad = true;
+        EnvironmentVariables = cfg.environmentVariables // {
+          HOME = cfg.home;
+          OLLAMA_MODELS = cfg.models;
+          OLLAMA_HOST = "${cfg.host}:${toString cfg.port}";
+        };
+      };
     };
   };
 }
