@@ -39,15 +39,6 @@ in {
         '';
       };
 
-      home = lib.mkOption {
-        type = types.str;
-        default = "$HOME";
-        example = "/home/foo";
-        description = ''
-          The home directory that the ollama service is started in.
-        '';
-      };
-
       models = mkOption {
         type = types.str;
         default = "$HOME/.ollama/models";
@@ -88,7 +79,6 @@ in {
         ProgramArguments = [ "${cfg.package}/bin/ollama" "serve" ];
 
         EnvironmentVariables = cfg.environmentVariables // {
-          HOME = cfg.home;
           OLLAMA_MODELS = cfg.models;
           OLLAMA_HOST = "${cfg.host}:${toString cfg.port}";
         };
