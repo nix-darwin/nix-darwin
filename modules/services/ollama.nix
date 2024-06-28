@@ -7,6 +7,8 @@ let
   cfg = config.services.ollama;
 
 in {
+  meta.maintainers = [ "velnbur" ];
+
   options = {
     services.ollama = {
       enable = mkOption {
