@@ -40,8 +40,8 @@ in {
       };
 
       models = mkOption {
-        type = types.str;
-        default = "$HOME/.ollama/models";
+        type = types.nullOr types.str;
+        default = null;
         example = "/path/to/ollama/models";
         description = ''
           The directory that the ollama service will read models from and download new models to.
@@ -79,9 +79,10 @@ in {
         ProgramArguments = [ "${cfg.package}/bin/ollama" "serve" ];
 
         EnvironmentVariables = cfg.environmentVariables // {
-          OLLAMA_MODELS = cfg.models;
           OLLAMA_HOST = "${cfg.host}:${toString cfg.port}";
-        };
+        } // (optionalAttrs (cfg.models != null) {
+          OLLAMA_MODELS = cfg.models;
+        });
       };
     };
   };
