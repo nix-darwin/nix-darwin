@@ -7,24 +7,92 @@ let
 
   hostnameRegEx = ''^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'';
 
-  emptyList = lst: if lst != [] then lst else ["empty"];
+  emptyList = lst: if lst != [ ] then lst else [ "empty" ];
 
   onOff = cond: if cond then "on" else "off";
 
-  setNetworkServices = optionalString (cfg.knownNetworkServices != []) ''
-    networkservices=$(networksetup -listallnetworkservices)
-    ${concatMapStringsSep "\n" (srv: ''
-      case "$networkservices" in
-        *${lib.escapeShellArg srv}*)
-          networksetup -setdnsservers ${lib.escapeShellArgs ([ srv ] ++ (emptyList cfg.dns))}
-          networksetup -setsearchdomains ${lib.escapeShellArgs ([ srv ] ++ (emptyList cfg.search))}
-          ;;
-      esac
-    '') cfg.knownNetworkServices}
+  setLocations = optionalString (cfg.knownNetworkServices != [ ] && cfg.location != { }) ''
+    curr_location=$(networksetup -getcurrentlocation)
+
+    readarray -t curr_locations_array < <(networksetup -listlocations)
+
+    declare -A curr_locations
+    for location in "''${curr_locations_array[@]}"; do
+      curr_locations[$location]=1
+    done
+
+    declare -A goal_locations
+    for location in ${strings.escapeShellArgs (builtins.attrNames cfg.location)}; do
+      goal_locations[$location]=1
+    done
+
+    for location in "''${!goal_locations[@]}"; do
+      if [[ ! -v curr_locations[$location] ]]; then
+        networksetup -createlocation "$location" populate > /dev/null
+      fi
+    done
+
+    # switch to a location that surely does not need to be deleted
+    networksetup -switchtolocation ${strings.escapeShellArg (builtins.head (builtins.attrNames cfg.location))} > /dev/null
+
+    for location in "''${!curr_locations[@]}"; do
+      if [[ ! -v goal_locations[$location] ]]; then
+        networksetup -deletelocation "$location" > /dev/null
+      fi
+    done
+
+    ${concatMapStringsSep "\n" (location: ''
+      networksetup -switchtolocation ${strings.escapeShellArg location} > /dev/null
+
+      networkservices=$(networksetup -listallnetworkservices)
+      ${concatMapStringsSep "\n" (srv: ''
+        case "$networkservices" in
+          *${lib.escapeShellArg srv}*)
+            networksetup -setdnsservers ${
+              lib.escapeShellArgs ([ srv ] ++ (emptyList cfg.location.${location}.dns))
+            }
+            networksetup -setsearchdomains ${
+              lib.escapeShellArgs ([ srv ] ++ (emptyList cfg.location.${location}.search))
+            }
+            ;;
+        esac
+      '') cfg.knownNetworkServices}
+    '') (builtins.attrNames cfg.location)}
+
+    if [[ -v goal_locations[$curr_location] ]]; then
+      networksetup -switchtolocation "$curr_location" > /dev/null
+    fi
   '';
 in
 
 {
+  imports = [
+    (mkAliasOptionModule
+      [
+        "networking"
+        "dns"
+      ]
+      [
+        "networking"
+        "location"
+        "Automatic"
+        "dns"
+      ]
+    )
+    (mkAliasOptionModule
+      [
+        "networking"
+        "search"
+      ]
+      [
+        "networking"
+        "location"
+        "Automatic"
+        "search"
+      ]
+    )
+  ];
+
   options = {
     networking.computerName = mkOption {
       type = types.nullOr types.str;
@@ -73,27 +141,54 @@ in
 
     networking.knownNetworkServices = mkOption {
       type = types.listOf types.str;
-      default = [];
-      example = [ "Wi-Fi" "Ethernet Adaptor" "Thunderbolt Ethernet" ];
+      default = [ ];
+      example = [
+        "Wi-Fi"
+        "Ethernet Adaptor"
+        "Thunderbolt Ethernet"
+      ];
       description = ''
-        List of networkservices that should be configured.
+        List of network services that should be configured.
 
         To display a list of all the network services on the server's
         hardware ports, use {command}`networksetup -listallnetworkservices`.
       '';
     };
 
-    networking.dns = mkOption {
-      type = types.listOf types.str;
-      default = [];
-      example = [ "8.8.8.8" "8.8.4.4" "2001:4860:4860::8888" "2001:4860:4860::8844" ];
-      description = "The list of dns servers used when resolving domain names.";
-    };
+    networking.location = mkOption {
+      type = types.attrsOf (
+        types.submodule {
+          options = {
+            dns = mkOption {
+              type = types.listOf types.str;
+              default = [ ];
+              example = [
+                "8.8.8.8"
+                "8.8.4.4"
+                "2001:4860:4860::8888"
+                "2001:4860:4860::8844"
+              ];
+              description = "The list of DNS servers used when resolving domain names.";
+            };
 
-    networking.search = mkOption {
-      type = types.listOf types.str;
-      default = [];
-      description = "The list of search paths used when resolving domain names.";
+            search = mkOption {
+              type = types.listOf types.str;
+              default = [ ];
+              description = "The list of search paths used when resolving domain names.";
+            };
+          };
+        }
+      );
+      default = { };
+      description = ''
+        Set of network locations to configure.
+
+        By default, a system comes with a single location called "Automatic", but you can
+        define additional locations to switch between different network configurations.
+
+        If you define any locations here, you must also explicitly define the "Automatic"
+        location if you want it to exist.
+      '';
     };
 
     networking.wakeOnLan.enable = mkOption {
@@ -110,8 +205,14 @@ in
   config = {
 
     warnings = [
-      (mkIf (cfg.knownNetworkServices == [] && cfg.dns != []) "networking.knownNetworkServices is empty, dns servers will not be configured.")
-      (mkIf (cfg.knownNetworkServices == [] && cfg.search != []) "networking.knownNetworkServices is empty, dns searchdomains will not be configured.")
+      (mkIf (
+        cfg.knownNetworkServices == [ ]
+        && (builtins.any (l: l.dns != [ ]) (builtins.attrValues cfg.location))
+      ) "networking.knownNetworkServices is empty, DNS servers will not be configured.")
+      (mkIf (
+        cfg.knownNetworkServices == [ ]
+        && (builtins.any (l: l.search != [ ]) (builtins.attrValues cfg.location))
+      ) "networking.knownNetworkServices is empty, DNS search domains will not be configured.")
     ];
 
     system.activationScripts.networking.text = ''
@@ -127,7 +228,7 @@ in
         scutil --set LocalHostName ${escapeShellArg cfg.localHostName}
       ''}
 
-      ${setNetworkServices}
+      ${setLocations}
 
       ${optionalString (cfg.wakeOnLan.enable != null) ''
         systemsetup -setWakeOnNetworkAccess '${onOff cfg.wakeOnLan.enable}' &> /dev/null
