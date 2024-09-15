@@ -202,9 +202,10 @@ in
     system.defaults.dock.persistent-others = mkOption {
       type = types.nullOr (types.listOf (types.either types.path types.str));
       default = null;
-      example = [ "~/Documents" "~/Downloads" ];
+      example = [ "/Users/my_user_name/Documents" "/Users/my_user_name/Downloads" ];
       description = ''
         Persistent folders in the dock.
+        Note: tilde(`~`) does not get reliably expanded.
       '';
       apply = value:
         if !(isList value)
