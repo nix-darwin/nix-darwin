@@ -200,17 +200,32 @@ in
     };
 
     system.defaults.dock.persistent-others = mkOption {
-      type = types.nullOr (types.listOf (types.either types.path types.str));
+      type = types.nullOr (types.listOf (types.oneOf [ types.path types.str types.attrs ]));
       default = null;
-      example = [ "/Users/my_user_name/Documents" "/Users/my_user_name/Downloads" ];
+      example = [
+        "/Users/my_user_name/Documents"
+        { name = "/Users/my_user_name/Downloads"; tile-data = { arrangement = 2; showas = 1; }; }
+      ];
       description = ''
         Persistent folders in the dock.
         Note: tilde(`~`) does not get reliably expanded.
       '';
       apply = value:
-        if !(isList value)
-        then value
-        else map (folder: { tile-data = { file-data = { _CFURLString = "file://" + folder; _CFURLStringType = 15; }; }; tile-type = if strings.hasInfix "." (last (splitString "/" folder)) then "file-tile" else "directory-tile"; }) value;
+        if !(isList value) then value else
+        let
+          pathToConfig = (path: {
+            tile-data = { file-data = { _CFURLString = "file://" + path; _CFURLStringType = 15; }; };
+            tile-type = if strings.hasInfix "." (last (splitString "/" path)) then "file-tile" else "directory-tile";
+          });
+        in
+        map
+          (folder:
+            if (isString folder)
+            then pathToConfig folder
+            else
+              (lib.recursiveUpdate (builtins.removeAttrs folder [ "name" ])
+                (pathToConfig folder.name)))
+          value;
     };
 
     system.defaults.dock.scroll-to-open = mkOption {
