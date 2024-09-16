@@ -5,7 +5,8 @@ with lib;
 let
   # Should only be used with options that previously used floats defined as strings.
   inherit (config.lib.defaults.types) floatWithDeprecationError;
-in {
+in
+{
   imports = [
     (mkRenamedOptionModule [ "system" "defaults" "dock" "expose-group-by-app" ] [ "system" "defaults" "dock" "expose-group-apps" ])
   ];
@@ -128,36 +129,37 @@ in {
     };
 
     system.defaults.dock.persistent-apps = mkOption {
-      type = let
-        taggedType = types.attrTag {
-              app = mkOption {
-                description = "An application to be added to the dock.";
-                type = types.str;
-              };
-              file = mkOption {
-                description = "A file to be added to the dock.";
-                type = types.str;
-              };
-              folder = mkOption {
-                description = "A folder to be added to the dock.";
-                type = types.str;
-              };
-              spacer = mkOption {
-                description = "A spacer to be added to the dock. Can be small or regular size.";
-                type = types.submodule {
-                  options.small = mkOption {
-                    description = "Whether the spacer is small.";
-                    type = types.bool;
-                    default = false;
-                  };
+      type =
+        let
+          taggedType = types.attrTag {
+            app = mkOption {
+              description = "An application to be added to the dock.";
+              type = types.str;
+            };
+            file = mkOption {
+              description = "A file to be added to the dock.";
+              type = types.str;
+            };
+            folder = mkOption {
+              description = "A folder to be added to the dock.";
+              type = types.str;
+            };
+            spacer = mkOption {
+              description = "A spacer to be added to the dock. Can be small or regular size.";
+              type = types.submodule {
+                options.small = mkOption {
+                  description = "Whether the spacer is small.";
+                  type = types.bool;
+                  default = false;
                 };
               };
             };
+          };
 
-        simpleType = types.either types.str types.path;
-        toTagged = path: { app = path; };
+          simpleType = types.either types.str types.path;
+          toTagged = path: { app = path; };
         in
-      types.nullOr (types.listOf (types.coercedTo simpleType toTagged taggedType));
+        types.nullOr (types.listOf (types.coercedTo simpleType toTagged taggedType));
       default = null;
       example = [
         { app = "/Applications/Safari.app"; }
@@ -170,30 +172,31 @@ in {
         Persistent applications, spacers, files, and folders in the dock.
       '';
       apply =
-      let
-        toTile = item: if item ? app then {
-        tile-data.file-data = {
-          _CFURLString = item.app;
-          _CFURLStringType = 0;
-        };
-        } else if item ? spacer then {
-          tile-data = { };
-          tile-type = if item.spacer.small then "small-spacer-tile" else "spacer-tile";
-        } else if item ? folder then {
-          tile-data.file-data = {
-            _CFURLString = "file://" + item.folder;
-            _CFURLStringType = 15;
-          };
-          tile-type = "directory-tile";
-        } else if item ? file then {
-          tile-data.file-data = {
-            _CFURLString = "file://" + item.file;
-            _CFURLStringType = 15;
-          };
-          tile-type = "file-tile";
-        } else item;
-      in
-      value: if value == null then null else map toTile value;
+        let
+          toTile = item:
+            if item ? app then {
+              tile-data.file-data = {
+                _CFURLString = item.app;
+                _CFURLStringType = 0;
+              };
+            } else if item ? spacer then {
+              tile-data = { };
+              tile-type = if item.spacer.small then "small-spacer-tile" else "spacer-tile";
+            } else if item ? folder then {
+              tile-data.file-data = {
+                _CFURLString = "file://" + item.folder;
+                _CFURLStringType = 15;
+              };
+              tile-type = "directory-tile";
+            } else if item ? file then {
+              tile-data.file-data = {
+                _CFURLString = "file://" + item.file;
+                _CFURLStringType = 15;
+              };
+              tile-type = "file-tile";
+            } else item;
+        in
+        value: if value == null then null else map toTile value;
     };
 
     system.defaults.dock.persistent-others = mkOption {
@@ -364,6 +367,5 @@ in {
         * `14`: Quick Note
       '';
     };
-
-    };
+  };
 }
