@@ -16,14 +16,15 @@ let
     sudo yabai --load-sa
   '';
 
-  configFile = mkIf (cfg.config != { } || cfg.extraConfig != "")
+  configFile = mkIf (cfg.config != {} || cfg.extraConfig != "")
     "${pkgs.writeScript "yabairc" (
-      optionalString (cfg.enableScriptingAddition) (scriptingAdditionConfig + "\n")
-      + optionalString (cfg.config != {}) (toYabaiConfig cfg.config)
-      + optionalString (cfg.extraConfig != "") ("\n" + cfg.extraConfig + "\n"))}";
-in
-
-{
+      concatLines (
+        optional (cfg.enableScriptingAddition) scriptingAdditionConfig
+        ++ optional (cfg.config != {}) (toYabaiConfig cfg.config)
+        ++ optional (cfg.extraConfig != "") cfg.extraConfig
+      )
+    )}";
+in {
   options = with types; {
     services.yabai.enable = mkOption {
       type = bool;
