@@ -10,6 +10,7 @@ let
       (p: v: "yabai -m config ${p} ${toString v}")
       opts);
 
+  # TODO: [@cmacrae] Handle removal of yabai scripting additions
   scriptingAdditionConfig = ''
     yabai -m signal --add event=dock_did_restart action='sudo yabai --load-sa'
     sudo yabai --load-sa
@@ -94,14 +95,7 @@ in
       };
     })
 
-    # TODO: [@cmacrae] Handle removal of yabai scripting additions
     (mkIf (cfg.enableScriptingAddition) {
-      launchd.daemons.yabai-sa = {
-        script = "${cfg.package}/bin/yabai --load-sa";
-        serviceConfig.RunAtLoad = true;
-        serviceConfig.KeepAlive.SuccessfulExit = false;
-      };
-
       environment.etc."sudoers.d/yabai".source = pkgs.runCommand "sudoers-yabai" {} ''
         YABAI_BIN="${cfg.package}/bin/yabai"
         SHASUM=$(sha256sum "$YABAI_BIN" | cut -d' ' -f1)
