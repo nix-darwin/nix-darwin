@@ -10,11 +10,15 @@ let
       (p: v: "yabai -m config ${p} ${toString v}")
       opts);
 
+  scriptingAdditionConfig = ''
+    yabai -m signal --add event=dock_did_restart action='sudo yabai --load-sa'
+    sudo yabai --load-sa
+  '';
+
   configFile = mkIf (cfg.config != { } || cfg.extraConfig != "")
     "${pkgs.writeScript "yabairc" (
-      (if (cfg.config != {})
-       then "${toYabaiConfig cfg.config}"
-       else "")
+      optionalString (cfg.enableScriptingAddition) (scriptingAdditionConfig + "\n")
+      + optionalString (cfg.config != {}) (toYabaiConfig cfg.config)
       + optionalString (cfg.extraConfig != "") ("\n" + cfg.extraConfig + "\n"))}";
 in
 
