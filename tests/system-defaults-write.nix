@@ -149,10 +149,10 @@
   system.defaults.controlcenter.NowPlaying = "always";
   system.defaults.controlcenter.ScreenMirroring = "whenActive";
   system.defaults.controlcenter.Sound = "whenActive";
-  system.defaults.controlcenter.Spotlight = true;
   system.defaults.controlcenter.StageManager = true;
   system.defaults.controlcenter.UserSwitcher = "both";
   system.defaults.controlcenter.WiFi = true;
+  system.defaults.Spotlight.MenuItemHidden = true;
   test = lib.strings.concatMapStringsSep "\n"
     (x: ''
       echo >&2 "checking defaults write in /${x}"
