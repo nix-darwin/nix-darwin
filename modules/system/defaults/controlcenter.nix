@@ -254,6 +254,19 @@
         '';
     };
 
+    system.defaults.controlcenter.Spotlight = lib.mkOption {
+        type = lib.types.nullOr lib.types.bool;
+        default = null;
+        description = ''
+          Apple menu > System Preferences > Control Center > Menu Bar Only > Spotlight
+
+          Show Spotlight in menu bar. Default is null.
+
+          false - "Don't Show in Menu Bar"
+          true  - "Show in Menu Bar"
+        '';
+    };
+
     system.defaults.controlcenter.StageManager = lib.mkOption {
         type = lib.types.nullOr lib.types.bool;
         apply = v: if v == null then null else if v == true then 2 else 8;
