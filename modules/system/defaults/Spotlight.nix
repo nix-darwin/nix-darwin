@@ -6,12 +6,14 @@
       type = lib.types.nullOr lib.types.bool;
       default = null;
       description = ''
-        Apple menu > System Preferences > Control Center > Menu Bar Only > Spotlight
+        Show Spotlight control in menu bar.
 
-        Show Spotlight in menu bar. Default is null.
+        Available settings:
+          true   - Don't Show in Menu Bar
+          false  - Show in Menu Bar
 
-        false - "Don't Show in Menu Bar"
-        true  - "Show in Menu Bar"
+        This option mirrors the setting found in:
+          System Preferences > Control Center > Menu Bar Only > Spotlight
       '';
     };
   };
