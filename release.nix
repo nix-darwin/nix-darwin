@@ -82,7 +82,8 @@ in {
   tests.autossh = makeTest ./tests/autossh.nix;
   tests.environment-path = makeTest ./tests/environment-path.nix;
   tests.environment-terminfo = makeTest ./tests/environment-terminfo.nix;
-  tests.homebrew = makeTest ./tests/homebrew.nix;
+  tests.homebrew-brewfile = makeTest ./tests/homebrew-brewfile.nix;
+  tests.homebrew-config = makeTest ./tests/homebrew-config.nix;
   tests.launchd-daemons = makeTest ./tests/launchd-daemons.nix;
   tests.launchd-setenv = makeTest ./tests/launchd-setenv.nix;
   tests.networking-hostname = makeTest ./tests/networking-hostname.nix;
