@@ -5,12 +5,8 @@
   ...
 }:
 
-with lib;
-
 let
-
   cfg = config.system;
-
 in
 
 {
