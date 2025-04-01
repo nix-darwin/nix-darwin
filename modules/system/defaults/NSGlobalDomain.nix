@@ -430,6 +430,14 @@ in {
       '';
     };
 
+    system.defaults.NSGlobalDomain.ApplePersistence = mkOption {
+      type = types.nullOr types.bool;
+      default = null;
+      description = ''
+        Whether to enable persistence of windows when restarting device.  The default is true.
+      '';
+    };
+
   };
 
 }
