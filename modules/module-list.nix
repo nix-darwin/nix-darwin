@@ -8,6 +8,7 @@
   ./security/pki
   ./security/sandbox
   ./security/sudo.nix
+  ./security/wrappers
   ./system
   ./system/base.nix
   ./system/checks.nix
