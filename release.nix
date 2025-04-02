@@ -123,6 +123,7 @@ in {
   tests.system-defaults-write = makeTest ./tests/system-defaults-write.nix;
   tests.system-environment = makeTest ./tests/system-environment.nix;
   tests.system-keyboard-mapping = makeTest ./tests/system-keyboard-mapping.nix;
+  tests.system-files = makeTest ./tests/system-files.nix;
   tests.system-packages = makeTest ./tests/system-packages.nix;
   tests.system-path = makeTest ./tests/system-path.nix;
   tests.system-shells = makeTest ./tests/system-shells.nix;
