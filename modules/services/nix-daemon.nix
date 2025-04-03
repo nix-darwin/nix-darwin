@@ -40,17 +40,24 @@ in
     };
   };
 
-  config = mkIf config.nix.enable {
+  config = let
+    nixDaemonCmd = lib.getExe' config.nix.package "nix-daemon";
+    keepAliveArgs = if cfg.enableSocketListener then {
+      command = nixDaemonCmd;
+    } else {
+      serviceConfig.ProgramArguments = [ nixDaemonCmd ];
+      serviceConfig.KeepAlive.PathState = {
+        "/nix/store" = true;
+      };
+    };
+  in mkIf config.nix.enable {
 
-    launchd.daemons.nix-daemon = {
-      command = lib.getExe' config.nix.package "nix-daemon";
+    launchd.daemons.nix-daemon = lib.recursiveUpdate {
       serviceConfig.ProcessType = config.nix.daemonProcessType;
       serviceConfig.LowPriorityIO = config.nix.daemonIOLowPriority;
       serviceConfig.Label = "org.nixos.nix-daemon"; # must match daemon installed by Nix regardless of the launchd label Prefix
       serviceConfig.SoftResourceLimits.NumberOfFiles = mkDefault 1048576;
       serviceConfig.StandardErrorPath = cfg.logFile;
-
-      serviceConfig.KeepAlive = mkIf (!cfg.enableSocketListener) true;
 
       serviceConfig.Sockets = mkIf cfg.enableSocketListener
         { Listeners.SockType = "stream";
@@ -68,7 +75,6 @@ in
           OBJC_DISABLE_INITIALIZE_FORK_SAFETY = mkDefault "YES";
         }
       ];
-    };
-
+    } keepAliveArgs;
   };
 }
