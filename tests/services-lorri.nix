@@ -33,10 +33,8 @@ in
     <service.json jq -e ".KeepAlive                     == true"
     <service.json jq -e ".Label                         == \"org.nixos.lorri\""
     <service.json jq -e ".ProcessType                   == \"Background\""
-    <service.json jq -e ".ProgramArguments|length       == 3"
-    <service.json jq -e ".ProgramArguments[0]           == \"/bin/sh\""
-    <service.json jq -e ".ProgramArguments[1]           == \"-c\""
-    <service.json jq -e ".ProgramArguments[2]           == \"/bin/wait4path /nix/store && exec ${pkgs.lorri}/bin/lorri daemon\""
+    <service.json jq -e ".ProgramArguments|length       == 1"
+    <service.json jq -e ".ProgramArguments[0]           == \"${pkgs.lorri}/bin/lorri daemon\""
     <service.json jq -e ".RunAtLoad                     == true"
   '';
 }
