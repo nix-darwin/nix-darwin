@@ -253,7 +253,7 @@ in {
       default = null;
       example = 12;
       description = ''
-        Sets the spacing between status icons in the menu bar. The default is null.
+        Sets the spacing between status icons in the menu bar.
       '';
     };
 
@@ -262,7 +262,7 @@ in {
       default = null;
       example = 6;
       description = ''
-        Sets the padding around status icons in the menu bar. The default is null.
+        Sets the padding around status icons in the menu bar.
       '';
     };
 
