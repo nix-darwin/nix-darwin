@@ -219,7 +219,17 @@ let
       # and error message with an assertion below if it's set by the user.
       noLock = mkOption { visible = false; default = null; };
 
-      analytics = lib.mkEnableOption "Enable Homebrew analytics";
+      analytics = lib.mkEnableOption ''
+        Enable Homebrew analytics.
+
+        See "https://docs.brew.sh/Analytics".  Setting this to `false` (default)
+        will turn the analytics off.  Setting this to `true` will turn them on.
+
+        Implementation note: when disabled, this option sets the
+        `HOMEBREW_NO_ANALYTICS` environment variable, by adding it to
+        [](#opt-environment.variables).
+
+      '';
 
       homebrewEnvironmentVariables = mkInternalOption { type = types.attrs; };
     };
