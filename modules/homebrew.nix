@@ -136,7 +136,7 @@ let
 
     config = {
       brewBundleCmd = concatStringsSep " " (
-        optional (cfg.global.noAnalytics) "HOMEBREW_NO_ANALYTICS=1"
+        optional (!cfg.global.analytics) "HOMEBREW_NO_ANALYTICS=1"
         ++ optional (!config.autoUpdate) "HOMEBREW_NO_AUTO_UPDATE=1"
         ++ [ "brew bundle --file='${brewfileFile}'" ]
         ++ optional (!config.upgrade) "--no-upgrade"
@@ -219,12 +219,7 @@ let
       # and error message with an assertion below if it's set by the user.
       noLock = mkOption { visible = false; default = null; };
 
-      noAnalytics = mkOption {
-        default = true;
-        example = false;
-        description = "Disable native Homebrew analytics";
-        type = types.bool;
-      };
+      analytics = lib.mkEnableOption "Enable Homebrew analytics";
 
       homebrewEnvironmentVariables = mkInternalOption { type = types.attrs; };
     };
@@ -233,7 +228,7 @@ let
       homebrewEnvironmentVariables = {
         HOMEBREW_BUNDLE_FILE = mkIf config.brewfile "${brewfileFile}";
         HOMEBREW_BUNDLE_NO_LOCK = mkIf (!config.lockfiles) "1";
-        HOMEBREW_NO_ANALYTICS = mkIf (config.noAnalytics) "1";
+        HOMEBREW_NO_ANALYTICS = mkIf (!config.analytics) "1";
         HOMEBREW_NO_AUTO_UPDATE = mkIf (!config.autoUpdate) "1";
       };
     };
