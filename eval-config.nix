@@ -37,7 +37,7 @@ assert enableNixpkgsReleaseCheck -> checkRelease lib || throw ''
 
       inputs = {
         nixpkgs.url = "github:NixOS/nixpkgs/NIXPKGS-BRANCH";
-        nix-darwin.url = "github:LnL7/nix-darwin/NIX-DARWIN-BRANCH";
+        nix-darwin.url = "github:nix-darwin/nix-darwin/NIX-DARWIN-BRANCH";
         nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
         # …
       };
@@ -46,7 +46,7 @@ assert enableNixpkgsReleaseCheck -> checkRelease lib || throw ''
 
       $ sudo nix-channel --list
       nixpkgs https://nixos.org/channels/NIXPKGS-BRANCH
-      darwin https://github.com/LnL7/nix-darwin/archive/NIX-DARWIN-BRANCH.tar.gz
+      darwin https://github.com/nix-darwin/nix-darwin/archive/NIX-DARWIN-BRANCH.tar.gz
       …
       $ nix-channel --list
       …
@@ -58,12 +58,12 @@ assert enableNixpkgsReleaseCheck -> checkRelease lib || throw ''
   You can then fix your channels like this:
 
       $ sudo nix-channel --add https://nixos.org/channels/NIXPKGS-BRANCH nixpkgs
-      $ sudo nix-channel --add https://github.com/LnL7/nix-darwin/archive/NIX-DARWIN-BRANCH.tar.gz darwin
+      $ sudo nix-channel --add https://github.com/nix-darwin/nix-darwin/archive/NIX-DARWIN-BRANCH.tar.gz darwin
       $ sudo nix-channel --update
 
   After that, activating your system again should work correctly. If it
   doesn’t, please open an issue at
-  <https://github.com/LnL7/nix-darwin/issues/new> and include as much
+  <https://github.com/nix-darwin/nix-darwin/issues/new> and include as much
   information as possible.
 '';
 
@@ -82,12 +82,10 @@ let
     modules = modules ++ [ argsModule ] ++ baseModules;
     specialArgs = { modulesPath = builtins.toString ./modules; } // specialArgs;
   });
-in
-
-{
-  inherit (eval._module.args) pkgs;
-  inherit (eval) options config;
-  inherit (eval) _module;
-
-  system = eval.config.system.build.toplevel;
-}
+  
+  withExtraAttrs = configuration: configuration // {
+    inherit (configuration._module.args) pkgs;
+    system = configuration.config.system.build.toplevel;
+    extendModules = args: withExtraAttrs (configuration.extendModules args);
+  };
+in withExtraAttrs eval

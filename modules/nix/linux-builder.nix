@@ -144,7 +144,7 @@ in
 
     workingDirectory = mkOption {
       type = types.str;
-      default = "/var/lib/darwin-builder";
+      default = "/var/lib/linux-builder";
       description = ''
         The working directory of the Linux builder daemon process.
       '';
@@ -159,64 +159,76 @@ in
     '';
   };
 
-  config = mkIf cfg.enable {
-    assertions = [
-      {
-        assertion = config.nix.enable;
-        message = ''`nix.linux-builder.enable` requires `nix.enable`'';
-      }
-    ];
+  config = mkMerge [
+    (mkIf (!cfg.enable) {
+      system.activationScripts.preActivation.text = ''
+        rm -rf ${cfg.workingDirectory}
+      '';
+    })
+    (mkIf cfg.enable {
+      assertions = [
+        {
+          assertion = config.nix.enable;
+          message = ''`nix.linux-builder.enable` requires `nix.enable`'';
+        }
+      ];
 
-    system.activationScripts.preActivation.text = ''
-      mkdir -p ${cfg.workingDirectory}
-    '';
+      system.activationScripts.preActivation.text = ''
+        # Migrate if using the old working directory
+        if [ -e /var/lib/darwin-builder ] && [ ! -e ${cfg.workingDirectory} ]; then
+          mv /var/lib/darwin-builder ${cfg.workingDirectory}
+        fi
 
-    launchd.daemons.linux-builder = {
-      environment = {
-        inherit (config.environment.variables) NIX_SSL_CERT_FILE;
-      };
-
-      # create-builder uses TMPDIR to share files with the builder, notably certs.
-      # macOS will clean up files in /tmp automatically that haven't been accessed in 3+ days.
-      # If we let it use /tmp, leaving the computer asleep for 3 days makes the certs vanish.
-      # So we'll use /run/org.nixos.linux-builder instead and clean it up ourselves.
-      script = ''
-        export TMPDIR=/run/org.nixos.linux-builder USE_TMPDIR=1
-        rm -rf $TMPDIR
-        mkdir -p $TMPDIR
-        trap "rm -rf $TMPDIR" EXIT
-        ${lib.optionalString cfg.ephemeral ''
-          rm -f ${cfg.workingDirectory}/${cfg.package.nixosConfig.networking.hostName}.qcow2
-        ''}
-        ${cfg.package}/bin/create-builder
+        mkdir -p ${cfg.workingDirectory}
       '';
 
-      serviceConfig = {
-        KeepAlive = true;
-        RunAtLoad = true;
-        WorkingDirectory = cfg.workingDirectory;
+      launchd.daemons.linux-builder = {
+        environment = {
+          inherit (config.environment.variables) NIX_SSL_CERT_FILE;
+        };
+
+        # create-builder uses TMPDIR to share files with the builder, notably certs.
+        # macOS will clean up files in /tmp automatically that haven't been accessed in 3+ days.
+        # If we let it use /tmp, leaving the computer asleep for 3 days makes the certs vanish.
+        # So we'll use /run/org.nixos.linux-builder instead and clean it up ourselves.
+        script = ''
+          export TMPDIR=/run/org.nixos.linux-builder USE_TMPDIR=1
+          rm -rf $TMPDIR
+          mkdir -p $TMPDIR
+          trap "rm -rf $TMPDIR" EXIT
+          ${lib.optionalString cfg.ephemeral ''
+            rm -f ${cfg.workingDirectory}/${cfg.package.nixosConfig.networking.hostName}.qcow2
+          ''}
+          ${cfg.package}/bin/create-builder
+        '';
+
+        serviceConfig = {
+          KeepAlive = true;
+          RunAtLoad = true;
+          WorkingDirectory = cfg.workingDirectory;
+        };
       };
-    };
 
-    environment.etc."ssh/ssh_config.d/100-linux-builder.conf".text = ''
-      Host linux-builder
-        User builder
-        Hostname localhost
-        HostKeyAlias linux-builder
-        Port 31022
-        IdentityFile /etc/nix/builder_ed25519
-    '';
+      environment.etc."ssh/ssh_config.d/100-linux-builder.conf".text = ''
+        Host linux-builder
+          User builder
+          Hostname localhost
+          HostKeyAlias linux-builder
+          Port 31022
+          IdentityFile /etc/nix/builder_ed25519
+      '';
 
-    nix.distributedBuilds = true;
+      nix.distributedBuilds = true;
 
-    nix.buildMachines = [{
-      hostName = "linux-builder";
-      sshUser = "builder";
-      sshKey = "/etc/nix/builder_ed25519";
-      publicHostKey = "c3NoLWVkMjU1MTkgQUFBQUMzTnphQzFsWkRJMU5URTVBQUFBSUpCV2N4Yi9CbGFxdDFhdU90RStGOFFVV3JVb3RpQzVxQkorVXVFV2RWQ2Igcm9vdEBuaXhvcwo=";
-      inherit (cfg) mandatoryFeatures maxJobs protocol speedFactor supportedFeatures systems;
-    }];
+      nix.buildMachines = [{
+        hostName = "linux-builder";
+        sshUser = "builder";
+        sshKey = "/etc/nix/builder_ed25519";
+        publicHostKey = "c3NoLWVkMjU1MTkgQUFBQUMzTnphQzFsWkRJMU5URTVBQUFBSUpCV2N4Yi9CbGFxdDFhdU90RStGOFFVV3JVb3RpQzVxQkorVXVFV2RWQ2Igcm9vdEBuaXhvcwo=";
+        inherit (cfg) mandatoryFeatures maxJobs protocol speedFactor supportedFeatures systems;
+      }];
 
-    nix.settings.builders-use-substitutes = true;
-  };
+      nix.settings.builders-use-substitutes = true;
+    })
+  ];
 }

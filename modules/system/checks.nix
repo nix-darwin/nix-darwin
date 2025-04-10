@@ -201,7 +201,7 @@ let
       printf >&2 '\n'
       printf >&2 '    $ sudo nix-channel --list\n'
       printf >&2 '    nixpkgs https://nixos.org/channels/NIXPKGS-BRANCH\n'
-      printf >&2 '    darwin https://github.com/LnL7/nix-darwin/archive/NIX-DARWIN-BRANCH.tar.gz\n'
+      printf >&2 '    darwin https://github.com/nix-darwin/nix-darwin/archive/NIX-DARWIN-BRANCH.tar.gz\n'
       printf >&2 '    …\n'
       printf >&2 '    $ nix-channel --list\n'
       printf >&2 '    …\n'
@@ -213,12 +213,12 @@ let
       printf >&2 'You can then fix your channels like this:\n'
       printf >&2 '\n'
       printf >&2 '    $ sudo nix-channel --add https://nixos.org/channels/NIXPKGS-BRANCH nixpkgs\n'
-      printf >&2 '    $ sudo nix-channel --add https://github.com/LnL7/nix-darwin/archive/NIX-DARWIN-BRANCH.tar.gz darwin\n'
+      printf >&2 '    $ sudo nix-channel --add https://github.com/nix-darwin/nix-darwin/archive/NIX-DARWIN-BRANCH.tar.gz darwin\n'
       printf >&2 '    $ sudo nix-channel --update\n'
       printf >&2 '\n'
       printf >&2 'After that, activating your system again should work correctly. If it\n'
       printf >&2 'doesn’t, please open an issue at\n'
-      printf >&2 '<https://github.com/LnL7/nix-darwin/issues/new> and include as much\n'
+      printf >&2 '<https://github.com/nix-darwin/nix-darwin/issues/new> and include as much\n'
       printf >&2 'information as possible.\n'
       exit 2
     }

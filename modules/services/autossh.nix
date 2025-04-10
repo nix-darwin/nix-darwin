@@ -55,7 +55,7 @@ in
 
         default = [];
         description = ''
-          List of AutoSSH sessions to start as systemd services. Each service is
+          List of AutoSSH sessions to start as launchd daemon. Each daemon is
           named 'autossh-{session.name}'.
         '';
 

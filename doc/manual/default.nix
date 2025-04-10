@@ -30,7 +30,7 @@ let
       declarations = map
         (decl:
           if lib.hasPrefix (toString prefix) (toString decl) then
-            gitHubDeclaration "LnL7" "nix-darwin" revision
+            gitHubDeclaration "nix-darwin" "nix-darwin" revision
               (lib.removePrefix "/"
                 (lib.removePrefix (toString prefix) (toString decl)))
           # TODO: handle this in a better way (may require upstream
