@@ -39,8 +39,8 @@ jobs:
         nix_path: nixpkgs=channel:${{ env.NIXPKGS_BRANCH }}
     - name: Install channels
       run: |
-        nix-channel --add https://nixos.org/channels/${{ env.NIXPKGS_BRANCH }} nixpkgs
-        nix-channel --update
+        sudo nix-channel --add https://nixos.org/channels/${{ env.NIXPKGS_BRANCH }} nixpkgs
+        sudo nix-channel --update
     - name: Install nix-darwin
       run: |
         sudo mkdir -p /etc/nix-darwin
@@ -61,7 +61,7 @@ jobs:
           /" \
           /etc/nix-darwin/configuration.nix
 
-        nix run .#darwin-rebuild -- switch \
+        sudo nix run .#darwin-rebuild -- switch \
           -I darwin=. \
           -I darwin-config=/etc/nix-darwin/configuration.nix
     - name: Switch to new configuration
@@ -72,17 +72,17 @@ jobs:
           "s/pkgs.vim/pkgs.hello/" \
           /etc/nix-darwin/configuration.nix
 
-        darwin-rebuild switch
+        sudo darwin-rebuild switch
 
         hello
     - name: Test uninstallation of nix-darwin
       run: |
         # We need to specify `--extra-experimental-features` because `experimental-features` is set by
         # `cachix/install-nix-action` but not by our default config above
-        nix run .#darwin-uninstaller \
+        sudo nix run .#darwin-uninstaller \
           --extra-experimental-features "nix-command flakes" \
           --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
-        nix run .#darwin-uninstaller.tests.uninstaller \
+        sudo nix run .#darwin-uninstaller.tests.uninstaller \
           --extra-experimental-features "nix-command flakes" \
           --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
 
@@ -112,7 +112,7 @@ jobs:
             's/nixpkgs.hostPlatform = "aarch64-darwin";/nixpkgs.hostPlatform = "'$(nix eval --expr builtins.currentSystem --impure --raw)'";/' \
             flake.nix
         popd
-        nix run .#darwin-rebuild -- switch \
+        sudo nix run .#darwin-rebuild -- switch \
           --override-input nix-darwin . \
           --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
     - name: Switch to new configuration
@@ -123,12 +123,12 @@ jobs:
           "s/pkgs.vim/pkgs.hello/" \
           /etc/nix-darwin/flake.nix
 
-        darwin-rebuild switch \
+        sudo darwin-rebuild switch \
           --override-input nix-darwin . \
           --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
 
         hello
     - name: Test uninstallation of nix-darwin
       run: |
-        nix run .#darwin-uninstaller --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
-        nix run .#darwin-uninstaller.tests.uninstaller --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
+        sudo nix run .#darwin-uninstaller --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
+        sudo nix run .#darwin-uninstaller.tests.uninstaller --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}

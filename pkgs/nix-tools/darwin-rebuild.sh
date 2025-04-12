@@ -2,6 +2,12 @@
 set -e
 set -o pipefail
 
+if [[ $(id -u) -eq 0 ]]; then
+  # On macOS, `sudo(8)` preserves `$HOME` by default, which causes Nix
+  # to output warnings.
+  HOME=~root
+fi
+
 export PATH=@path@
 export NIX_PATH=${NIX_PATH:-@nixPath@}
 
@@ -20,12 +26,6 @@ showSyntax() {
   echo "                             [--no-registries] [--offline] [--refresh]]" >&2
   echo "               [--substituters substituters-list] ..." >&2
   exit 1
-}
-
-sudo() {
-  # We use `env` before our command to ensure the preserved PATH gets checked
-  # when trying to resolve the command to execute
-  command sudo -H --preserve-env=PATH --preserve-env=SSH_CONNECTION env "$@"
 }
 
 # Parse the command line.
@@ -142,6 +142,11 @@ done
 
 if [ -z "$action" ]; then showSyntax; fi
 
+if [[ $action =~ ^switch|activate|rollback|check$ && $(id -u) -ne 0 ]]; then
+  printf >&2 '%s: system activation must now be run as root\n' "$0"
+  exit 1
+fi
+
 flakeFlags=(--extra-experimental-features 'nix-command flakes')
 
 # Use /etc/nix-darwin/flake.nix if it exists. It can be a symlink to the
@@ -193,11 +198,7 @@ if [ "$action" = switch ] || [ "$action" = build ] || [ "$action" = check ] || [
 fi
 
 if [ "$action" = list ] || [ "$action" = rollback ]; then
-  if [ "$USER" != root ] && [ ! -w $(dirname "$profile") ]; then
-    sudo nix-env -p "$profile" "${extraProfileFlags[@]}"
-  else
-    nix-env -p "$profile" "${extraProfileFlags[@]}"
-  fi
+  nix-env -p "$profile" "${extraProfileFlags[@]}"
 fi
 
 if [ "$action" = rollback ]; then
@@ -210,22 +211,37 @@ fi
 
 if [ -z "$systemConfig" ]; then exit 0; fi
 
-if [ "$action" = switch ]; then
-  if [ "$USER" != root ] && [ ! -w $(dirname "$profile") ]; then
-    sudo nix-env -p "$profile" --set "$systemConfig"
+# TODO: Remove this backwards‐compatibility hack in 25.11.
+
+if
+  [[ -x $systemConfig/activate-user ]] \
+  && ! grep -q '^# nix-darwin: deprecated$' "$systemConfig/activate-user"
+then
+  hasActivateUser=1
+else
+  hasActivateUser=
+fi
+
+runActivateUser() {
+  if [[ -n $SUDO_USER ]]; then
+    sudo --user="$SUDO_USER" --set-home -- "$systemConfig/activate-user"
   else
-    nix-env -p "$profile" --set "$systemConfig"
+    printf >&2 \
+      '%s: $SUDO_USER not set, can’t run legacy `activate-user` script\n' \
+      "$0"
+    exit 1
   fi
+}
+
+if [ "$action" = switch ]; then
+  nix-env -p "$profile" --set "$systemConfig"
 fi
 
 if [ "$action" = switch ] || [ "$action" = activate ] || [ "$action" = rollback ]; then
-  "$systemConfig/activate-user"
-
-  if [ "$USER" != root ]; then
-    sudo "$systemConfig/activate"
-  else
-    "$systemConfig/activate"
+  if [[ -n $hasActivateUser ]]; then
+    runActivateUser
   fi
+  "$systemConfig/activate"
 fi
 
 if [ "$action" = changelog ]; then
@@ -234,5 +250,9 @@ fi
 
 if [ "$action" = check ]; then
   export checkActivation=1
-  "$systemConfig/activate-user"
+  if [[ -n $hasActivateUser ]]; then
+    runActivateUser
+  else
+    "$systemConfig/activate"
+  fi
 fi

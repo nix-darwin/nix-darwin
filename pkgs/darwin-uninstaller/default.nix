@@ -53,16 +53,16 @@ in writeShellApplication {
     ${uninstallSystem.system}/sw/bin/darwin-rebuild activate
 
     if [[ -L /run/current-system ]]; then
-      sudo rm /run/current-system
+      rm /run/current-system
     fi
 
     if [[ -L /run ]]; then
       if [[ -e /etc/synthetic.conf ]]; then
-        sudo sed -i -E '/^run[[:space:]]/d' /etc/synthetic.conf
-        sudo /System/Library/Filesystems/apfs.fs/Contents/Resources/apfs.util -t &>/dev/null || true
+        sed -i -E '/^run[[:space:]]/d' /etc/synthetic.conf
+        /System/Library/Filesystems/apfs.fs/Contents/Resources/apfs.util -t &>/dev/null || true
         echo >&2 "NOTE: the /run symlink will be removed on reboot"
       else
-        sudo rm /run
+        rm /run
       fi
     fi
 

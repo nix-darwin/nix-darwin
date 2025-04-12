@@ -1,3 +1,30 @@
+2025-01-30
+- Previously, some nix-darwin options applied to the user running
+  `darwin-rebuild`. As part of a long‐term migration to make
+  nix-darwin focus on system‐wide activation and support first‐class
+  multi‐user setups, all system activation now runs as `root`, and
+  these options instead apply to the `system.primaryUser` user.
+
+  You will get an evaluation error if you are using any options to
+  which this applies.
+
+  To continue using these options, set `system.primaryUser` to the name
+  of the user you have been using to run `darwin-rebuild`. In the long
+  run, this setting will be deprecated and removed after all the
+  functionality it is relevant for has been adjusted to allow
+  specifying the relevant user separately, moved under the
+  `users.users.*` namespace, or migrated to Home Manager.
+
+  Accordingly, `darwin-rebuild` must now be run as root, the
+  `system.activationScripts.{extraUserActivation,preUserActivation,
+  postUserActivation}` settings have been removed, and all activation
+  scripts are now executed as `root` – be careful if you override any
+  of them.
+
+  If you run into any unexpected issues with the migration, please
+  open an issue at <https://github.com/LnL7/nix-darwin/issues/new>
+  and include as much information as possible.
+
 2025-01-29
 - There is now a `nix.enable` toggle to disable management of the Nix
   installation. Nix installation management has been made more

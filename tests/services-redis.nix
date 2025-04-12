@@ -7,6 +7,8 @@ let
 in
 
 {
+  system.primaryUser = "test-redis-user";
+
   services.redis.enable = true;
   services.redis.package = redis;
   services.redis.extraConfig = ''

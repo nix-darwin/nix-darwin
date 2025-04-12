@@ -57,6 +57,8 @@ in
           SockType = "dgram";
           SockFamily = "IPv4";
         };
+
+      managedBy = "services.khd.enable";
     };
 
   };

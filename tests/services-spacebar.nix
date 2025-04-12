@@ -7,6 +7,8 @@ let
 in
 
 {
+  system.primaryUser = "test-spacebar-user";
+
   services.spacebar.enable = true;
   services.spacebar.package = spacebar;
   services.spacebar.config = { background_color = "0xff202020"; };

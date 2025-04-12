@@ -42,6 +42,7 @@ in {
         KeepAlive = true;
         RunAtLoad = true;
       };
+      managedBy = "services.trezord.enable";
     };
   };
 }
