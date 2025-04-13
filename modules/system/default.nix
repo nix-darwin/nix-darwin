@@ -125,6 +125,9 @@ in
         mkdir -p $out/user/Library
         ln -s ${cfg.build.launchd}/user/Library/LaunchAgents $out/user/Library/LaunchAgents
 
+        mkdir -p $out/Library/Java
+        ln -s ${cfg.build.jdks}/Library/Java/JavaVirtualMachines $out/Library/Java/JavaVirtualMachines
+
         echo "$activationScript" > $out/activate
         substituteInPlace $out/activate --subst-var out
         chmod u+x $out/activate
