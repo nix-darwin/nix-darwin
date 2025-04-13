@@ -20,6 +20,7 @@ with lib;
     env_path=$(bash -c 'source ${config.system.build.setEnvironment}; echo $PATH')
 
     test "$env_path" = "${builtins.concatStringsSep ":" [
+      "/run/wrappers/bin"
       "beforePath"
       "myPath"
       "beforeProfile/bin"
