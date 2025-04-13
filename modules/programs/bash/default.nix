@@ -39,9 +39,60 @@ in
       package = mkPackageOption pkgs "bash-completion" { };
     };
 
+    programs.bash.promptInit = mkOption {
+      type = types.lines;
+      default = ''
+        # Provide a nice prompt if the terminal supports it.
+        if [ "$TERM" != "dumb" ] || [ -n "$INSIDE_EMACS" ]; then
+          PROMPT_COLOR="1;31m"
+          ((UID)) && PROMPT_COLOR="1;32m"
+          if [ -n "$INSIDE_EMACS" ]; then
+            # Emacs term mode doesn't support xterm title escape sequence (\e]0;)
+            PS1="\n\[\033[$PROMPT_COLOR\][\u@\h:\w]\\$\[\033[0m\] "
+          else
+            PS1="\n\[\033[$PROMPT_COLOR\][\[\e]0;\u@\h: \w\a\]\u@\h:\w]\\$\[\033[0m\] "
+          fi
+          if test "$TERM" = "xterm"; then
+            PS1="\[\033]2;\h:\u:\w\007\]$PS1"
+          fi
+        fi
+      '';
+      description = "Shell script code used to initialise the bash prompt.";
+    };
   };
 
   config = mkIf cfg.enable {
+
+    programs.bash.interactiveShellInit = ''
+      # Make bash check its window size after a process completes
+      shopt -s checkwinsize
+
+      ${config.system.build.setAliases.text}
+
+      ${cfg.promptInit}
+      ${config.environment.interactiveShellInit}
+
+      ${optionalString cfg.completion.enable ''
+        if [ "$TERM" != "dumb" ]; then
+          source "${cfg.completion.package}/etc/profile.d/bash_completion.sh"
+
+          nullglobStatus=$(shopt -p nullglob)
+          shopt -s nullglob
+          for p in $NIX_PROFILES; do
+            for m in "$p/etc/bash_completion.d/"*; do
+              source $m
+            done
+          done
+          eval "$nullglobStatus"
+          unset nullglobStatus p m
+        fi
+      ''}
+
+      # Read system-wide modifications.
+      if test -f /etc/bash.local; then
+        source /etc/bash.local
+      fi
+    '';
 
     environment.systemPackages =
       [ # Include bash package
@@ -70,34 +121,7 @@ in
       # Return early if not running interactively, but after basic nix setup.
       [[ $- != *i* ]] && return
 
-      # Make bash check its window size after a process completes
-      shopt -s checkwinsize
-
-      ${config.system.build.setAliases.text}
-
-      ${config.environment.interactiveShellInit}
       ${cfg.interactiveShellInit}
-
-      ${optionalString cfg.completion.enable ''
-        if [ "$TERM" != "dumb" ]; then
-          source "${cfg.completion.package}/etc/profile.d/bash_completion.sh"
-
-          nullglobStatus=$(shopt -p nullglob)
-          shopt -s nullglob
-          for p in $NIX_PROFILES; do
-            for m in "$p/etc/bash_completion.d/"*; do
-              source $m
-            done
-          done
-          eval "$nullglobStatus"
-          unset nullglobStatus p m
-        fi
-      ''}
-
-      # Read system-wide modifications.
-      if test -f /etc/bash.local; then
-        source /etc/bash.local
-      fi
     '';
 
     environment.etc."bashrc".knownSha256Hashes = [
