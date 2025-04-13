@@ -430,6 +430,15 @@ in {
       '';
     };
 
-  };
+    system.defaults.NSGlobalDomain.NSToolbarTitleViewRolloverDelay = mkOption {
+      type = types.nullOr types.float;
+      default = null;
+      description = ''
+        Toolbar title rollover delay.
+        Choose the delay of the auto-hidden document-proxy icon.
+        com.apple.universalaccess showWindowTitlebarIcons must be set to false.
+      '';
+    };
 
+  };
 }
