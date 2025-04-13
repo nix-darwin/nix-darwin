@@ -248,6 +248,24 @@ in {
       '';
     };
 
+    system.defaults.NSGlobalDomain.NSStatusItemSpacing = mkOption {
+      type = types.nullOr types.int;
+      default = null;
+      example = 12;
+      description = ''
+        Sets the spacing between status icons in the menu bar.
+      '';
+    };
+
+    system.defaults.NSGlobalDomain.NSStatusItemSelectionPadding = mkOption {
+      type = types.nullOr types.int;
+      default = null;
+      example = 6;
+      description = ''
+        Sets the padding around status icons in the menu bar.
+      '';
+    };
+
     system.defaults.NSGlobalDomain.InitialKeyRepeat = mkOption {
       type = types.nullOr types.int;
       default = null;
