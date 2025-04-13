@@ -56,7 +56,7 @@ in {
     };
 
     system.defaults.NSGlobalDomain.AppleKeyboardUIMode = mkOption {
-      type = types.nullOr (types.enum [ 3 ]);
+      type = types.nullOr (types.enum [ 2 3 ]);
       default = null;
       description = ''
         Configures the keyboard control behavior.  Mode 3 enables full keyboard control.
