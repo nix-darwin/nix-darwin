@@ -105,11 +105,14 @@ nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch
 
 ### Step 3. Using `nix-darwin`
 
-After installing, you can run `darwin-rebuild` to apply changes to your system:
+After installation, restarting your computer will make `darwin-rebuild` available in your `PATH`. After restarting, you can apply changes in your configuration by running:
 
 ```bash
 darwin-rebuild switch
 ```
+
+> NOTE: if the 'darwin-rebuild' command is not found after installation, you will need to add a path to your shell configuration (f.e. the ~/.bashrc or ~/.zshrc file).
+> To to so, add: `export PATH=/run/current-system/sw/bin:$PATH` in your shell configuration file.
 
 #### Using flake inputs
 
