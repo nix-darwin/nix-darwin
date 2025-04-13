@@ -1,3 +1,5 @@
+# Test the contents of the generated Brewfile
+
 { config, lib, ... }:
 
 let
