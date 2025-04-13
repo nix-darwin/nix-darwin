@@ -10,15 +10,21 @@ let
       (p: v: "yabai -m config ${p} ${toString v}")
       opts);
 
-  configFile = mkIf (cfg.config != { } || cfg.extraConfig != "")
-    "${pkgs.writeScript "yabairc" (
-      (if (cfg.config != {})
-       then "${toYabaiConfig cfg.config}"
-       else "")
-      + optionalString (cfg.extraConfig != "") ("\n" + cfg.extraConfig + "\n"))}";
-in
+  # TODO: [@cmacrae] Handle removal of yabai scripting additions
+  scriptingAdditionConfig = ''
+    yabai -m signal --add event=dock_did_restart action='sudo yabai --load-sa'
+    sudo yabai --load-sa
+  '';
 
-{
+  configFile = mkIf (cfg.config != {} || cfg.extraConfig != "")
+    "${pkgs.writeScript "yabairc" (
+      concatLines (
+        optional (cfg.enableScriptingAddition) scriptingAdditionConfig
+        ++ optional (cfg.config != {}) (toYabaiConfig cfg.config)
+        ++ optional (cfg.extraConfig != "") cfg.extraConfig
+      )
+    )}";
+in {
   options = with types; {
     services.yabai.enable = mkOption {
       type = bool;
@@ -88,14 +94,7 @@ in
       };
     })
 
-    # TODO: [@cmacrae] Handle removal of yabai scripting additions
     (mkIf (cfg.enableScriptingAddition) {
-      launchd.daemons.yabai-sa = {
-        script = "${cfg.package}/bin/yabai --load-sa";
-        serviceConfig.RunAtLoad = true;
-        serviceConfig.KeepAlive.SuccessfulExit = false;
-      };
-
       environment.etc."sudoers.d/yabai".source = pkgs.runCommand "sudoers-yabai" {} ''
         YABAI_BIN="${cfg.package}/bin/yabai"
         SHASUM=$(sha256sum "$YABAI_BIN" | cut -d' ' -f1)
