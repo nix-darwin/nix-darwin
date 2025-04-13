@@ -219,6 +219,7 @@ in
 
     system.build.setEnvironment = pkgs.writeText "set-environment" ''
       # Prevent this file from being sourced by child shells.
+      if [ -n "${__NIX_DARWIN_SET_ENVIRONMENT_DONE:-}" ]; then return; fi
       export __NIX_DARWIN_SET_ENVIRONMENT_DONE=1
 
       export PATH=${config.environment.systemPath}
