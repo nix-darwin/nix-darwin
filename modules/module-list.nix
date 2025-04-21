@@ -45,6 +45,7 @@
   ./system/version.nix
   ./time
   ./networking
+  ./networking/firewall.nix
   ./nix
   ./nix/linux-builder.nix
   ./nix/nix-darwin.nix
