@@ -206,7 +206,8 @@ in
         XDG_DATA_DIRS = map (path: path + "/share") cfg.profiles;
         TERMINFO_DIRS = map (path: path + "/share/terminfo") cfg.profiles ++ [ "/usr/share/terminfo" ];
         EDITOR = mkDefault "nano";
-        PAGER = mkDefault "less -R";
+        PAGER = mkDefault "less";
+        LESS = mkDefault "-R";
       };
 
     system.path = pkgs.buildEnv {
