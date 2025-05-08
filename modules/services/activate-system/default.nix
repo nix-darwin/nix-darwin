@@ -28,6 +28,7 @@
         ${config.system.activationScripts.etcChecks.text}
         ${config.system.activationScripts.etc.text}
         ${config.system.activationScripts.keyboard.text}
+        ${config.system.activationScripts.wrappers.text}
       '';
       serviceConfig.RunAtLoad = true;
     };
