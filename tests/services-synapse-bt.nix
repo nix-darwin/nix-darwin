@@ -7,6 +7,8 @@ let
 in
 
 {
+  system.primaryUser = "test-synapse-bt-user";
+
   services.synapse-bt.enable = true;
   services.synapse-bt.package = synapse-bt;
 

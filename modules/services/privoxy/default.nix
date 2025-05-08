@@ -61,6 +61,7 @@ in
       ${cfg.package}/bin/privoxy /etc/privoxy-config
       '';
       serviceConfig.KeepAlive = true;
+      managedBy = "services.privoxy.enable";
     };
   };
 }

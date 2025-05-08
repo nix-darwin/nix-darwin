@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ lib, config, pkgs, ... }:
 
 with lib;
 
@@ -15,12 +15,16 @@ with lib;
   # Restore any unmanaged `nix-daemon`.
   nix.enable = false;
 
-  system.activationScripts.postUserActivation.text = mkAfter ''
-    nix-channel --remove darwin || true
-  '';
-
   system.activationScripts.postActivation.text = mkAfter ''
     nix-channel --remove darwin || true
+
+    ${lib.optionalString (config.system.primaryUser != null) ''
+      sudo \
+        --user=${lib.escapeShellArg config.system.primaryUser} \
+        --set-home \
+        -- nix-channel --remove darwin \
+      || true
+    ''}
 
     if [[ -L /Applications/Nix\ Apps ]]; then
         rm /Applications/Nix\ Apps

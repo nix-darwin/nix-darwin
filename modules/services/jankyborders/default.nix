@@ -162,6 +162,7 @@ in {
         ++ (optionalArg "order" cfg.order);
       serviceConfig.KeepAlive = true;
       serviceConfig.RunAtLoad = true;
+      managedBy = "services.jankyborders.enable";
     };
   };
 }

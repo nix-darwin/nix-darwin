@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ options, config, lib, pkgs, ... }:
 
 with lib;
 
@@ -75,7 +75,7 @@ in
         else if config.system.stateVersion >= 6 then
           "/etc/nix-darwin/configuration.nix"
         else
-          "$HOME/.nixpkgs/darwin-configuration.nix";
+          "${config.system.primaryUserHome}/.nixpkgs/darwin-configuration.nix";
       defaultText = literalExpression ''
         if config.nixpkgs.flake.setNixPath then
           # Don’t set this for flake‐based systems.
@@ -83,7 +83,7 @@ in
         else if config.system.stateVersion >= 6 then
           "/etc/nix-darwin/configuration.nix"
         else
-          "$HOME/.nixpkgs/darwin-configuration.nix"
+          "''${config.system.primaryUserHome}/.nixpkgs/darwin-configuration.nix"
       '';
       description = ''
         The path of the darwin configuration.nix used to configure the system,
@@ -174,6 +174,16 @@ in
   };
 
   config = {
+
+    # This is horrible, sorry.
+    system.requiresPrimaryUser = mkIf (
+      config.nix.enable
+      && !config.nixpkgs.flake.setNixPath
+      && config.system.stateVersion < 6
+      && options.environment.darwinConfig.highestPrio == (mkOptionDefault {}).priority
+    ) [
+      "environment.darwinConfig"
+    ];
 
     environment.systemPath = mkMerge [
       [ (makeBinPath cfg.profiles) ]

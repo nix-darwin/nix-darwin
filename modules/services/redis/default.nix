@@ -67,6 +67,7 @@ in
     launchd.user.agents.redis = {
       command = "${cfg.package}/bin/redis-server /etc/redis.conf";
       serviceConfig.KeepAlive = true;
+      managedBy = "services.redis.enable";
     };
 
     environment.etc."redis.conf".text = ''

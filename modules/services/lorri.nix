@@ -38,6 +38,7 @@ in
     ];
 
     environment.systemPackages = [ pkgs.lorri ];
+
     launchd.user.agents.lorri = {
       command = with pkgs; "${lorri}/bin/lorri daemon";
       path = with pkgs; [ config.nix.package git gnutar gzip ];
@@ -49,6 +50,7 @@ in
         StandardErrorPath = cfg.logFile;
         EnvironmentVariables = { NIX_PATH = "nixpkgs=" + toString pkgs.path; };
       };
+      managedBy = "services.lorri.enable";
     };
   };
 }

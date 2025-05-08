@@ -7,6 +7,8 @@ let
 in
 
 {
+  system.primaryUser = "test-yabai-user";
+
   services.yabai.enable = true;
   services.yabai.package = yabai;
   services.yabai.config = { focus_follows_mouse = "autoraise"; };

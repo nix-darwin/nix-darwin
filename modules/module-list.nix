@@ -10,6 +10,7 @@
   ./security/sudo.nix
   ./system
   ./system/base.nix
+  ./system/primary-user.nix
   ./system/checks.nix
   ./system/activation-scripts.nix
   ./system/applications.nix

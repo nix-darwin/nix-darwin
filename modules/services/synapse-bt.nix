@@ -66,6 +66,7 @@ in
         command = "${cfg.package}/bin/synapse --config ${configFile}";
         serviceConfig.KeepAlive = true;
         serviceConfig.RunAtLoad = true;
+        managedBy = "services.synapse-bt.enable";
       };
 
   };
