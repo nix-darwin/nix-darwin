@@ -80,6 +80,7 @@ in {
 
   tests.activation-scripts = makeTest ./tests/activation-scripts.nix;
   tests.autossh = makeTest ./tests/autossh.nix;
+  tests.checks-nh-clean = makeTest ./tests/checks-nh-clean.nix;
   tests.environment-path = makeTest ./tests/environment-path.nix;
   tests.environment-terminfo = makeTest ./tests/environment-terminfo.nix;
   tests.homebrew = makeTest ./tests/homebrew.nix;
@@ -89,6 +90,7 @@ in {
   tests.networking-networkservices = makeTest ./tests/networking-networkservices.nix;
   tests.nix-enable = makeTest ./tests/nix-enable.nix;
   tests.nixpkgs-overlays = makeTest ./tests/nixpkgs-overlays.nix;
+  tests.programs-nh = makeTest ./tests/programs-nh.nix;
   tests.programs-ssh = makeTest ./tests/programs-ssh.nix;
   tests.programs-tmux = makeTest ./tests/programs-tmux.nix;
   tests.programs-zsh = makeTest ./tests/programs-zsh.nix;
