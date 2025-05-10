@@ -70,6 +70,10 @@ in
     "whalebrew/wget"
   ];
 
+  homebrew.vscode = [
+    "golang.go"
+  ];
+
   test = ''
     bf=${lib.escapeShellArg config.homebrew.brewfile}
 
@@ -97,5 +101,8 @@ in
 
     echo "checking whalebrew entries in Brewfile" >&2
     ${mkTest "whalebrew/wget" ''whalebrew "whalebrew/wget"''}
+
+    echo "checking vscode entries in Brewfile" >&2
+    ${mkTest "golang.go" ''vscode "golang.go"''}
   '';
 }
