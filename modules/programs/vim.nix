@@ -28,32 +28,11 @@ in
       description = "Enable sensible configuration options for vim.";
     };
 
-    programs.vim.extraKnownPlugins = mkOption {
-      type = types.attrsOf types.package;
-      default = {};
-      example = literalExpression
-        ''
-        {
-          vim-jsx = pkgs.vimUtils.buildVimPluginFrom2Nix {
-            name = "vim-javascript-2016-07-29";
-            src = pkgs.fetchgit {
-              url = "git://github.com/mxw/vim-jsx";
-              rev = "261114c925ea81eeb4db1651cc1edced66d6b5d6";
-              sha256 = "17pffzwnvsimnnr4ql1qifdh4a0sqqsmcwfiqqzgglvsnzw5vpls";
-            };
-            dependencies = [];
-
-          };
-        }
-        '';
-      description = "Custom plugin declarations to add to VAM's knownPlugins.";
-    };
-
     programs.vim.plugins = mkOption {
-      type = types.listOf types.attrs;
-      default = [];
-      example = [ { names = [ "surround" "vim-nix" ]; } ];
-      description = "VAM plugin dictionaries to use for vim_configurable.";
+      type = types.listOf (types.either types.str types.attrs);
+      default = [ ];
+      example = lib.literalExpression "[ pkgs.vimPlugins.vim-nix ]";
+      description = "Plugins to use for vim_configurable.";
     };
 
     programs.vim.package = mkOption {
@@ -95,15 +74,10 @@ in
     programs.vim.package = pkgs.vim_configurable.customize {
       name = "vim";
       vimrcConfig.customRC = config.environment.etc."vimrc".text;
-      vimrcConfig.vam = {
-        knownPlugins = pkgs.vimPlugins // cfg.extraKnownPlugins;
-        pluginDictionaries = cfg.plugins;
-      };
+      vimrcConfig.packages.nix-darwin.start = cfg.plugins;
     };
 
-    programs.vim.plugins = mkIf cfg.enableSensible [
-      { names = [ "fugitive" "surround" "vim-nix" ]; }
-    ];
+    programs.vim.plugins = mkIf cfg.enableSensible [pkgs.vimPlugins.vim-sensible];
 
     programs.vim.vimOptions.sensible.text = mkIf cfg.enableSensible ''
       set nocompatible
