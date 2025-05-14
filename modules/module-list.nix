@@ -57,6 +57,7 @@
   ./power/sleep.nix
   ./services/activate-system
   ./services/aerospace
+  ./services/autoraise.nix
   ./services/autossh.nix
   ./services/buildkite-agents.nix
   ./services/chunkwm.nix

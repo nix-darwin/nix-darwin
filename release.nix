@@ -102,6 +102,7 @@ in {
   tests.services-nix-daemon = makeTest ./tests/services-nix-daemon.nix;
   tests.sockets-nix-daemon = makeTest ./tests/sockets-nix-daemon.nix;
   tests.services-aerospace = makeTest ./tests/services-aerospace.nix;
+  tests.services-autoraise = makeTest ./tests/services-autoraise.nix;
   tests.services-dnsmasq = makeTest ./tests/services-dnsmasq.nix;
   tests.services-dnscrypt-proxy = makeTest ./tests/services-dnscrypt-proxy.nix;
   tests.services-eternal-terminal = makeTest ./tests/services-eternal-terminal.nix;
