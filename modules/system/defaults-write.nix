@@ -38,6 +38,7 @@ let
   ActivityMonitor = defaultsToList "com.apple.ActivityMonitor" cfg.ActivityMonitor;
   WindowManager = defaultsToList "com.apple.WindowManager" cfg.WindowManager;
   controlcenter = defaultsToList "~/Library/Preferences/ByHost/com.apple.controlcenter" cfg.controlcenter;  
+  Spotlight = defaultsToList "~/Library/Preferences/ByHost/com.apple.Spotlight" cfg.Spotlight;  
   CustomUserPreferences = flatten (mapAttrsToList (name: value: defaultsToList name value) cfg.CustomUserPreferences);
   CustomSystemPreferences = flatten (mapAttrsToList (name: value: defaultsToList name value) cfg.CustomSystemPreferences);
 
@@ -95,6 +96,7 @@ in
         CustomUserPreferences
         WindowManager
         controlcenter
+        Spotlight
       ]
       ''
         # Set defaults
@@ -120,6 +122,7 @@ in
         ${concatStringsSep "\n" CustomUserPreferences}
         ${concatStringsSep "\n" WindowManager}
         ${concatStringsSep "\n" controlcenter}
+        ${concatStringsSep "\n" Spotlight}
 
         ${optionalString (length dock > 0) ''
           # Only restart Dock if current user is logged in
