@@ -114,6 +114,7 @@ in
 
         ln -s ${cfg.build.patches}/patches $out/patches
         ln -s ${cfg.build.etc}/etc $out/etc
+        ln -s ${cfg.build.files} $out/links.json
         ln -s ${cfg.path} $out/sw
 
         mkdir -p $out/Library

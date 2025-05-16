@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "linker"
+version = "0.1.0"
+description = "Link files into place across a nix-darwin system"
+authors = ["Sam <30577766+Samasaur1@users.noreply.github.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+
+[tool.poetry.scripts]
+linker = "linker:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

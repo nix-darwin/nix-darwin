@@ -37,6 +37,7 @@
   ./system/defaults/ActivityMonitor.nix
   ./system/defaults/WindowManager.nix
   ./system/etc.nix
+  ./system/files
   ./system/keyboard.nix
   ./system/launchd.nix
   ./system/nvram.nix
