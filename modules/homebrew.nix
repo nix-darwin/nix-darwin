@@ -542,10 +542,10 @@ in
       [website](https://brew.sh) for installation instructions.
 
       Use the [](#opt-homebrew.brews), [](#opt-homebrew.casks),
-      [](#opt-homebrew.masApps), and [](#opt-homebrew.whalebrews) options
-      to list the Homebrew formulae, casks, Mac App Store apps, and Docker containers you'd like to
-      install. Use the [](#opt-homebrew.taps) option, to make additional formula
-      repositories available to Homebrew. This module uses those options (along with the
+      [](#opt-homebrew.masApps), [](#opt-homebrew.whalebrews), [](#opt-homebrew.vscode) options
+      to list the Homebrew formulae, casks, Mac App Store apps, Docker containers and Visual Studio
+      Code Extensions you'd like to install. Use the [](#opt-homebrew.taps) option, to make additional
+      formula repositories available to Homebrew. This module uses those options (along with the
       [](#opt-homebrew.caskArgs) options) to generate a Brewfile that
       {command}`nix-darwin` passes to the {command}`brew bundle` command during
       system activation.
@@ -734,6 +734,21 @@ in
       '';
     };
 
+    vscode = mkOption {
+      type = with types; listOf str;
+      default = [ ];
+      example = [ "golang.go" ];
+      description = ''
+        List of Visual Studio Code extensions to install using `code --install-extension`.
+
+        When this option is used, `"visual-studio-code"` is automatically added to
+        [](#opt-homebrew.casks).
+
+        For more information on {command}`code` see:
+        [VSCode Extension Marketplace](https://code.visualstudio.com/docs/editor/extension-marketplace).
+      '';
+    };
+
     extraConfig = mkOption {
       type = types.lines;
       default = "";
@@ -767,6 +782,8 @@ in
     homebrew.brews =
       optional (cfg.whalebrews != [ ]) "whalebrew";
 
+    homebrew.casks = optional (cfg.vscode != [ ]) "visual-studio-code";
+
     homebrew.brewfile =
       "# Created by `nix-darwin`'s `homebrew` module\n\n"
       + mkBrewfileSectionString "Taps" cfg.taps
@@ -777,6 +794,7 @@ in
       + mkBrewfileSectionString "Mac App Store apps"
         (mapAttrsToList (n: id: ''mas "${n}", id: ${toString id}'') cfg.masApps)
       + mkBrewfileSectionString "Docker containers" (map (v: ''whalebrew "${v}"'') cfg.whalebrews)
+      + mkBrewfileSectionString "Visual Studio Code extensions" (map (v: ''vscode "${v}"'') cfg.vscode)
       + optionalString (cfg.extraConfig != "") ("# Extra config\n" + cfg.extraConfig);
 
     environment.variables = mkIf cfg.enable cfg.global.homebrewEnvironmentVariables;
