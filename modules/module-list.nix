@@ -43,6 +43,7 @@
   ./system/patches.nix
   ./system/shells.nix
   ./system/startup.nix
+  ./system/shortcuts.nix
   ./system/version.nix
   ./time
   ./networking
