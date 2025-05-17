@@ -58,7 +58,7 @@
           `users.users.*` namespace, or migrated to Home Manager.
 
           If you run into any unexpected issues with the migration, please
-          open an issue at <https://github.com/LnL7/nix-darwin/issues/new>
+          open an issue at <https://github.com/nix-darwin/nix-darwin/issues/new>
           and include as much information as possible.
         '';
       }

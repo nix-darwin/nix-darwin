@@ -136,7 +136,7 @@ in
         printf >&2 '\n'
         printf >&2 'Otherwise, you should report this to the deployment tool developers. If\n'
         printf >&2 'you don’t use a third‐party deployment tool, please open a bug report\n'
-        printf >&2 'at <https://github.com/LnL7/nix-darwin/issues/new> and include as much\n'
+        printf >&2 'at <https://github.com/nix-darwin/nix-darwin/issues/new> and include as much\n'
         printf >&2 'detail about your setup as possible.\n'
       '';
 
