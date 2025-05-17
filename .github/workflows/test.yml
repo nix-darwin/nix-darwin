@@ -3,10 +3,10 @@ on:
   pull_request:
   push:
     branches:
-      - master
+      - nix-darwin-25.05
 
 env:
-  NIXPKGS_BRANCH: nixpkgs-unstable
+  NIXPKGS_BRANCH: nixpkgs-25.05-darwin
   NIX_VERSION: 2.24.11
 
 jobs:

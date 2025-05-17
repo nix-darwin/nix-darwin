@@ -2,7 +2,7 @@
   description = "A collection of darwin modules";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-25.05-darwin";
   };
 
   outputs = { self, nixpkgs }: let

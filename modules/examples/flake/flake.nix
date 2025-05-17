@@ -2,8 +2,8 @@
   description = "Example nix-darwin system flake";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    nix-darwin.url = "github:nix-darwin/nix-darwin/master";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-25.05-darwin";
+    nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-25.05";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
 
