@@ -82,6 +82,7 @@
   ./services/monitoring/prometheus-node-exporter.nix
   ./services/netbird.nix
   ./services/nix-daemon.nix
+  ./services/nix-serve.nix
   ./services/nix-gc
   ./services/nix-optimise
   ./services/ofborg
