@@ -29,5 +29,19 @@ in
         launchctl disable system/com.openssh.sshd
       fi
     '');
+
+    environment.etc."ssh/sshd_config.d/50-nix-path-fallback.conf".text = let
+      pathDirs = lib.splitString ":" config.environment.systemPath;
+      filteredPathDirs = lib.filter (dir: !lib.hasInfix "$" dir) pathDirs;
+      filteredPath = lib.concatStringsSep ":" filteredPathDirs;
+    in ''
+      # Set a fallback PATH that doesn't depend on any environment variables
+      # for when SSH is run with a command i.e. `ssh root@localhost nix-store`
+      # This is necessary for any users who have `/bin/sh` or `/bin/bash` as
+      # their default shells (`root` by default), this isn't necessary for Zsh
+      # as it will still execute `/etc/zshenv` whereas `/bin/sh` will not
+      # execute any files.
+      SetEnv PATH=${filteredPath}
+    '';
   };
 }
