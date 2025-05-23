@@ -143,9 +143,9 @@ done
 if [ -z "$action" ]; then showSyntax; fi
 
 if [[ $action =~ ^switch|activate|rollback|check$ && $(id -u) -ne 0 ]]; then
-  printf >&2 '%s: system activation must now be run as root\n' "$0"
-  printf >&2 '%s: trying to re-run as root\n' "$0"
-  exec sudo --reset-timestamp -- "$0" "${origArgs[@]}"
+  printf >&2 '%s: system activation must now be run as root. Try:\n\n' "$0"
+  printf >&2 '  sudo %s %s\n' "$0" "$action"
+  exit 1
 fi
 
 flakeFlags=(--extra-experimental-features 'nix-command flakes')
