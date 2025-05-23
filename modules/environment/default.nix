@@ -98,6 +98,12 @@ in
     environment.variables = mkOption {
       type = types.attrsOf (types.either types.str (types.listOf types.str));
       default = {};
+      defaultText = literalExpression ''
+        XDG_CONFIG_DIRS=$HOME/.nix-profile/etc/xdg:/run/current-system/sw/etc/xdg:/nix/var/nix/profiles/default/etc/xdg
+        XDG_DATA_DIRS=$HOME/.nix-profile/share:/run/current-system/sw/share:/nix/var/nix/profiles/default/share
+        EDITOR = "nano";
+        PAGER = "less -R";
+      '';
       example = { EDITOR = "vim"; LANG = "nl_NL.UTF-8"; };
       description = ''
         A set of environment variables used in the global environment.
