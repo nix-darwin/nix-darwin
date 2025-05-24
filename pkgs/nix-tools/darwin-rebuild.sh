@@ -11,6 +11,10 @@ fi
 export PATH=@path@
 export NIX_PATH=${NIX_PATH:-@nixPath@}
 
+# Use the daemon even as `root` so that resource limits, TLS and proxy
+# configuration, etc. work as expected.
+export NIX_REMOTE=${NIX_REMOTE:-daemon}
+
 showSyntax() {
   echo "darwin-rebuild [--help] {edit | switch | activate | build | check | changelog}" >&2
   echo "               [--list-generations] [{--profile-name | -p} name] [--rollback]" >&2
