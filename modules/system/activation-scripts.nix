@@ -68,10 +68,11 @@ in
         (userActivationOption: {
           assertion = !config.system.activationScripts ? ${userActivationOption};
           message = ''
-            The `system.activationScripts.${userActivationOption}` option has
-            been removed, as all activation now takes place as `root`. Please
-            restructure your custom activation scripts appropriately,
-            potentially using `sudo` if you need to run commands as a user.
+            `system.activationScripts.${userActivationOption}` has been removed.
+            Please modify your configuration to use `system.activationScripts.${
+              builtins.replaceStrings [ "User" ] [ "" ] userActivationOption
+            }` instead.
+            Note: All activation scripts now run as `root`. Use `sudo -u <user>` for user-specific commands.
           '';
         })
         [
