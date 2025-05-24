@@ -56,5 +56,9 @@ in
       serviceConfig.RunAtLoad = true;
       managedBy = "services.sketchybar.enable";
     };
+
+    system.activationScripts.sketchybarReload.text = ''
+      ${lib.getExe cfg.package} --reload
+    '';
   };
 }
