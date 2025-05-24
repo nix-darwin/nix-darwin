@@ -65,7 +65,7 @@
 
     # TODO: use `environment.profileRelativeSessionVariables`
     environment.variables = {
-      TERMINFO_DIRS = map (path: path + "/share/terminfo") config.environment.profiles ++ [ "/usr/share/terminfo" ];
+      TERMINFO_DIRS = map (path: path + "/share/terminfo") config.environment.profiles ++ [ "${pkgs.ncurses}/share/terminfo" "/usr/share/terminfo" ];
     };
 
     environment.extraInit = ''
