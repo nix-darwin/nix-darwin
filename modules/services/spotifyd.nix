@@ -58,6 +58,7 @@ in
         RunAtLoad = true;
         ThrottleInterval = 30;
       };
+      managedBy = "services.spotifyd.enable";
     };
   };
 }

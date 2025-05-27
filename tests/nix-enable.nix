@@ -12,5 +12,9 @@
 
     printf >&2 'checking for late‐bound Nix lookup in /activate\n'
     grep nixEnvPath= ${config.out}/activate
+
+    printf >&2 'checking for late‐bound Nix lookup in activation service\n'
+    script=$(cat ${config.out}/Library/LaunchDaemons/org.nixos.activate-system.plist | awk -F'[< ]' '$6 ~ "^/nix/store/.*" {print $6}')
+    grep nixEnvPath= "$script"
   '';
 }

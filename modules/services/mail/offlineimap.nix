@@ -56,6 +56,7 @@ in {
       serviceConfig.StartInterval     = cfg.startInterval;
       serviceConfig.StandardErrorPath = "/var/log/offlineimap.log";
       serviceConfig.StandardOutPath   = "/var/log/offlineimap.log";
+      managedBy = "services.offlineimap.enable";
     };
   };
 }

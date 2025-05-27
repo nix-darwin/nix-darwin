@@ -363,6 +363,7 @@ in
         serviceConfig.EnvironmentVariables = {
           PGDATA = cfg.dataDir;
         };
+        managedBy = "services.postgresql.enable";
       };
 
   };

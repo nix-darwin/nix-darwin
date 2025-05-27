@@ -7,6 +7,8 @@ let
 in
 
 {
+  system.primaryUser = "test-synergy-user";
+
   services.synergy.package = synergy;
 
   services.synergy.client.enable = true;

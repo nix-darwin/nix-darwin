@@ -111,6 +111,7 @@ in {
   tests.services-netdata = makeTest ./tests/services-netdata.nix;
   tests.services-ofborg = makeTest ./tests/services-ofborg.nix;
   tests.services-offlineimap = makeTest ./tests/services-offlineimap.nix;
+  tests.services-openssh = makeTest ./tests/services-openssh.nix;
   tests.services-privoxy = makeTest ./tests/services-privoxy.nix;
   tests.services-redis = makeTest ./tests/services-redis.nix;
   tests.services-skhd = makeTest ./tests/services-skhd.nix;

@@ -11,8 +11,8 @@ let
     mkTextDerivation = pkgs.writeText;
   };
 
-  launchdVariables = mapAttrsToList (name: value: ''
-    launchctl setenv ${name} '${value}'
+  launchdVariables = prefix: mapAttrsToList (name: value: ''
+    ${prefix} launchctl setenv ${name} '${value}'
   '');
 
   launchdActivation = basedir: target: ''
@@ -31,19 +31,21 @@ let
     fi
   '';
 
-  userLaunchdActivation = target: ''
-    if ! diff ${cfg.build.launchd}/user/Library/LaunchAgents/${target} ~/Library/LaunchAgents/${target} &> /dev/null; then
-      if test -f ~/Library/LaunchAgents/${target}; then
+  userLaunchdActivation = target: let
+    user = lib.escapeShellArg config.system.primaryUser;
+  in ''
+    if ! diff ${cfg.build.launchd}/user/Library/LaunchAgents/${target} ~${user}/Library/LaunchAgents/${target} &> /dev/null; then
+      if test -f ~${user}/Library/LaunchAgents/${target}; then
         echo "reloading user service $(basename ${target} .plist)" >&2
-        launchctl unload ~/Library/LaunchAgents/${target} || true
+        launchctl asuser "$(id -u -- ${user})" sudo --user=${user} -- launchctl unload ~${user}/Library/LaunchAgents/${target} || true
       else
         echo "creating user service $(basename ${target} .plist)" >&2
       fi
-      if test -L ~/Library/LaunchAgents/${target}; then
-        rm ~/Library/LaunchAgents/${target}
+      if test -L ~${user}/Library/LaunchAgents/${target}; then
+        sudo --user=${user} -- rm ~${user}/Library/LaunchAgents/${target}
       fi
-      cp -f '${cfg.build.launchd}/user/Library/LaunchAgents/${target}' ~/Library/LaunchAgents/${target}
-      launchctl load -w ~/Library/LaunchAgents/${target}
+      sudo --user=${user} -- cp -f '${cfg.build.launchd}/user/Library/LaunchAgents/${target}' ~${user}/Library/LaunchAgents/${target}
+      launchctl asuser "$(id -u -- ${user})" sudo --user=${user} -- launchctl load -w ~${user}/Library/LaunchAgents/${target}
     fi
   '';
 
@@ -100,7 +102,7 @@ in
       # Set up launchd services in /Library/LaunchAgents and /Library/LaunchDaemons
       echo "setting up launchd services..." >&2
 
-      ${concatStringsSep "\n" (launchdVariables config.launchd.envVariables)}
+      ${concatStringsSep "\n" (launchdVariables "" config.launchd.envVariables)}
 
       ${concatMapStringsSep "\n" (attr: launchdActivation "LaunchAgents" attr.target) launchAgents}
       ${concatMapStringsSep "\n" (attr: launchdActivation "LaunchDaemons" attr.target) launchDaemons}
@@ -132,14 +134,16 @@ in
       done
     '';
 
-    system.activationScripts.userLaunchd.text = ''
+    system.activationScripts.userLaunchd.text = let
+      user = lib.escapeShellArg config.system.primaryUser;
+    in mkIf (config.launchd.user.envVariables != { } || userLaunchAgents != [ ]) ''
       # Set up user launchd services in ~/Library/LaunchAgents
       echo "setting up user launchd services..."
 
-      ${concatStringsSep "\n" (launchdVariables config.launchd.user.envVariables)}
+      ${concatStringsSep "\n" (launchdVariables "sudo --user=${user} --" config.launchd.user.envVariables)}
 
       ${optionalString (builtins.length userLaunchAgents > 0) ''
-      mkdir -p ~/Library/LaunchAgents
+      sudo --user=${user} -- mkdir -p ~${user}/Library/LaunchAgents
       ''}
       ${concatMapStringsSep "\n" (attr: userLaunchdActivation attr.target) userLaunchAgents}
 
@@ -149,9 +153,9 @@ in
 
         if [[ ! -e "${cfg.build.launchd}/user/Library/LaunchAgents/$f" ]]; then
           echo "removing user service $(basename "$f" .plist)" >&2
-          launchctl unload ~/Library/LaunchAgents/"$f" || true
-          if [[ -e ~/Library/LaunchAgents/"$f" ]]; then
-            rm -f ~/Library/LaunchAgents/"$f"
+          sudo --user=${user} -- launchctl unload ~${user}/Library/LaunchAgents/"$f" || true
+          if [[ -e ~${user}/Library/LaunchAgents/"$f" ]]; then
+            sudo --user=${user} -- rm -f ~${user}/Library/LaunchAgents/"$f"
           fi
         fi
       done

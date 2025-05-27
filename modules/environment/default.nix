@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ options, config, lib, pkgs, ... }:
 
 with lib;
 
@@ -11,13 +11,10 @@ let
   aliasCommands =
     mapAttrsToList (n: v: ''alias ${n}=${escapeShellArg v}'')
       (filterAttrs (k: v: v != null) cfg.shellAliases);
-
-  makeDrvBinPath = concatMapStringsSep ":" (p: if isDerivation p then "${p}/bin" else p);
 in
 
 {
   imports = [
-    (mkRenamedOptionModule ["environment" "postBuild"] ["environment" "extraSetup"])
     (mkRemovedOptionModule [ "environment" "loginShell" ] ''
       This option was only used to change the default command in tmux.
 
@@ -26,44 +23,9 @@ in
   ];
 
   options = {
-    environment.systemPackages = mkOption {
-      type = types.listOf types.package;
-      default = [];
-      example = literalExpression "[ pkgs.curl pkgs.vim ]";
-      description = ''
-        The set of packages that appear in
-        /run/current-system/sw.  These packages are
-        automatically available to all users, and are
-        automatically updated every time you rebuild the system
-        configuration.  (The latter is the main difference with
-        installing them in the default profile,
-        {file}`/nix/var/nix/profiles/default`.
-      '';
-    };
-
-    environment.systemPath = mkOption {
-      type = types.listOf (types.either types.path types.str);
-      description = "The set of paths that are added to PATH.";
-      apply = x: if isList x then makeDrvBinPath x else x;
-    };
-
     environment.profiles = mkOption {
       type = types.listOf types.str;
       description = "A list of profiles used to setup the global environment.";
-    };
-
-    environment.extraOutputsToInstall = mkOption {
-      type = types.listOf types.str;
-      default = [];
-      example = [ "doc" "info" "devdoc" ];
-      description = "List of additional package outputs to be symlinked into {file}`/run/current-system/sw`.";
-    };
-
-    environment.pathsToLink = mkOption {
-      type = types.listOf types.str;
-      default = [];
-      example = [ "/share/doc" ];
-      description = "List of directories to be symlinked in {file}`/run/current-system/sw`.";
     };
 
     environment.darwinConfig = mkOption {
@@ -75,7 +37,7 @@ in
         else if config.system.stateVersion >= 6 then
           "/etc/nix-darwin/configuration.nix"
         else
-          "$HOME/.nixpkgs/darwin-configuration.nix";
+          "${config.system.primaryUserHome}/.nixpkgs/darwin-configuration.nix";
       defaultText = literalExpression ''
         if config.nixpkgs.flake.setNixPath then
           # Don’t set this for flake‐based systems.
@@ -83,7 +45,7 @@ in
         else if config.system.stateVersion >= 6 then
           "/etc/nix-darwin/configuration.nix"
         else
-          "$HOME/.nixpkgs/darwin-configuration.nix"
+          "''${config.system.primaryUserHome}/.nixpkgs/darwin-configuration.nix"
       '';
       description = ''
         The path of the darwin configuration.nix used to configure the system,
@@ -160,20 +122,19 @@ in
       '';
       type = types.lines;
     };
-
-    environment.extraSetup = mkOption {
-      type = types.lines;
-      default = "";
-      description = ''
-        Shell fragments to be run after the system environment has been created.
-        This should only be used for things that need to modify the internals
-        of the environment, e.g. generating MIME caches.
-        The environment being built can be accessed at $out.
-      '';
-    };
   };
 
   config = {
+
+    # This is horrible, sorry.
+    system.requiresPrimaryUser = mkIf (
+      config.nix.enable
+      && !config.nixpkgs.flake.setNixPath
+      && config.system.stateVersion < 6
+      && options.environment.darwinConfig.highestPrio == (mkOptionDefault {}).priority
+    ) [
+      "environment.darwinConfig"
+    ];
 
     environment.systemPath = mkMerge [
       [ (makeBinPath cfg.profiles) ]
@@ -186,16 +147,7 @@ in
       [ "/run/current-system/sw" "/nix/var/nix/profiles/default" ]
     ];
 
-    environment.pathsToLink = [
-      "/bin"
-      "/share/locale"
-      "/share/terminfo"
-    ];
-
     environment.extraInit = ''
-       # reset TERM with new TERMINFO available (if any)
-       export TERM=$TERM
-
        export NIX_USER_PROFILE_DIR="/nix/var/nix/profiles/per-user/$USER"
        export NIX_PROFILES="${concatStringsSep " " (reverseList cfg.profiles)}"
     '';
@@ -204,18 +156,9 @@ in
       {
         XDG_CONFIG_DIRS = map (path: path + "/etc/xdg") cfg.profiles;
         XDG_DATA_DIRS = map (path: path + "/share") cfg.profiles;
-        TERMINFO_DIRS = map (path: path + "/share/terminfo") cfg.profiles ++ [ "/usr/share/terminfo" ];
         EDITOR = mkDefault "nano";
         PAGER = mkDefault "less -R";
       };
-
-    system.path = pkgs.buildEnv {
-      name = "system-path";
-      paths = cfg.systemPackages;
-      postBuild = cfg.extraSetup;
-      ignoreCollisions = true;
-      inherit (cfg) pathsToLink extraOutputsToInstall;
-    };
 
     system.build.setEnvironment = pkgs.writeText "set-environment" ''
       # Prevent this file from being sourced by child shells.

@@ -1,0 +1,668 @@
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'AppleEnableMouseSwipeNavigateWithScrolls' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'AppleEnableSwipeNavigateWithScrolls' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'AppleFontSmoothing' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>1</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'AppleICUForce24HourTime' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'AppleKeyboardUIMode' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>3</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'ApplePressAndHoldEnabled' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'AppleScrollerPagingBehavior' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'AppleShowAllExtensions' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'AppleShowAllFiles' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'AppleShowScrollBars' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<string>Always</string>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'AppleSpacesSwitchOnActivate' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'AppleWindowTabbingMode' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<string>always</string>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'InitialKeyRepeat' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>10</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'KeyRepeat' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>1</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSAutomaticCapitalizationEnabled' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSAutomaticDashSubstitutionEnabled' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSAutomaticInlinePredictionEnabled' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSAutomaticPeriodSubstitutionEnabled' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSAutomaticQuoteSubstitutionEnabled' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSAutomaticSpellingCorrectionEnabled' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSAutomaticWindowAnimationsEnabled' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSDisableAutomaticTermination' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSDocumentSaveNewDocumentsToCloud' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSNavPanelExpandedStateForSaveMode' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSNavPanelExpandedStateForSaveMode2' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSScrollAnimationEnabled' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSTableViewDefaultSizeMode' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>2</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSTextShowsControlCharacters' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSUseAnimatedFocusRing' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSWindowResizeTime' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<real>0.010000</real>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'NSWindowShouldDragOnGesture' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'PMPrintingExpandedStateForPrint' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'PMPrintingExpandedStateForPrint2' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'com.apple.keyboard.fnState' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'com.apple.mouse.tapBehavior' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>1</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'com.apple.springing.delay' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<real>0.000000</real>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'com.apple.springing.enabled' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'com.apple.swipescrolldirection' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'com.apple.trackpad.enableSecondaryClick' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'com.apple.trackpad.trackpadCornerClickBehavior' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>1</integer>
+</plist>'
+
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write .GlobalPreferences 'com.apple.sound.beep.sound' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<string>/System/Library/Sounds/Funk.aiff</string>
+</plist>'
+
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.menuextra.clock 'FlashDateSeparators' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.menuextra.clock 'Show24Hour' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.menuextra.clock 'ShowDate' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>2</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.menuextra.clock 'ShowDayOfWeek' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.dock 'appswitcher-all-displays' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.dock 'autohide-delay' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<real>0.240000</real>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.dock 'expose-group-apps' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.dock 'orientation' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<string>left</string>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.dock 'persistent-apps' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>tile-data</key>
+		<dict>
+			<key>file-data</key>
+			<dict>
+				<key>_CFURLString</key>
+				<string>/Applications/MyApp.app</string>
+				<key>_CFURLStringType</key>
+				<integer>0</integer>
+			</dict>
+		</dict>
+	</dict>
+	<dict>
+		<key>tile-data</key>
+		<dict>
+			<key>file-data</key>
+			<dict>
+				<key>_CFURLString</key>
+				<string>/Applications/Cool.app</string>
+				<key>_CFURLStringType</key>
+				<integer>0</integer>
+			</dict>
+		</dict>
+	</dict>
+	<dict>
+		<key>tile-data</key>
+		<dict>
+
+		</dict>
+		<key>tile-type</key>
+		<string>small-spacer-tile</string>
+	</dict>
+	<dict>
+		<key>tile-data</key>
+		<dict>
+
+		</dict>
+		<key>tile-type</key>
+		<string>spacer-tile</string>
+	</dict>
+	<dict>
+		<key>tile-data</key>
+		<dict>
+			<key>file-data</key>
+			<dict>
+				<key>_CFURLString</key>
+				<string>file:///Applications/Utilities</string>
+				<key>_CFURLStringType</key>
+				<integer>15</integer>
+			</dict>
+		</dict>
+		<key>tile-type</key>
+		<string>directory-tile</string>
+	</dict>
+	<dict>
+		<key>tile-data</key>
+		<dict>
+			<key>file-data</key>
+			<dict>
+				<key>_CFURLString</key>
+				<string>file:///Users/example/Downloads/test.csv</string>
+				<key>_CFURLStringType</key>
+				<integer>15</integer>
+			</dict>
+		</dict>
+		<key>tile-type</key>
+		<string>file-tile</string>
+	</dict>
+</array>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.dock 'persistent-others' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>tile-data</key>
+		<dict>
+			<key>file-data</key>
+			<dict>
+				<key>_CFURLString</key>
+				<string>file://~/Documents</string>
+				<key>_CFURLStringType</key>
+				<integer>15</integer>
+			</dict>
+		</dict>
+		<key>tile-type</key>
+		<string>directory-tile</string>
+	</dict>
+	<dict>
+		<key>tile-data</key>
+		<dict>
+			<key>file-data</key>
+			<dict>
+				<key>_CFURLString</key>
+				<string>file://~/Downloads/file.txt</string>
+				<key>_CFURLStringType</key>
+				<integer>15</integer>
+			</dict>
+		</dict>
+		<key>tile-type</key>
+		<string>file-tile</string>
+	</dict>
+</array>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.dock 'scroll-to-open' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'AppleShowAllExtensions' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'AppleShowAllFiles' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'CreateDesktop' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'FXDefaultSearchScope' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<string>SCcf</string>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'FXEnableExtensionChangeWarning' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'FXPreferredViewStyle' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<string>Flwv</string>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'FXRemoveOldTrashItems' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'NewWindowTarget' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<string>PfLo</string>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'NewWindowTargetPath' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<string>file:///Library/Apple</string>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'QuitMenuItem' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'ShowExternalHardDrivesOnDesktop' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'ShowHardDrivesOnDesktop' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'ShowMountedServersOnDesktop' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'ShowPathbar' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'ShowRemovableMediaOnDesktop' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder 'ShowStatusBar' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder '_FXShowPosixPathInTitle' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder '_FXSortFoldersFirst' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.finder '_FXSortFoldersFirstOnDesktop' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.HIToolbox 'AppleFnUsageType' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>2</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.iCal 'CalendarSidebarShown' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.iCal 'TimeZone support enabled' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.iCal 'first day of week' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>4</integer>
+</plist>'
+
+
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.screencapture 'include-date' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.screencapture 'location' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<string>/tmp</string>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.screencapture 'target' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<string>file</string>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.screensaver 'askForPassword' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.screensaver 'askForPasswordDelay' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>5</integer>
+</plist>'
+
+
+
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.universalaccess 'closeViewScrollWheelToggle' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.universalaccess 'closeViewZoomFollowsFocus' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.universalaccess 'mouseDriverCursorSize' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<real>1.500000</real>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.universalaccess 'reduceMotion' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.universalaccess 'reduceTransparency' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.ActivityMonitor 'IconType' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>3</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.ActivityMonitor 'OpenMainWindow' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.ActivityMonitor 'ShowCategory' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>103</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.ActivityMonitor 'SortColumn' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<string>CPUUsage</string>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.ActivityMonitor 'SortDirection' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>0</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write NSGlobalDomain 'TISRomanSwitchState' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>1</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.Safari 'NSUserKeyEquivalents' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Quit Safari</key>
+	<string>@^q</string>
+</dict>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.Safari 'com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.WindowManager 'AppWindowGroupingBehavior' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.WindowManager 'AutoHide' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.WindowManager 'EnableStandardClickToShowDesktop' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.WindowManager 'EnableTiledWindowMargins' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.WindowManager 'EnableTilingByEdgeDrag' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.WindowManager 'EnableTilingOptionAccelerator' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.WindowManager 'EnableTopTilingByEdgeDrag' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.WindowManager 'GloballyEnabled' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.WindowManager 'HideDesktop' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.WindowManager 'StageManagerHideWidgets' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.WindowManager 'StandardHideDesktopIcons' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<false/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.WindowManager 'StandardHideWidgets' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter 'AirDrop' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>18</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter 'BatteryShowPercentage' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter 'Bluetooth' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>18</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter 'Display' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>24</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter 'FocusModes' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>24</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter 'NowPlaying' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>18</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter 'Sound' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>24</integer>
+</plist>'

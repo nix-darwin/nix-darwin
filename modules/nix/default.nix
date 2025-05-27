@@ -825,10 +825,17 @@ in
 
     # Not in NixOS module
     nix.nixPath = mkIf (config.system.stateVersion < 2) (mkDefault [
-      "darwin=$HOME/.nix-defexpr/darwin"
-      "darwin-config=$HOME/.nixpkgs/darwin-configuration.nix"
+      "darwin=${config.system.primaryUserHome}/.nix-defexpr/darwin"
+      "darwin-config=${config.system.primaryUserHome}/.nixpkgs/darwin-configuration.nix"
       "/nix/var/nix/profiles/per-user/root/channels"
     ]);
+
+    system.requiresPrimaryUser = mkIf (
+      config.system.stateVersion < 2
+      && options.nix.nixPath.highestPrio == (mkDefault {}).priotity
+    ) [
+      "nix.nixPath"
+    ];
 
     # Set up the environment variables for running Nix.
     environment.variables = cfg.envVars // { NIX_PATH = cfg.nixPath; };
@@ -869,7 +876,7 @@ in
     #
     # TODO: Maybe this could use a more general file placement mechanism
     # to express that we want it deleted and know only one hash?
-    system.activationScripts.etcChecks.text = mkAfter ''
+    system.activationScripts.checks.text = mkAfter ''
       nixCustomConfKnownSha256Hashes=(
         # v0.33.0
         6787fade1cf934f82db554e78e1fc788705c2c5257fddf9b59bdd963ca6fec63
