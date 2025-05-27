@@ -802,6 +802,7 @@ in
       if [ -f "${cfg.brewPrefix}/brew" ]; then
         PATH="${cfg.brewPrefix}:${lib.makeBinPath [ pkgs.mas ]}:$PATH" \
         sudo \
+          --preserve-env=PATH \
           --user=${escapeShellArg cfg.user} \
           --set-home \
           ${cfg.onActivation.brewBundleCmd}
