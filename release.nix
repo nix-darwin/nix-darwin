@@ -85,6 +85,7 @@ in {
   tests.homebrew = makeTest ./tests/homebrew.nix;
   tests.launchd-daemons = makeTest ./tests/launchd-daemons.nix;
   tests.launchd-setenv = makeTest ./tests/launchd-setenv.nix;
+  tests.networking-firewall = makeTest ./tests/networking-firewall.nix;
   tests.networking-hostname = makeTest ./tests/networking-hostname.nix;
   tests.networking-networkservices = makeTest ./tests/networking-networkservices.nix;
   tests.nix-enable = makeTest ./tests/nix-enable.nix;
