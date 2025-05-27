@@ -1,21 +1,71 @@
-{ config, lib, options, pkgs, ... }:
-
-with lib;
-
-let
+{
+  config,
+  lib,
+  options,
+  pkgs,
+  ...
+}:
+with lib; let
   cfg = config.programs.zsh;
   opt = options.programs.zsh;
 
-  zshVariables =
-    mapAttrsToList (n: v: ''${n}="${v}"'') cfg.variables;
+  zshVariables = mapAttrsToList (n: v: ''${n}="${v}"'') cfg.variables;
 
   fzfCompletion = ./fzf-completion.zsh;
   fzfGit = ./fzf-git.zsh;
   fzfHistory = ./fzf-history.zsh;
-in
 
-{
-  options = {
+  bindkeyCommands = {
+    emacs = "-e";
+    viins = "-v";
+    vicmd = "-a";
+  };
+in {
+  options = let
+    historyModule = types.submodule (
+      {config, ...}: {
+        options = {
+          save = mkOption {
+            type = types.int;
+            defaultText = 2000;
+            default = config.size;
+            description = "Number of history lines to save.";
+          };
+
+          size = mkOption {
+            type = types.int;
+            default = 2000;
+            description = "Number of history lines to keep.";
+          };
+
+          path = mkOption {
+            type = types.str;
+            default = "\${\ZDOTDIR:-$HOME\}/.zsh_history";
+            # defaultText = literalExpression ''
+            #   "''${ZDOTDIR:-$HOME}/.zsh_history"
+            # '';
+            example = literalExpression ''"$HOME/.local/share/zsh/zsh_history"'';
+            description = "History file location.";
+          };
+
+          ignoreDups = mkOption {
+            type = types.bool;
+            default = true;
+            description = ''
+              Do not enter command lines into the history list
+              if they are duplicates of the previous event.
+            '';
+          };
+
+          share = mkOption {
+            type = types.bool;
+            default = true;
+            description = "Share command history between zsh sessions.";
+          };
+        };
+      }
+    );
+  in {
     programs.zsh.enable = mkOption {
       type = types.bool;
       default = true;
@@ -32,7 +82,23 @@ in
         strings.  The latter is concatenated, interspersed with colon
         characters.
       '';
-      apply = mapAttrs (n: v: if isList v then concatStringsSep ":" v else v);
+      apply = mapAttrs (n: v:
+        if isList v
+        then concatStringsSep ":" v
+        else v);
+    };
+
+    programs.zsh.history = mkOption {
+      type = historyModule;
+      default = {};
+      description = "Options related to commands history configuration.";
+    };
+
+    programs.zsh.defaultKeymap = mkOption {
+      type = types.enum (lib.attrNames bindkeyCommands);
+      default = "emacs";
+      example = "viins";
+      description = "The default base keymap to use.";
     };
 
     programs.zsh.shellInit = mkOption {
@@ -112,7 +178,6 @@ in
   };
 
   config = mkIf cfg.enable {
-
     assertions = [
       {
         assertion = !(cfg.enableSyntaxHighlighting && cfg.enableFastSyntaxHighlighting);
@@ -120,13 +185,15 @@ in
       }
     ];
     environment.systemPackages =
-      [ # Include zsh package
+      [
+        # Include zsh package
         pkgs.zsh
-      ] ++ optional cfg.enableCompletion pkgs.nix-zsh-completions
-        ++ optional cfg.enableSyntaxHighlighting pkgs.zsh-syntax-highlighting
-        ++ optional cfg.enableFastSyntaxHighlighting pkgs.zsh-fast-syntax-highlighting;
+      ]
+      ++ optional cfg.enableCompletion pkgs.nix-zsh-completions
+      ++ optional cfg.enableSyntaxHighlighting pkgs.zsh-syntax-highlighting
+      ++ optional cfg.enableFastSyntaxHighlighting pkgs.zsh-fast-syntax-highlighting;
 
-    environment.pathsToLink = [ "/share/zsh" ];
+    environment.pathsToLink = ["/share/zsh"];
 
     environment.etc."zshenv".text = ''
       # /etc/zshenv: DO NOT EDIT -- this file has been generated automatically.
@@ -182,14 +249,25 @@ in
       if [ -n "$__ETC_ZSHRC_SOURCED" -o -n "$NOSYSZSHRC" ]; then return; fi
       __ETC_ZSHRC_SOURCED=1
 
-      # history defaults
-      SAVEHIST=2000
-      HISTSIZE=2000
-      HISTFILE=$HOME/.zsh_history
+      # History
+      HISTFILE="${cfg.history.path}"
+      HISTSIZE=${toString cfg.history.size}
+      SAVEHIST=${toString cfg.history.save}
 
-      setopt HIST_IGNORE_DUPS SHARE_HISTORY HIST_FCNTL_LOCK
+      setopt HIST_FCNTL_LOCK
+      ${
+        if cfg.history.ignoreDups
+        then "setopt"
+        else "unsetopt"
+      } HIST_IGNORE_DUPS
+      ${
+        if cfg.history.share
+        then "setopt"
+        else "unsetopt"
+      } SHARE_HISTORY
 
-      bindkey -e
+      # Use ${cfg.defaultKeymap} keymap as the default.
+      bindkey ${lib.getAttr cfg.defaultKeymap bindkeyCommands}
 
       ${config.environment.interactiveShellInit}
       ${cfg.interactiveShellInit}
@@ -199,13 +277,9 @@ in
       ${optionalString cfg.enableGlobalCompInit "autoload -U compinit && compinit"}
       ${optionalString cfg.enableBashCompletion "autoload -U bashcompinit && bashcompinit"}
 
-      ${optionalString cfg.enableSyntaxHighlighting
-        "source ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-      }
+      ${optionalString cfg.enableSyntaxHighlighting "source ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"}
 
-      ${optionalString cfg.enableFastSyntaxHighlighting
-        "source ${pkgs.zsh-fast-syntax-highlighting}/share/zsh/site-functions/fast-syntax-highlighting.plugin.zsh"
-      }
+      ${optionalString cfg.enableFastSyntaxHighlighting "source ${pkgs.zsh-fast-syntax-highlighting}/share/zsh/site-functions/fast-syntax-highlighting.plugin.zsh"}
 
       ${optionalString cfg.enableFzfCompletion "source ${fzfCompletion}"}
       ${optionalString cfg.enableFzfGit "source ${fzfGit}"}
@@ -219,20 +293,19 @@ in
 
     environment.etc."zprofile".knownSha256Hashes = [
       "db8422f92d8cff684e418f2dcffbb98c10fe544b5e8cd588b2009c7fa89559c5"
-      "0235d3c1b6cf21e7043fbc98e239ee4bc648048aafaf6be1a94a576300584ef2"  # macOS
+      "0235d3c1b6cf21e7043fbc98e239ee4bc648048aafaf6be1a94a576300584ef2" # macOS
     ];
 
     environment.etc."zshrc".knownSha256Hashes = [
       "19a2d673ffd47b8bed71c5218ff6617dfc5e8533b240b9ba79142a45f8823c23"
-      "fb5827cb4712b7e7932d438067ec4852c8955a9ff0f55e282473684623ebdfa1"  # macOS
-      "c5a00c072c920f46216454978c44df044b2ec6d03409dc492c7bdcd92c94a110"  # official Nix installer
-      "40b0d8751adae5b0100a4f863be5b75613a49f62706427e92604f7e04d2e2261"  # official Nix installer
-      "2af1b563e389d11b76a651b446e858116d7a20370d9120a7e9f78991f3e5f336"  # DeterminateSystems installer
+      "fb5827cb4712b7e7932d438067ec4852c8955a9ff0f55e282473684623ebdfa1" # macOS
+      "c5a00c072c920f46216454978c44df044b2ec6d03409dc492c7bdcd92c94a110" # official Nix installer
+      "40b0d8751adae5b0100a4f863be5b75613a49f62706427e92604f7e04d2e2261" # official Nix installer
+      "2af1b563e389d11b76a651b446e858116d7a20370d9120a7e9f78991f3e5f336" # DeterminateSystems installer
     ];
 
     environment.etc."zshenv".knownSha256Hashes = [
-      "d07015be6875f134976fce84c6c7a77b512079c1c5f9594dfa65c70b7968b65f"  # DeterminateSystems installer
+      "d07015be6875f134976fce84c6c7a77b512079c1c5f9594dfa65c70b7968b65f" # DeterminateSystems installer
     ];
-
   };
 }
