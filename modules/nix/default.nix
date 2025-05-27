@@ -443,11 +443,14 @@ in
       nixPath = mkOption {
         type = nixPathType;
         inherit (managedDefault "nix.nixPath" (
-          lib.optionals cfg.channel.enable [
-            # Include default path <darwin-config>.
-            { darwin-config = "${config.environment.darwinConfig}"; }
-            "/nix/var/nix/profiles/per-user/root/channels"
-          ]
+          lib.optionals cfg.channel.enable (
+            lib.optionals (config.environment.darwinConfig != null) [
+              # Include default path <darwin-config>.
+              { darwin-config = "${config.environment.darwinConfig}"; }
+            ] ++ [
+              "/nix/var/nix/profiles/per-user/root/channels"
+            ]
+          )
         )) default;
 
         defaultText = lib.literalExpression ''
