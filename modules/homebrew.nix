@@ -805,6 +805,7 @@ in
           --preserve-env=PATH \
           --user=${escapeShellArg cfg.user} \
           --set-home \
+          env \
           ${cfg.onActivation.brewBundleCmd}
       else
         echo -e "\e[1;31merror: Homebrew is not installed, skipping...\e[0m" >&2
