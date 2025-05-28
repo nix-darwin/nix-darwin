@@ -28,8 +28,15 @@ showSyntax() {
   echo "                             [--no-update-lock-file] [--no-write-lock-file]" >&2
   echo "                             [--override-input input flake] [--update-input input]" >&2
   echo "                             [--no-registries] [--offline] [--refresh]]" >&2
+  echo "               [--use-remote-sudo]" >&2
   echo "               [--substituters substituters-list] ..." >&2
   exit 1
+}
+
+sudo() {
+  # We use `env` before our command to ensure the preserved PATH gets checked
+  # when trying to resolve the command to execute
+  command sudo -H --preserve-env=PATH --preserve-env=SSH_CONNECTION env "$@"
 }
 
 # Parse the command line.
@@ -42,6 +49,7 @@ profile=@profile@
 action=
 flake=
 noFlake=
+useRemoteSudo=
 
 while [ $# -gt 0 ]; do
   i=$1; shift 1
@@ -137,6 +145,9 @@ while [ $# -gt 0 ]; do
       extraMetadataFlags+=("$i" "$j")
       extraBuildFlags+=("$i" "$j")
       ;;
+    --use-remote-sudo)
+      useRemoteSudo=1
+      ;;
     *)
       echo "$0: unknown option '$i'"
       exit 1
@@ -146,7 +157,8 @@ done
 
 if [ -z "$action" ]; then showSyntax; fi
 
-if [[ $action =~ ^switch|activate|rollback|check$ && $(id -u) -ne 0 ]]; then
+if [[ $action =~ ^switch|activate|rollback|check$ && $(id -u) -ne 0 ]] \
+  && [[ -z "${useRemoteSudo:-}" ]] ; then
   printf >&2 '%s: system activation must now be run as root\n' "$0"
   exit 1
 fi
@@ -202,7 +214,11 @@ if [ "$action" = switch ] || [ "$action" = build ] || [ "$action" = check ] || [
 fi
 
 if [ "$action" = list ] || [ "$action" = rollback ]; then
-  nix-env -p "$profile" "${extraProfileFlags[@]}"
+  if [ "$USER" != root ] && [ ! -w $(dirname "$profile") ]; then
+    sudo nix-env -p "$profile" "${extraProfileFlags[@]}"
+  else
+    nix-env -p "$profile" "${extraProfileFlags[@]}"
+  fi
 fi
 
 if [ "$action" = rollback ]; then
@@ -238,14 +254,22 @@ runActivateUser() {
 }
 
 if [ "$action" = switch ]; then
-  nix-env -p "$profile" --set "$systemConfig"
+  cmd="nix-env -p $profile --set $systemConfig"
+  if [[ -n "${useRemoteSudo:-}" ]]; then
+    cmd="sudo $cmd"
+  fi
+  $cmd
 fi
 
 if [ "$action" = switch ] || [ "$action" = activate ] || [ "$action" = rollback ]; then
   if [[ -n $hasActivateUser ]]; then
     runActivateUser
   fi
-  "$systemConfig/activate"
+  cmd="$systemConfig/activate"
+  if [[ -n "${useRemoteSudo:-}" ]]; then
+    cmd="sudo $cmd"
+  fi
+  $cmd
 fi
 
 if [ "$action" = changelog ]; then
