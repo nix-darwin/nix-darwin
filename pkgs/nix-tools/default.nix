@@ -2,7 +2,7 @@
 , coreutils
 , jq
 , git
-, substituteAll
+, replaceVarsWith
 , stdenv
 , profile ? "/nix/var/nix/profiles/system"
 , # This should be kept in sync with the default
@@ -31,40 +31,53 @@
 
 let
   extraPath = lib.makeBinPath [ coreutils jq git nixPackage ];
-
-  writeProgram = name: env: src:
-    substituteAll ({
-      inherit name src;
-      dir = "bin";
-      isExecutable = true;
-      meta.mainProgram = name;
-    } // env);
+  
+  writeProgram =
+    attrs:
+    replaceVarsWith (
+      attrs
+      // {
+        dir = "bin";
+        isExecutable = true;
+        meta.mainProgram = attrs.name;
+      }
+    );
 
   path = "${extraPath}:${systemPath}";
 in
 {
-  darwin-option = writeProgram "darwin-option"
-    {
+  darwin-option = writeProgram {
+    name = "darwin-option";
+    src = ./darwin-option.sh;
+
+    replacements = {
       inherit path nixPath;
       inherit (stdenv) shell;
-    }
-    ./darwin-option.sh;
+    };
+  };
 
-  darwin-rebuild = writeProgram "darwin-rebuild"
-    {
+  darwin-rebuild = writeProgram {
+    name = "darwin-rebuild";
+    src = ./darwin-rebuild.sh;
+
+    replacements = {
       inherit path nixPath profile;
       inherit (stdenv) shell;
-      postInstall = ''
-        mkdir -p $out/share/zsh/site-functions
-        cp ${./darwin-rebuild.zsh-completions} $out/share/zsh/site-functions/_darwin-rebuild
-      '';
-    }
-    ./darwin-rebuild.sh;
+    };
 
-  darwin-version = writeProgram "darwin-version"
-    {
+    postInstall = ''
+      mkdir -p $out/share/zsh/site-functions
+      cp ${./darwin-rebuild.zsh-completions} $out/share/zsh/site-functions/_darwin-rebuild
+    '';
+  };
+
+  darwin-version = writeProgram {
+    name = "darwin-version";
+    src = ./darwin-version.sh;
+
+    replacements = {
       inherit (stdenv) shell;
       path = lib.makeBinPath [ jq ];
-    }
-    ./darwin-version.sh;
+    };
+  };
 }

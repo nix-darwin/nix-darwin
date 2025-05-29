@@ -1,6 +1,8 @@
 { config, pkgs, lib, ... }:
 
 {
+  system.primaryUser = "test-defaults-user";
+
   imports = [
     {
       system.defaults.CustomUserPreferences = {
@@ -99,6 +101,9 @@
   system.defaults.finder.ShowMountedServersOnDesktop = false;
   system.defaults.finder.ShowRemovableMediaOnDesktop = false;
   system.defaults.hitoolbox.AppleFnUsageType = "Show Emoji & Symbols";
+  system.defaults.iCal."first day of week" = "Wednesday";
+  system.defaults.iCal.CalendarSidebarShown = true;
+  system.defaults.iCal."TimeZone support enabled" = true;
   system.defaults.screencapture.location = "/tmp";
   system.defaults.screencapture.target = "file";
   system.defaults.screencapture.include-date = true;
@@ -137,18 +142,18 @@
   system.defaults.controlcenter.NowPlaying = true;
   test = lib.strings.concatMapStringsSep "\n"
     (x: ''
-      echo >&2 "checking defaults write in /${x}"
+      echo >&2 "checking ${x} defaults write in /activate"
       ${pkgs.python3}/bin/python3 <<EOL
       import sys
       from pathlib import Path
       fixture = '${./fixtures/system-defaults-write}/${x}.txt'
-      out = '${config.out}/${x}'
+      out = '${config.out}/activate'
       if Path(fixture).read_text() not in Path(out).read_text():
         print("Did not find content from %s in %s" % (fixture, out), file=sys.stderr)
         sys.exit(1)
       EOL
     '') [
-    "activate"
-    "activate-user"
+    "system"
+    "user"
   ];
 }

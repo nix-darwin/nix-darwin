@@ -43,7 +43,12 @@ in {
       type = types.nullOr (types.enum [ "Dark" ]);
       default = null;
       description = ''
-        Set to 'Dark' to enable dark mode, or leave unset for normal mode.
+        Set to 'Dark' to enable dark mode.
+
+        To set to light mode, set this to `null` and you'll need to manually run
+        {command}`defaults delete -g AppleInterfaceStyle`.
+
+        This option requires logging out and logging back in to apply.
       '';
     };
 

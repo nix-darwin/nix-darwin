@@ -98,9 +98,9 @@ Unlike NixOS, `nix-darwin` does not have an installer, you can just run `darwin-
 
 ```bash
 # To use Nixpkgs unstable:
-nix run nix-darwin/master#darwin-rebuild -- switch
+sudo nix run nix-darwin/master#darwin-rebuild -- switch
 # To use Nixpkgs 24.11:
-nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch
+sudo nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch
 ```
 
 ### Step 3. Using `nix-darwin`
@@ -108,7 +108,7 @@ nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch
 After installing, you can run `darwin-rebuild` to apply changes to your system:
 
 ```bash
-darwin-rebuild switch
+sudo darwin-rebuild switch
 ```
 
 #### Using flake inputs
@@ -155,7 +155,7 @@ To install `nix-darwin`, you can just run `darwin-rebuild switch` to install nix
 
 ```bash
 nix-build '<darwin>' -A darwin-rebuild
-./result/bin/darwin-rebuild switch -I darwin-config=/etc/nix-darwin/configuration.nix
+sudo ./result/bin/darwin-rebuild switch -I darwin-config=/etc/nix-darwin/configuration.nix
 ```
 
 ### Step 4. Using `nix-darwin`
@@ -163,7 +163,7 @@ nix-build '<darwin>' -A darwin-rebuild
 After installing, you can run `darwin-rebuild` to apply changes to your system:
 
 ```bash
-darwin-rebuild switch
+sudo darwin-rebuild switch
 ```
 
 ### Step 5. Updating `nix-darwin`
@@ -186,13 +186,13 @@ The documentation is also available as manpages by running `man 5 configuration.
 To run the latest version of the uninstaller, you can run the following command:
 
 ```
-nix --extra-experimental-features "nix-command flakes" run nix-darwin#darwin-uninstaller
+sudo nix --extra-experimental-features "nix-command flakes" run nix-darwin#darwin-uninstaller
 ```
 
 If that command doesn't work for you, you can try the locally installed uninstaller:
 
 ```
-darwin-uninstaller
+sudo darwin-uninstaller
 ```
 
 ## Tests
@@ -218,7 +218,7 @@ flag can also be used to override darwin-config or nixpkgs, for more
 information on the `-I` flag look at the nix-build [manpage](https://nixos.org/manual/nix/stable/command-ref/nix-build.html).
 
 ```bash
-darwin-rebuild switch -I darwin=.
+sudo darwin-rebuild switch -I darwin=.
 ```
 
 If you're adding a module, please add yourself to `meta.maintainers`, for example

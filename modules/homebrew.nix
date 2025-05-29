@@ -559,6 +559,17 @@ in
       This module also provides a few options for modifying how Homebrew commands behave when
       you manually invoke them, under [](#opt-homebrew.global)'';
 
+    user = mkOption {
+      type = types.str;
+      default = config.system.primaryUser;
+      defaultText = literalExpression "config.system.primaryUser";
+      description = ''
+        The user that owns the Homebrew installation. In most cases
+        this should be the normal user account that you installed
+        Homebrew as.
+      '';
+    };
+
     brewPrefix = mkOption {
       type = types.str;
       default = if pkgs.stdenv.hostPlatform.isAarch64 then "/opt/homebrew/bin" else "/usr/local/bin";
@@ -764,6 +775,10 @@ in
       (mkIf (options.homebrew.autoUpdate.isDefined || options.homebrew.cleanup.isDefined) "The `homebrew' module no longer upgrades outdated formulae and apps by default during `nix-darwin' system activation. To enable upgrading, set `homebrew.onActivation.upgrade = true'.")
     ];
 
+    system.requiresPrimaryUser = mkIf (cfg.enable && options.homebrew.user.highestPrio == (mkOptionDefault {}).priority) [
+      "homebrew.enable"
+    ];
+
     homebrew.brews =
       optional (cfg.whalebrews != [ ]) "whalebrew";
 
@@ -786,6 +801,9 @@ in
       echo >&2 "Homebrew bundle..."
       if [ -f "${cfg.brewPrefix}/brew" ]; then
         PATH="${cfg.brewPrefix}:${lib.makeBinPath [ pkgs.mas ]}:$PATH" \
+        sudo \
+          --user=${escapeShellArg cfg.user} \
+          --set-home \
           ${cfg.onActivation.brewBundleCmd}
       else
         echo -e "\e[1;31merror: Homebrew is not installed, skipping...\e[0m" >&2

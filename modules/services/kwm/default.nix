@@ -47,6 +47,7 @@ in
           SockType = "dgram";
           SockFamily = "IPv4";
         };
+      managedBy = "services.kwm.enable";
     };
 
   };

@@ -7,6 +7,8 @@ let
 in
 
 {
+  system.primaryUser = "test-offlineimap-user";
+
   services.offlineimap.enable = true;
   services.offlineimap.package = offlineimap;
   services.offlineimap.runQuick = true;

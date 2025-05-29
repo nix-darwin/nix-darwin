@@ -5,6 +5,8 @@ let
 in
 
 {
+  system.primaryUser = "test-aerospace-user";
+
   services.aerospace.enable = true;
   services.aerospace.package = aerospace;
   services.aerospace.settings = {

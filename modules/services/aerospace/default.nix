@@ -253,6 +253,7 @@ in
           KeepAlive = true;
           RunAtLoad = true;
         };
+        managedBy = "services.aerospace.enable";
       };
     }
   );

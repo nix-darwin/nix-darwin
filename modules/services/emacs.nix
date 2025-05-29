@@ -49,6 +49,7 @@ in {
         RunAtLoad = true;
         KeepAlive = true;
       };
+      managedBy = "services.emacs.enable";
     };
 
   };

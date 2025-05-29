@@ -31,6 +31,19 @@ let
     fi
   '';
 
+  primaryUser = ''
+    # shellcheck disable=SC2209
+    primaryUser=${escapeShellArg config.system.primaryUser}
+    if ! id -- "$primaryUser" >/dev/null 2>&1; then
+      printf >&2 '\e[1;31merror: primary user `%s` does not exist, aborting activation\e[0m\n' \
+        "$primaryUser"
+      printf >&2 'Please ensure that `system.primaryUser` is set to the name of an\n'
+      printf >&2 'existing user. Usually this should be the user you have been using to\n'
+      printf >&2 'run `darwin-rebuild`.\n'
+      exit 2
+    fi
+  '';
+
   determinate = ''
     if [[ -e /usr/local/bin/determinate-nixd ]]; then
       printf >&2 '\e[1;31merror: Determinate detected, aborting activation\e[0m\n'
@@ -150,49 +163,70 @@ let
   '';
 
   nixPath = ''
-    nixPath=${concatMapStringsSep ":" escapeDoubleQuote config.nix.nixPath}:$HOME/.nix-defexpr/channels
+    findPathEntry() {
+      NIX_PATH=${concatMapStringsSep ":" escapeDoubleQuote config.nix.nixPath} \
+        nix-instantiate --find-file "$@" >/dev/null
+    }
 
-    darwinConfig=$(NIX_PATH=$nixPath nix-instantiate --find-file darwin-config) || true
-    if ! test -e "$darwinConfig"; then
-        echo "[1;31merror: Changed <darwin-config> but target does not exist, aborting activation[0m" >&2
-        echo "Create ''${darwinConfig:-/etc/nix-darwin/configuration.nix} or set environment.darwinConfig:" >&2
-        echo >&2
-        echo "    environment.darwinConfig = \"$(nix-instantiate --find-file darwin-config 2> /dev/null || echo '***')\";" >&2
-        echo >&2
-        echo "And rebuild using (only required once)" >&2
-        echo "$ darwin-rebuild switch -I \"darwin-config=$(nix-instantiate --find-file darwin-config 2> /dev/null || echo '***')\"" >&2
-        echo >&2
-        echo >&2
-        exit 2
+    if ! findPathEntry darwin-config; then
+      printf >&2 '\e[1;31merror: can’t find `<darwin-config>`, aborting activation\e[0m\n'
+      printf >&2 'Make sure that %s exists,\n' \
+        ${escapeDoubleQuote (
+          if config.environment.darwinConfig == null then
+            "the \\`<darwin-config>\\` entry in `nix.nixPath`"
+          else
+            "\\`${config.environment.darwinConfig}\\`"
+        )}
+      printf >&2 'or else set `environment.darwinConfig` to the correct path to your\n'
+      printf >&2 '`configuration.nix` file.\n'
+      printf >&2 '\n'
+      printf >&2 'The setting should not reference `$HOME`, as `root` now needs to be\n'
+      printf >&2 'able to find your configuration. If you previously used `$HOME` in\n'
+      printf >&2 'your `environment.darwinConfig` path, please replace it with the\n'
+      printf >&2 'full path to your home directory.\n'
+      exit 2
     fi
 
-    darwinPath=$(NIX_PATH=$nixPath nix-instantiate --find-file darwin) || true
-    if ! test -e "$darwinPath"; then
-        echo "[1;31merror: Changed <darwin> but target does not exist, aborting activation[0m" >&2
-        echo "Add the darwin repo as a channel or set nix.nixPath:" >&2
-        echo "$ sudo nix-channel --add https://github.com/nix-darwin/nix-darwin/archive/master.tar.gz darwin" >&2
-        echo "$ sudo nix-channel --update" >&2
-        echo >&2
-        echo "or set" >&2
-        echo >&2
-        echo "    nix.nixPath = [ \"darwin=$(nix-instantiate --find-file darwin 2> /dev/null || echo '***')\" ];" >&2
-        echo >&2
-        exit 2
-    fi
+    checkChannel() {
+      if findPathEntry "$1"; then
+        return
+      fi
 
-    nixpkgsPath=$(NIX_PATH=$nixPath nix-instantiate --find-file nixpkgs) || true
-    if ! test -e "$nixpkgsPath"; then
-        echo "[1;31merror: Changed <nixpkgs> but target does not exist, aborting activation[0m" >&2
-        echo "Add a nixpkgs channel or set nix.nixPath:" >&2
-        echo "$ sudo nix-channel --add http://nixos.org/channels/nixpkgs-unstable nixpkgs" >&2
-        echo "$ sudo nix-channel --update" >&2
-        echo >&2
-        echo "or set" >&2
-        echo >&2
-        echo "    nix.nixPath = [ \"nixpkgs=$(nix-instantiate --find-file nixpkgs 2> /dev/null || echo '***')\" ];" >&2
-        echo >&2
-        exit 2
-    fi
+      printf >&2 '\e[1;31merror: can’t find `<%s>`, aborting activation\e[0m\n' \
+        "$1"
+      printf >&2 'The most likely reason for this is that the channel is owned\n'
+      printf >&2 'by your user. This no longer works now that nix-darwin has moved over\n'
+      printf >&2 'to `root`‐based activation.\n'
+      printf >&2 '\n'
+      printf >&2 'You can check your current channels with:\n'
+      printf >&2 '\n'
+      printf >&2 '    $ sudo nix-channel --list\n'
+      printf >&2 '    nixpkgs https://nixos.org/channels/NIXPKGS-BRANCH\n'
+      printf >&2 '    darwin https://github.com/nix-darwin/nix-darwin/archive/NIX-DARWIN-BRANCH.tar.gz\n'
+      printf >&2 '    …\n'
+      printf >&2 '    $ nix-channel --list\n'
+      printf >&2 '    …\n'
+      printf >&2 '\n'
+      printf >&2 'You should see `darwin` and `nixpkgs` in `sudo nix-channel --list`.\n'
+      printf >&2 'If `darwin` or `nixpkgs` are present in `nix-channel --list` (without\n'
+      printf >&2 '`sudo`), you should delete them with `nix-channel --remove NAME`.\n'
+      printf >&2 '\n'
+      printf >&2 'You can then fix your channels like this:\n'
+      printf >&2 '\n'
+      printf >&2 '    $ sudo nix-channel --add https://nixos.org/channels/NIXPKGS-BRANCH nixpkgs\n'
+      printf >&2 '    $ sudo nix-channel --add https://github.com/nix-darwin/nix-darwin/archive/NIX-DARWIN-BRANCH.tar.gz darwin\n'
+      printf >&2 '    $ sudo nix-channel --update\n'
+      printf >&2 '\n'
+      printf >&2 'After that, activating your system again should work correctly. If it\n'
+      printf >&2 'doesn’t, please open an issue at\n'
+      printf >&2 '<https://github.com/nix-darwin/nix-darwin/issues/new> and include as much\n'
+      printf >&2 'information as possible.\n'
+      exit 2
+    }
+
+    checkChannel nixpkgs
+
+    checkChannel darwin
   '';
 
   # TODO: Remove this a couple years down the line when we can assume
@@ -275,6 +309,7 @@ in
 
     system.checks.text = mkMerge [
       (mkIf cfg.verifyMacOSVersion macOSVersion)
+      (mkIf (config.system.primaryUser != null) primaryUser)
       (mkIf config.nix.enable determinate)
       (mkIf cfg.verifyBuildUsers preSequoiaBuildUsers)
       (mkIf cfg.verifyBuildUsers buildGroupID)

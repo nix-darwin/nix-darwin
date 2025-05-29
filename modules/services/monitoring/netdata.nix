@@ -29,6 +29,12 @@ in {
         default = "/var/log/netdata";
         description = "Log directory for Netdata";
       };
+
+      cacheDir = mkOption {
+        type = types.path;
+        default = "/var/cache/netdata";
+        description = "Cache directory for Netdata";
+      };
     };
   };
 
@@ -50,6 +56,7 @@ in {
 
     system.activationScripts.preActivation.text = ''
       mkdir -p ${cfg.workDir}
+      mkdir -p ${cfg.cacheDir}
     '';
   };
 }
