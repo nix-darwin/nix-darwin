@@ -5,12 +5,12 @@
   ...
 }: let
   cfg = config.programs.direnv;
+  format = pkgs.formats.toml {};
 in {
   meta.maintainers = [
     lib.maintainers.mattpolzin or "mattpolzin"
   ];
   options.programs.direnv = {
-
     enable = lib.mkEnableOption ''
       direnv integration. Takes care of both installation and
       setting up the sourcing of the shell. Additionally enables nix-direnv
@@ -54,11 +54,32 @@ in {
 
       package = lib.mkPackageOption pkgs "nix-direnv" {};
     };
+
+    settings = lib.mkOption {
+      inherit (format) type;
+      default = {};
+      example = lib.literalExpression ''
+        {
+          global = {
+            log_format = "-";
+            log_filter = "^$";
+          };
+        }
+      '';
+      description = ''
+        Direnv configuration. Refer to {manpage}`direnv.toml(1)`.
+      '';
+    };
   };
 
   config = lib.mkIf cfg.enable {
-
     programs = {
+      direnv.settings = lib.mkIf cfg.silent {
+        global = {
+          log_format = lib.mkDefault "-";
+          log_filter = lib.mkDefault "^$";
+        };
+      };
       zsh.interactiveShellInit = ''
         if ${lib.boolToString cfg.loadInNixShell} || printenv PATH | grep -vqc '/nix/store'; then
          eval "$(${lib.getExe cfg.package} hook zsh)"
@@ -82,25 +103,25 @@ in {
     };
 
     environment = {
-      systemPackages =
-        if cfg.loadInNixShell then [cfg.package]
-        else [
-          #direnv has a fish library which sources direnv for some reason
-          (cfg.package.overrideAttrs (old: {
-            installPhase =
-              (old.installPhase or "")
-              + ''
-                rm -rf $out/share/fish
-              '';
-          }))
-        ];
-
+      systemPackages = [
+        (pkgs.symlinkJoin {
+          inherit (cfg.package) name;
+          paths = [cfg.package];
+          nativeBuildInputs = [pkgs.makeBinaryWrapper];
+          # direnv has a fish library which automatically sources direnv for some reason
+          # I don't see any harm removing this if we're sourcing it with fish.interactiveShellInit
+          postBuild = ''
+            rm -rf "$out/share/fish"
+          '';
+        })
+      ];
       variables = {
         DIRENV_CONFIG = "/etc/direnv";
-        DIRENV_LOG_FORMAT = lib.mkIf cfg.silent "";
       };
-
       etc = {
+        "direnv/direnv.toml".source = lib.mkIf (cfg.settings != {}) (
+          format.generate "direnv.toml" cfg.settings
+        );
         "direnv/direnvrc".text = ''
           ${lib.optionalString cfg.nix-direnv.enable ''
             #Load nix-direnv
