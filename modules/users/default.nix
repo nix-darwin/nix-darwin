@@ -186,7 +186,6 @@ in
               exit 1
             fi
           fi
-
         fi
       }
 
@@ -287,6 +286,8 @@ in
           if [ -z "$u" ]; then
             echo "creating user ${v.name}..." >&2
 
+            # We will need to create the home directory ourselves because `sysadminctl`
+            # will not create it when called with the `-home` flag.
             sysadminctl -addUser ${escapeShellArgs ([
               v.name
               "-UID" v.uid
@@ -302,11 +303,21 @@ in
             fi
 
             dscl . -create ${dsclUser} IsHidden ${if v.isHidden then "1" else "0"}
-
-            # `sysadminctl -addUser` won't create the home directory if we use the `-home`
-            # flag so we need to do it ourselves
-            ${optionalString (v.home != null && v.createHome) "createhomedir -cu ${name} > /dev/null"}
           fi
+
+          ${optionalString (v.home != null) ''
+            # Support updating home directory if the user's home directory is set to
+            # `/var/empty` as there won't be any files to migrate.
+            homeDir=$(dscl . -read ${dsclUser} NFSHomeDirectory)
+            if [[ "$homeDir" == "/var/empty" && "$homeDir" != "${v.home}" ]]; then
+              dscl . -create ${dsclUser} NFSHomeDirectory ${v.home}
+            fi
+
+            # Always create the home directory as this command is idempotent and works
+            # when the user's home directory is set to `/var/empty`. This is necessary
+            # if we just created a user or changed the user's home directory.
+            ${optionalString (v.createHome) "createhomedir -cu ${name} > /dev/null"}
+          ''}
 
           # Update properties on known users to keep them inline with configuration
           dscl . -create ${dsclUser} PrimaryGroupID ${toString v.gid}
