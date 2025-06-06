@@ -61,10 +61,14 @@ in {
     };
 
     system.defaults.NSGlobalDomain.AppleKeyboardUIMode = mkOption {
-      type = types.nullOr (types.enum [ 3 ]);
+      type = types.nullOr (types.enum [ 0 2 3 ]);
       default = null;
       description = ''
-        Configures the keyboard control behavior.  Mode 3 enables full keyboard control.
+        Configures the keyboard control behavior. The default is 0.
+
+        0 = Disabled
+        2 = Enabled on Sonoma or later
+        3 = Enabled on older macOS versions
       '';
     };
 
@@ -72,7 +76,7 @@ in {
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to enable the press-and-hold feature.  The default is true.
+        Whether to enable the press-and-hold feature. The default is true.
       '';
     };
 
@@ -112,7 +116,7 @@ in {
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to enable automatic capitalization.  The default is true.
+        Whether to enable automatic capitalization. The default is true.
       '';
     };
 
@@ -120,7 +124,7 @@ in {
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to enable inline predictive text.  The default is true.
+        Whether to enable inline predictive text. The default is true.
       '';
     };
 
@@ -128,7 +132,7 @@ in {
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to enable smart dash substitution.  The default is true.
+        Whether to enable smart dash substitution. The default is true.
       '';
     };
 
@@ -136,7 +140,7 @@ in {
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to enable smart period substitution.  The default is true.
+        Whether to enable smart period substitution. The default is true.
       '';
     };
 
@@ -144,7 +148,7 @@ in {
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to enable smart quote substitution.  The default is true.
+        Whether to enable smart quote substitution. The default is true.
       '';
     };
 
@@ -152,7 +156,7 @@ in {
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to enable automatic spelling correction.  The default is true.
+        Whether to enable automatic spelling correction. The default is true.
       '';
     };
 
@@ -160,7 +164,7 @@ in {
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to animate opening and closing of windows and popovers.  The default is true.
+        Whether to animate opening and closing of windows and popovers. The default is true.
       '';
     };
 
@@ -176,7 +180,7 @@ in {
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to save new documents to iCloud by default.  The default is true.
+        Whether to save new documents to iCloud by default. The default is true.
       '';
     };
 
@@ -184,7 +188,7 @@ in {
       type = types.nullOr (types.enum [ "manual" "always" "fullscreen" ]);
       default = null;
       description = ''
-        Sets the window tabbing when opening a new document: 'manual', 'always', or 'fullscreen'.  The default is 'fullscreen'.
+        Sets the window tabbing when opening a new document: 'manual', 'always', or 'fullscreen'. The default is 'fullscreen'.
       '';
     };
 
@@ -192,7 +196,7 @@ in {
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to use expanded save panel by default.  The default is false.
+        Whether to use expanded save panel by default. The default is false.
       '';
     };
 
@@ -200,7 +204,7 @@ in {
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to use expanded save panel by default.  The default is false.
+        Whether to use expanded save panel by default. The default is false.
       '';
     };
 
@@ -307,7 +311,7 @@ in {
       type = types.nullOr (types.enum [ 1 ]);
       default = null;
       description = ''
-        Configures the trackpad tap behavior.  Mode 1 enables tap to click.
+        Configures the trackpad tap behavior. Mode 1 enables tap to click.
       '';
     };
 
@@ -342,7 +346,7 @@ in {
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to enable trackpad secondary click.  The default is true.
+        Whether to enable trackpad secondary click. The default is true.
       '';
     };
 
@@ -350,7 +354,7 @@ in {
       type = types.nullOr (types.enum [ 1 ]);
       default = null;
       description = ''
-        Configures the trackpad corner click behavior.  Mode 1 enables right click.
+        Configures the trackpad corner click behavior. Mode 1 enables right click.
       '';
     };
 
@@ -358,7 +362,7 @@ in {
       type = types.nullOr floatWithDeprecationError;
       default = null;
       description = ''
-        Configures the trackpad tracking speed (0 to 3).  The default is "1".
+        Configures the trackpad tracking speed (0 to 3). The default is "1".
       '';
     };
 
@@ -391,7 +395,7 @@ in {
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to enable "Natural" scrolling direction.  The default is true.
+        Whether to enable "Natural" scrolling direction. The default is true.
       '';
     };
 
@@ -399,7 +403,7 @@ in {
       type = types.nullOr (types.enum [ "Centimeters" "Inches" ]);
       default = null;
       description = ''
-        Whether to use centimeters (metric) or inches (US, UK) as the measurement unit.  The default is based on region settings.
+        Whether to use centimeters (metric) or inches (US, UK) as the measurement unit. The default is based on region settings.
       '';
     };
 
@@ -407,7 +411,7 @@ in {
       type = types.nullOr (types.enum [ 0 1 ]);
       default = null;
       description = ''
-        Whether to use the metric system.  The default is based on region settings.
+        Whether to use the metric system. The default is based on region settings.
       '';
     };
 
@@ -415,7 +419,7 @@ in {
       type = types.nullOr (types.enum [ "Celsius" "Fahrenheit" ]);
       default = null;
       description = ''
-        Whether to use Celsius or Fahrenheit.  The default is based on region settings.
+        Whether to use Celsius or Fahrenheit. The default is based on region settings.
       '';
     };
 
@@ -423,7 +427,7 @@ in {
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to use 24-hour or 12-hour time.  The default is based on region settings.
+        Whether to use 24-hour or 12-hour time. The default is based on region settings.
       '';
     };
 
@@ -431,7 +435,7 @@ in {
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to autohide the menu bar.  The default is false.
+        Whether to autohide the menu bar. The default is false.
       '';
     };
 

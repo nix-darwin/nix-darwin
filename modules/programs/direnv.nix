@@ -5,12 +5,12 @@
   ...
 }: let
   cfg = config.programs.direnv;
+  format = pkgs.formats.toml {};
 in {
   meta.maintainers = [
     lib.maintainers.mattpolzin or "mattpolzin"
   ];
   options.programs.direnv = {
-
     enable = lib.mkEnableOption ''
       direnv integration. Takes care of both installation and
       setting up the sourcing of the shell. Additionally enables nix-direnv
@@ -18,6 +18,12 @@ in {
     '';
 
     package = lib.mkPackageOption pkgs "direnv" {};
+
+    finalPackage = lib.mkOption {
+      type = lib.types.package;
+      readOnly = true;
+      description = "The wrapped direnv package.";
+    };
 
     direnvrcExtra = lib.mkOption {
       type = lib.types.lines;
@@ -54,14 +60,46 @@ in {
 
       package = lib.mkPackageOption pkgs "nix-direnv" {};
     };
+
+    settings = lib.mkOption {
+      inherit (format) type;
+      default = {};
+      example = lib.literalExpression ''
+        {
+          global = {
+            log_format = "-";
+            log_filter = "^$";
+          };
+        }
+      '';
+      description = ''
+        Direnv configuration. Refer to {manpage}`direnv.toml(1)`.
+      '';
+    };
   };
 
   config = lib.mkIf cfg.enable {
-
     programs = {
+      direnv = {
+        finalPackage = pkgs.symlinkJoin {
+          inherit (cfg.package) name;
+          paths = [cfg.package];
+          # direnv has a fish library which automatically sources direnv for some reason
+          postBuild = ''
+            rm -rf "$out/share/fish"
+          '';
+          meta.mainProgram = "direnv";
+        };
+        settings = lib.mkIf cfg.silent {
+          global = {
+            log_format = lib.mkDefault "-";
+            log_filter = lib.mkDefault "^$";
+          };
+        };
+      };
       zsh.interactiveShellInit = ''
         if ${lib.boolToString cfg.loadInNixShell} || printenv PATH | grep -vqc '/nix/store'; then
-         eval "$(${lib.getExe cfg.package} hook zsh)"
+         eval "$(${lib.getExe cfg.finalPackage} hook zsh)"
         fi
       '';
 
@@ -69,38 +107,29 @@ in {
       #$IN_NIX_SHELL for "nix-shell"
       bash.interactiveShellInit = ''
         if ${lib.boolToString cfg.loadInNixShell} || [ -z "$IN_NIX_SHELL$NIX_GCROOT$(printenv PATH | grep '/nix/store')" ] ; then
-         eval "$(${lib.getExe cfg.package} hook bash)"
+         eval "$(${lib.getExe cfg.finalPackage} hook bash)"
         fi
       '';
 
       fish.interactiveShellInit = ''
         if ${lib.boolToString cfg.loadInNixShell};
         or printenv PATH | grep -vqc '/nix/store';
-         ${lib.getExe cfg.package} hook fish | source
+         ${lib.getExe cfg.finalPackage} hook fish | source
         end
       '';
     };
 
     environment = {
-      systemPackages =
-        if cfg.loadInNixShell then [cfg.package]
-        else [
-          #direnv has a fish library which sources direnv for some reason
-          (cfg.package.overrideAttrs (old: {
-            installPhase =
-              (old.installPhase or "")
-              + ''
-                rm -rf $out/share/fish
-              '';
-          }))
-        ];
-
+      systemPackages = [
+        cfg.finalPackage
+      ];
       variables = {
         DIRENV_CONFIG = "/etc/direnv";
-        DIRENV_LOG_FORMAT = lib.mkIf cfg.silent "";
       };
-
       etc = {
+        "direnv/direnv.toml".source = lib.mkIf (cfg.settings != {}) (
+          format.generate "direnv.toml" cfg.settings
+        );
         "direnv/direnvrc".text = ''
           ${lib.optionalString cfg.nix-direnv.enable ''
             #Load nix-direnv

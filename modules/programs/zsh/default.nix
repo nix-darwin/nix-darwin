@@ -102,6 +102,12 @@ in
       description = "Enable fzf keybinding for Ctrl-r history search.";
     };
 
+    programs.zsh.enableAutosuggestions = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable zsh-autosuggestions.";
+    };
+
     programs.zsh.enableSyntaxHighlighting = mkOption {
       type = types.bool;
       default = false;
@@ -123,6 +129,7 @@ in
       [ # Include zsh package
         pkgs.zsh
       ] ++ optional cfg.enableCompletion pkgs.nix-zsh-completions
+        ++ optional cfg.enableAutosuggestions pkgs.zsh-autosuggestions
         ++ optional cfg.enableSyntaxHighlighting pkgs.zsh-syntax-highlighting
         ++ optional cfg.enableFastSyntaxHighlighting pkgs.zsh-fast-syntax-highlighting;
 
@@ -198,6 +205,10 @@ in
 
       ${optionalString cfg.enableGlobalCompInit "autoload -U compinit && compinit"}
       ${optionalString cfg.enableBashCompletion "autoload -U bashcompinit && bashcompinit"}
+
+      ${optionalString cfg.enableAutosuggestions
+        "source ${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+      }
 
       ${optionalString cfg.enableSyntaxHighlighting
         "source ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
