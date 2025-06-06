@@ -148,7 +148,7 @@ in
 
       launchd.user.agents.autoraise = {
         command =
-          "${cfg.package}/Applications/AutoRaise.app/Contents/MacOS/AutoRaise"
+          "${lib.getExe cfg.package}"
           + (lib.optionalString (settings != { }) " ${flags}");
         serviceConfig = {
           KeepAlive = true;
