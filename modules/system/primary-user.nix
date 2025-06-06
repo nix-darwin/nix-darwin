@@ -1,6 +1,5 @@
 {
   lib,
-  options,
   config,
   ...
 }:
@@ -51,11 +50,7 @@
           )}
 
           To continue using these options, set `system.primaryUser` to the name
-          of the user you have been using to run `darwin-rebuild`. In the long
-          run, this setting will be deprecated and removed after all the
-          functionality it is relevant for has been adjusted to allow
-          specifying the relevant user separately, moved under the
-          `users.users.*` namespace, or migrated to Home Manager.
+          of the user you have been using to run `darwin-rebuild`.
 
           If you run into any unexpected issues with the migration, please
           open an issue at <https://github.com/nix-darwin/nix-darwin/issues/new>
