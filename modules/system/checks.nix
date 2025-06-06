@@ -229,6 +229,17 @@ let
     checkChannel darwin
   '';
 
+  nhCleanAll = ''
+    if test -O /nix/store; then
+        echo "[1;31merror: A single-user install can't run nh clean all as root, aborting activation[0m" >&2
+        echo "Configure nh clean all to run as the current user:" >&2
+        echo >&2
+        echo "    programs.nh.clean.user = \"$USER\";" >&2
+        echo >&2
+        exit 2
+    fi
+  '';
+
   # TODO: Remove this a couple years down the line when we can assume
   # that anyone who cares about security has upgraded.
   oldSshAuthorizedKeysDirectory = ''
@@ -314,6 +325,7 @@ in
       (mkIf cfg.verifyBuildUsers preSequoiaBuildUsers)
       (mkIf cfg.verifyBuildUsers buildGroupID)
       (mkIf config.nix.enable nixDaemon)
+      (mkIf (config.programs.nh.clean.enable && config.programs.nh.clean.user == null) nhCleanAll)
       nixInstaller
       (mkIf cfg.verifyNixPath nixPath)
       oldSshAuthorizedKeysDirectory
