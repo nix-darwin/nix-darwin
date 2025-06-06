@@ -802,8 +802,10 @@ in
       if [ -f "${cfg.brewPrefix}/brew" ]; then
         PATH="${cfg.brewPrefix}:${lib.makeBinPath [ pkgs.mas ]}:$PATH" \
         sudo \
+          --preserve-env=PATH \
           --user=${escapeShellArg cfg.user} \
           --set-home \
+          env \
           ${cfg.onActivation.brewBundleCmd}
       else
         echo -e "\e[1;31merror: Homebrew is not installed, skipping...\e[0m" >&2
