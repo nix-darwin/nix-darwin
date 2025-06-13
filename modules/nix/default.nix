@@ -412,8 +412,20 @@ in
         description = "Environment variables used by Nix.";
       };
 
-      nrBuildUsers = mkOption {
+      # Not in NixOS module
+      maxBuildUsers = mkOption {
         type = types.int;
+        internal = true;
+        # Having over 40 users can be problematic with the default build user
+        # UIDs starting at 351. Apple already uses GID 395 in macOS Sequoia.
+        default = 40;
+        description = ''
+          Maximum number of users to allow for {option}`nrBuildUsers`.
+        '';
+      };
+
+      nrBuildUsers = mkOption {
+        type = types.ints.between 0 cfg.maxBuildUsers;
         inherit (managedDefault "nix.nrBuildUsers" 0) default defaultText;
         description = ''
           Number of `nixbld` user accounts created to
@@ -807,8 +819,8 @@ in
 
         # Not in NixOS module
         { assertion = elem "nixbld" config.users.knownGroups -> elem "nixbld" createdGroups; message = "refusing to delete group nixbld in users.knownGroups, this would break nix"; }
-        { assertion = elem "_nixbld1" config.users.knownUsers -> elem "_nixbld1" createdUsers; message = "refusing to delete user _nixbld1 in users.knownUsers, this would break nix"; }
-        { assertion = config.users.groups ? "nixbld" -> config.users.groups.nixbld.members != []; message = "refusing to remove all members from nixbld group, this would break nix"; }
+        { assertion = configureBuildUsers -> elem "_nixbld1" createdUsers; message = "refusing to delete user _nixbld1 in users.knownUsers, this would break nix"; }
+        { assertion = configureBuildUsers -> config.users.groups.nixbld.members != []; message = "refusing to remove all members from nixbld group, this would break nix"; }
 
         {
           # Should be fixed in Lix by https://gerrit.lix.systems/c/lix/+/2100
@@ -850,18 +862,28 @@ in
       rm --force $out/bin/nix-channel
     '';
 
-    nix.nrBuildUsers = mkDefault (max 32 (if cfg.settings.max-jobs == "auto" then 0 else cfg.settings.max-jobs));
+    nix.nrBuildUsers = mkDefault (
+      if !configureBuildUsers then
+        0
+      else
+        max 32 (if cfg.settings.max-jobs == "auto" then 0 else cfg.settings.max-jobs)
+    );
 
-    users.users = mkIf configureBuildUsers nixbldUsers;
+    users.users = nixbldUsers;
 
     # Not in NixOS module
-    users.groups.nixbld = mkIf configureBuildUsers {
+    users.groups.nixbld = {
       description = "Nix build group for nix-daemon";
       gid = config.ids.gids.nixbld;
       members = attrNames nixbldUsers;
     };
     users.knownUsers =
-      let nixbldUserNames = attrNames nixbldUsers;
+      let
+        # This creates 128 "known" build users -- in other words, any user
+        # between `_nixbld1` and `_nixbld128` is considered "managed" by
+        # nix-darwin, and will be created/deleted as `nrBuildUsers` increases
+        # and decreases (or is set to 0 in case of `auto-allocate-uids`.
+        nixbldUserNames = map (x: "_nixbld${toString x}") (range 1 128);
       in
       mkMerge [
         nixbldUserNames
