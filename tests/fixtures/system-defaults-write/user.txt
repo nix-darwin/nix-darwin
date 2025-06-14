@@ -1,3 +1,8 @@
+defaults write -g 'AppleActionOnDoubleClick' $'<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<string>Minimize</string>
+</plist>'
 launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g 'AppleEnableMouseSwipeNavigateWithScrolls' $'<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
