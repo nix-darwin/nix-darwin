@@ -157,7 +157,8 @@ in
         XDG_CONFIG_DIRS = map (path: path + "/etc/xdg") cfg.profiles;
         XDG_DATA_DIRS = map (path: path + "/share") cfg.profiles;
         EDITOR = mkDefault "nano";
-        PAGER = mkDefault "less -R";
+        PAGER = mkDefault "less";
+        LESS = mkDefault "-R";
       };
 
     system.build.setEnvironment = pkgs.writeText "set-environment" ''
