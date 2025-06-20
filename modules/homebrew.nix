@@ -502,7 +502,9 @@ let
           [](#opt-homebrew.caskArgs) for the available options.
         '';
       };
-      greedy = mkNullOrBoolOption {
+      greedy = mkOption {
+        type = types.nullOr types.bool;
+        default = cfg.greedyCasks;
         description = ''
           Whether to always upgrade this cask regardless of whether it's unversioned or it updates
           itself.
@@ -639,6 +641,13 @@ in
       description = ''
         Arguments passed to {command}`brew install --cask` for all casks listed in
         [](#opt-homebrew.casks).
+      '';
+    };
+
+    greedyCasks = mkNullOrBoolOption {
+      description = ''
+        Whether to always upgrade casks listed in [](#opt-homebrew.casks) regardless
+        of whether it's unversioned or it updates itself.
       '';
     };
 
