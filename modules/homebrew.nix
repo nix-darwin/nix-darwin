@@ -54,10 +54,10 @@ let
   # Submodules -------------------------------------------------------------------------------------
   # Option values and descriptions of Brewfile entries are sourced/derived from:
   #   * `brew` manpage: https://docs.brew.sh/Manpage
-  #   * `brew bundle` source files (at https://github.com/Homebrew/homebrew-bundle/tree/9fffe077f1a5a722ed5bd26a87ed622e8cb64e0c):
-  #     * lib/bundle/dsl.rb
-  #     * lib/bundle/{brew,cask,tap}_installer.rb
-  #     * spec/bundle/{brew,cask,tap}_installer_spec.rb
+  #   * `brew bundle` source files (at https://github.com/Homebrew/brew/tree/master/Library/Homebrew/bundle):
+  #     * dsl.rb
+  #     * {brew,cask,tap}_installer.rb
+  #     * ../test/bundle/{brew,cask,tap}_installer_spec.rb
 
   onActivationOptions = { config, ... }: {
     options = {
@@ -234,7 +234,7 @@ let
     options = {
       name = mkOption {
         type = types.str;
-        example = "homebrew/cask-fonts";
+        example = "apple/apple";
         description = ''
           When {option}`clone_target` is unspecified, this is the name of a formula
           repository to tap from GitHub using HTTPS. For example, `"user/repo"`
@@ -605,10 +605,10 @@ in
       type = with types; listOf (coercedTo str (name: { inherit name; }) (submodule tapOptions));
       default = [ ];
       example = literalExpression ''
-        # Adapted examples from https://github.com/Homebrew/homebrew-bundle#usage
+        # Adapted from https://docs.brew.sh/Brew-Bundle-and-Brewfile
         [
           # `brew tap`
-          "homebrew/cask"
+          "apple/apple"
 
           # `brew tap` with custom Git URL and arguments
           {
@@ -646,7 +646,7 @@ in
       type = with types; listOf (coercedTo str (name: { inherit name; }) (submodule brewOptions));
       default = [ ];
       example = literalExpression ''
-        # Adapted examples from https://github.com/Homebrew/homebrew-bundle#usage
+        # Adapted from https://docs.brew.sh/Brew-Bundle-and-Brewfile
         [
           # `brew install`
           "imagemagick"
@@ -680,7 +680,7 @@ in
       type = with types; listOf (coercedTo str (name: { inherit name; }) (submodule caskOptions));
       default = [ ];
       example = literalExpression ''
-        # Adapted examples from https://github.com/Homebrew/homebrew-bundle#usage
+        # Adapted from https://docs.brew.sh/Brew-Bundle-and-Brewfile
         [
           # `brew install --cask`
           "google-chrome"
