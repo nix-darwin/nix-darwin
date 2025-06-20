@@ -197,7 +197,7 @@ in {
     };
 
     system.defaults.dock.persistent-others = mkOption {
-      type = types.nullOr (types.listOf (types.either types.path types.str));
+      type = types.nullOr (types.listOf (types.oneOf [ types.path types.str (types.attrsOf types.anything) ] ));
       default = null;
       example = [ "~/Documents" "~/Downloads" ];
       description = ''
@@ -206,7 +206,17 @@ in {
       apply = value:
         if !(isList value)
         then value
-        else map (folder: { tile-data = { file-data = { _CFURLString = "file://" + folder; _CFURLStringType = 15; }; }; tile-type = if strings.hasInfix "." (last (splitString "/" folder)) then "file-tile" else "directory-tile"; }) value;
+        else map (folder:
+          if isPath folder || isString folder
+          then
+            {
+              tile-data = {
+                file-data = { _CFURLString = "file://" + folder; _CFURLStringType = 15; };
+              };
+              tile-type = if strings.hasInfix "." (last (splitString "/" folder)) then "file-tile" else "directory-tile";
+            }
+          else folder  # pass through complex objects entirely
+        ) value;
     };
 
     system.defaults.dock.scroll-to-open = mkOption {
