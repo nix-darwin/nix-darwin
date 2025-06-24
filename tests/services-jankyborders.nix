@@ -7,6 +7,8 @@ let
 in
 
 {
+  system.primaryUser = "test-jankyborders-user";
+
   services.jankyborders.enable = true;
   services.jankyborders.package = jankyborders;
   services.jankyborders.width = 5.0;

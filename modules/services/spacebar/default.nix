@@ -69,6 +69,8 @@ in
       serviceConfig.EnvironmentVariables = {
         PATH = "${cfg.package}/bin:${config.environment.systemPath}";
       };
+
+      managedBy = "services.spacebar.enable";
     };
   };
 }

@@ -16,6 +16,8 @@ let
   expectedNixPath = "${"nixpkgs=" + toString pkgs.path}";
 in
 {
+  system.primaryUser = "test-lorri-user";
+
   services.lorri.enable = true;
   test = ''
     PATH=${

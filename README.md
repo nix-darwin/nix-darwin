@@ -1,8 +1,8 @@
-[<img src="https://daiderd.com/nix-darwin/images/nix-darwin.png" width="200px" alt="logo" />](https://github.com/LnL7/nix-darwin)
+[<img src="https://github.com/user-attachments/assets/0e1a77ac-6739-4153-bd24-abd3a5e143f5" width="200px" alt="logo" />](https://github.com/nix-darwin/nix-darwin)
 
 # nix-darwin
 
-[![Test](https://github.com/LnL7/nix-darwin/actions/workflows/test.yml/badge.svg)](https://github.com/LnL7/nix-darwin/actions/workflows/test.yml)
+[![Test](https://github.com/nix-darwin/nix-darwin/actions/workflows/test.yml/badge.svg)](https://github.com/nix-darwin/nix-darwin/actions/workflows/test.yml)
 
 Nix modules for darwin, `/etc/nixos/configuration.nix` for macOS.
 
@@ -73,8 +73,8 @@ Add the following to `flake.nix` in the same folder as `configuration.nix`:
   inputs = {
     # Use `github:NixOS/nixpkgs/nixpkgs-24.11-darwin` to use Nixpkgs 24.11.
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    # Use `github:LnL7/nix-darwin/nix-darwin-24.11` to use Nixpkgs 24.11.
-    nix-darwin.url = "github:LnL7/nix-darwin/master";
+    # Use `github:nix-darwin/nix-darwin/nix-darwin-24.11` to use Nixpkgs 24.11.
+    nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
 
@@ -98,9 +98,9 @@ Unlike NixOS, `nix-darwin` does not have an installer, you can just run `darwin-
 
 ```bash
 # To use Nixpkgs unstable:
-nix run nix-darwin/master#darwin-rebuild -- switch
+sudo nix run nix-darwin/master#darwin-rebuild -- switch
 # To use Nixpkgs 24.11:
-nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch
+sudo nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch
 ```
 
 ### Step 3. Using `nix-darwin`
@@ -108,7 +108,7 @@ nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch
 After installing, you can run `darwin-rebuild` to apply changes to your system:
 
 ```bash
-darwin-rebuild switch
+sudo darwin-rebuild switch
 ```
 
 #### Using flake inputs
@@ -142,9 +142,9 @@ Copy the [simple](./modules/examples/simple.nix) example to `/etc/nix-darwin/con
 
 ```bash
 # If you use Nixpkgs unstable (the default):
-sudo nix-channel --add https://github.com/LnL7/nix-darwin/archive/master.tar.gz darwin
+sudo nix-channel --add https://github.com/nix-darwin/nix-darwin/archive/master.tar.gz darwin
 # If you use Nixpkgs 24.11:
-sudo nix-channel --add https://github.com/LnL7/nix-darwin/archive/nix-darwin-24.11.tar.gz darwin
+sudo nix-channel --add https://github.com/nix-darwin/nix-darwin/archive/nix-darwin-24.11.tar.gz darwin
 
 sudo nix-channel --update
 ```
@@ -155,7 +155,7 @@ To install `nix-darwin`, you can just run `darwin-rebuild switch` to install nix
 
 ```bash
 nix-build '<darwin>' -A darwin-rebuild
-./result/bin/darwin-rebuild switch -I darwin-config=/etc/nix-darwin/configuration.nix
+sudo ./result/bin/darwin-rebuild switch -I darwin-config=/etc/nix-darwin/configuration.nix
 ```
 
 ### Step 4. Using `nix-darwin`
@@ -163,7 +163,7 @@ nix-build '<darwin>' -A darwin-rebuild
 After installing, you can run `darwin-rebuild` to apply changes to your system:
 
 ```bash
-darwin-rebuild switch
+sudo darwin-rebuild switch
 ```
 
 ### Step 5. Updating `nix-darwin`
@@ -177,7 +177,7 @@ sudo nix-channel --update
 
 ## Documentation
 
-`darwin-help` will open up a local copy of the reference documentation, it can also be found online [here](https://daiderd.com/nix-darwin/manual/index.html).
+`darwin-help` will open up a local copy of the reference documentation, it can also be found online [here](https://nix-darwin.github.io/nix-darwin/manual/index.html).
 
 The documentation is also available as manpages by running `man 5 configuration.nix`.
 
@@ -186,13 +186,13 @@ The documentation is also available as manpages by running `man 5 configuration.
 To run the latest version of the uninstaller, you can run the following command:
 
 ```
-nix --extra-experimental-features "nix-command flakes" run nix-darwin#darwin-uninstaller
+sudo nix --extra-experimental-features "nix-command flakes" run nix-darwin#darwin-uninstaller
 ```
 
 If that command doesn't work for you, you can try the locally installed uninstaller:
 
 ```
-darwin-uninstaller
+sudo darwin-uninstaller
 ```
 
 ## Tests
@@ -218,7 +218,7 @@ flag can also be used to override darwin-config or nixpkgs, for more
 information on the `-I` flag look at the nix-build [manpage](https://nixos.org/manual/nix/stable/command-ref/nix-build.html).
 
 ```bash
-darwin-rebuild switch -I darwin=.
+sudo darwin-rebuild switch -I darwin=.
 ```
 
 If you're adding a module, please add yourself to `meta.maintainers`, for example
@@ -234,6 +234,6 @@ If you're adding a module, please add yourself to `meta.maintainers`, for exampl
 The `or` operator takes care of graceful degradation when `lib` from Nixpkgs
 goes out of sync.
 
-Also feel free to contact me if you have questions,
-- Matrix - @daiderd:matrix.org, you can find me in [#macos:nixos.org](https://matrix.to/#/#macos:nixos.org)
-- @LnL7 on twitter
+Feel free to contact us on Matrix if you have questions:
+* **User support:** [#macos:nixos.org](https://matrix.to/#/#macos:nixos.org)
+* **Development discussion:** [#nix-darwin-dev:nixos.org](https://matrix.to/#/#nix-darwin-dev:nixos.org)

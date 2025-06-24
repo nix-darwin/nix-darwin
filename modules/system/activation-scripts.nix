@@ -14,10 +14,12 @@ let
   };
 
   activationPath =
-    lib.makeBinPath [
-      pkgs.gnugrep
-      pkgs.coreutils
-    ]
+    lib.makeBinPath (
+      [
+        pkgs.gnugrep
+        pkgs.coreutils
+      ] ++ lib.optionals config.nix.enable [ config.nix.package ]
+    )
     + lib.optionalString (!config.nix.enable) ''
       $(
         # If `nix.enable` is off, there might be an unmanaged Nix
@@ -37,8 +39,7 @@ let
           )"
         fi
       )''
-    + ":@out@/sw/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-
+    + ":/usr/bin:/bin:/usr/sbin:/sbin";
 in
 
 {
@@ -62,24 +63,58 @@ in
 
   config = {
 
+    assertions =
+      map
+        (userActivationOption: {
+          assertion = !config.system.activationScripts ? ${userActivationOption};
+          message = ''
+            The `system.activationScripts.${userActivationOption}` option has
+            been removed, as all activation now takes place as `root`. Please
+            restructure your custom activation scripts appropriately,
+            potentially using `sudo` if you need to run commands as a user.
+          '';
+        })
+        [
+          "extraUserActivation"
+          "preUserActivation"
+          "postUserActivation"
+        ];
+
     system.activationScripts.script.text = ''
-      #! ${stdenv.shell}
+      #!/usr/bin/env -i ${stdenv.shell}
+      # shellcheck shell=bash
+      # shellcheck disable=SC2096
+
       set -e
       set -o pipefail
 
       PATH="${activationPath}"
+
       export PATH
+      export USER=root
+      export LOGNAME=root
+      export HOME=~root
+      export MAIL=/var/mail/root
+      export SHELL=$BASH
+      export LANG=C
+      export LC_CTYPE=UTF-8
 
       systemConfig=@out@
 
       # Ensure a consistent umask.
       umask 0022
 
+      cd /
+
+      if [[ $(id -u) -ne 0 ]]; then
+        printf >&2 '\e[1;31merror: `activate` must be run as root\e[0m\n'
+        exit 2
+      fi
+
       ${cfg.activationScripts.preActivation.text}
 
-      # We run `etcChecks` again just in case someone runs `activate`
-      # directly without `activate-user`.
-      ${cfg.activationScripts.etcChecks.text}
+      ${cfg.activationScripts.checks.text}
+      ${cfg.activationScripts.createRun.text}
       ${cfg.activationScripts.extraActivation.text}
       ${cfg.activationScripts.groups.text}
       ${cfg.activationScripts.users.text}
@@ -88,7 +123,9 @@ in
       ${cfg.activationScripts.patches.text}
       ${cfg.activationScripts.etc.text}
       ${cfg.activationScripts.defaults.text}
+      ${cfg.activationScripts.userDefaults.text}
       ${cfg.activationScripts.launchd.text}
+      ${cfg.activationScripts.userLaunchd.text}
       ${cfg.activationScripts.nix-daemon.text}
       ${cfg.activationScripts.time.text}
       ${cfg.activationScripts.networking.text}
@@ -96,6 +133,7 @@ in
       ${cfg.activationScripts.keyboard.text}
       ${cfg.activationScripts.fonts.text}
       ${cfg.activationScripts.nvram.text}
+      ${cfg.activationScripts.homebrew.text}
 
       ${cfg.activationScripts.postActivation.text}
 
@@ -111,48 +149,11 @@ in
       fi
     '';
 
-    # FIXME: activationScripts.checks should be system level
-    system.activationScripts.userScript.text = ''
-      #! ${stdenv.shell}
-      set -e
-      set -o pipefail
-
-      PATH="${activationPath}"
-      export PATH
-
-      systemConfig=@out@
-
-      _status=0
-      trap "_status=1" ERR
-
-      # Ensure a consistent umask.
-      umask 0022
-
-      ${cfg.activationScripts.preUserActivation.text}
-
-      # This should be running at the system level, but as user activation runs first
-      # we run it here with sudo
-      ${cfg.activationScripts.createRun.text}
-      ${cfg.activationScripts.checks.text}
-      ${cfg.activationScripts.etcChecks.text}
-      ${cfg.activationScripts.extraUserActivation.text}
-      ${cfg.activationScripts.userDefaults.text}
-      ${cfg.activationScripts.userLaunchd.text}
-      ${cfg.activationScripts.homebrew.text}
-
-      ${cfg.activationScripts.postUserActivation.text}
-
-      exit $_status
-    '';
-
     # Extra activation scripts, that can be customized by users
     # don't use this unless you know what you are doing.
     system.activationScripts.extraActivation.text = mkDefault "";
     system.activationScripts.preActivation.text = mkDefault "";
     system.activationScripts.postActivation.text = mkDefault "";
-    system.activationScripts.extraUserActivation.text = mkDefault "";
-    system.activationScripts.preUserActivation.text = mkDefault "";
-    system.activationScripts.postUserActivation.text = mkDefault "";
 
   };
 }

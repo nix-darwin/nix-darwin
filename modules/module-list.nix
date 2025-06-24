@@ -1,5 +1,7 @@
 [
   ./alias.nix
+  ./config/system-path.nix
+  ./config/terminfo.nix
   ./documentation
   ./meta.nix
   ./misc/ids.nix
@@ -10,6 +12,7 @@
   ./security/sudo.nix
   ./system
   ./system/base.nix
+  ./system/primary-user.nix
   ./system/checks.nix
   ./system/activation-scripts.nix
   ./system/applications.nix
@@ -23,6 +26,7 @@
   ./system/defaults/dock.nix
   ./system/defaults/finder.nix
   ./system/defaults/hitoolbox.nix
+  ./system/defaults/iCal.nix
   ./system/defaults/screencapture.nix
   ./system/defaults/screensaver.nix
   ./system/defaults/alf.nix
@@ -45,6 +49,7 @@
   ./system/version.nix
   ./time
   ./networking
+  ./networking/applicationFirewall.nix
   ./nix
   ./nix/linux-builder.nix
   ./nix/nix-darwin.nix
@@ -99,6 +104,9 @@
   ./services/yabai
   ./services/nextdns
   ./services/jankyborders
+  ./programs/_1password.nix
+  ./programs/_1password-gui.nix
+  ./programs/arqbackup.nix
   ./programs/bash
   ./programs/direnv.nix
   ./programs/fish.nix
@@ -106,7 +114,7 @@
   ./programs/man.nix
   ./programs/info
   ./programs/nix-index
-  ./programs/ssh
+  ./programs/ssh.nix
   ./programs/tmux.nix
   ./programs/vim.nix
   ./programs/zsh

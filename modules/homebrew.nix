@@ -54,10 +54,10 @@ let
   # Submodules -------------------------------------------------------------------------------------
   # Option values and descriptions of Brewfile entries are sourced/derived from:
   #   * `brew` manpage: https://docs.brew.sh/Manpage
-  #   * `brew bundle` source files (at https://github.com/Homebrew/homebrew-bundle/tree/9fffe077f1a5a722ed5bd26a87ed622e8cb64e0c):
-  #     * lib/bundle/dsl.rb
-  #     * lib/bundle/{brew,cask,tap}_installer.rb
-  #     * spec/bundle/{brew,cask,tap}_installer_spec.rb
+  #   * `brew bundle` source files (at https://github.com/Homebrew/brew/tree/master/Library/Homebrew/bundle):
+  #     * dsl.rb
+  #     * {brew,cask,tap}_installer.rb
+  #     * ../test/bundle/{brew,cask,tap}_installer_spec.rb
 
   onActivationOptions = { config, ... }: {
     options = {
@@ -234,7 +234,7 @@ let
     options = {
       name = mkOption {
         type = types.str;
-        example = "homebrew/cask-fonts";
+        example = "apple/apple";
         description = ''
           When {option}`clone_target` is unspecified, this is the name of a formula
           repository to tap from GitHub using HTTPS. For example, `"user/repo"`
@@ -502,7 +502,9 @@ let
           [](#opt-homebrew.caskArgs) for the available options.
         '';
       };
-      greedy = mkNullOrBoolOption {
+      greedy = mkOption {
+        type = types.nullOr types.bool;
+        default = cfg.greedyCasks;
         description = ''
           Whether to always upgrade this cask regardless of whether it's unversioned or it updates
           itself.
@@ -559,6 +561,17 @@ in
       This module also provides a few options for modifying how Homebrew commands behave when
       you manually invoke them, under [](#opt-homebrew.global)'';
 
+    user = mkOption {
+      type = types.str;
+      default = config.system.primaryUser;
+      defaultText = literalExpression "config.system.primaryUser";
+      description = ''
+        The user that owns the Homebrew installation. In most cases
+        this should be the normal user account that you installed
+        Homebrew as.
+      '';
+    };
+
     brewPrefix = mkOption {
       type = types.str;
       default = if pkgs.stdenv.hostPlatform.isAarch64 then "/opt/homebrew/bin" else "/usr/local/bin";
@@ -594,10 +607,10 @@ in
       type = with types; listOf (coercedTo str (name: { inherit name; }) (submodule tapOptions));
       default = [ ];
       example = literalExpression ''
-        # Adapted examples from https://github.com/Homebrew/homebrew-bundle#usage
+        # Adapted from https://docs.brew.sh/Brew-Bundle-and-Brewfile
         [
           # `brew tap`
-          "homebrew/cask"
+          "apple/apple"
 
           # `brew tap` with custom Git URL and arguments
           {
@@ -631,11 +644,18 @@ in
       '';
     };
 
+    greedyCasks = mkNullOrBoolOption {
+      description = ''
+        Whether to always upgrade casks listed in [](#opt-homebrew.casks) regardless
+        of whether it's unversioned or it updates itself.
+      '';
+    };
+
     brews = mkOption {
       type = with types; listOf (coercedTo str (name: { inherit name; }) (submodule brewOptions));
       default = [ ];
       example = literalExpression ''
-        # Adapted examples from https://github.com/Homebrew/homebrew-bundle#usage
+        # Adapted from https://docs.brew.sh/Brew-Bundle-and-Brewfile
         [
           # `brew install`
           "imagemagick"
@@ -669,7 +689,7 @@ in
       type = with types; listOf (coercedTo str (name: { inherit name; }) (submodule caskOptions));
       default = [ ];
       example = literalExpression ''
-        # Adapted examples from https://github.com/Homebrew/homebrew-bundle#usage
+        # Adapted from https://docs.brew.sh/Brew-Bundle-and-Brewfile
         [
           # `brew install --cask`
           "google-chrome"
@@ -764,6 +784,10 @@ in
       (mkIf (options.homebrew.autoUpdate.isDefined || options.homebrew.cleanup.isDefined) "The `homebrew' module no longer upgrades outdated formulae and apps by default during `nix-darwin' system activation. To enable upgrading, set `homebrew.onActivation.upgrade = true'.")
     ];
 
+    system.requiresPrimaryUser = mkIf (cfg.enable && options.homebrew.user.highestPrio == (mkOptionDefault {}).priority) [
+      "homebrew.enable"
+    ];
+
     homebrew.brews =
       optional (cfg.whalebrews != [ ]) "whalebrew";
 
@@ -786,6 +810,11 @@ in
       echo >&2 "Homebrew bundle..."
       if [ -f "${cfg.brewPrefix}/brew" ]; then
         PATH="${cfg.brewPrefix}:${lib.makeBinPath [ pkgs.mas ]}:$PATH" \
+        sudo \
+          --preserve-env=PATH \
+          --user=${escapeShellArg cfg.user} \
+          --set-home \
+          env \
           ${cfg.onActivation.brewBundleCmd}
       else
         echo -e "\e[1;31merror: Homebrew is not installed, skipping...\e[0m" >&2

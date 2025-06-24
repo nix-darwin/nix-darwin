@@ -7,6 +7,8 @@ let
 in
 
 {
+  system.primaryUser = "test-privoxy-user";
+
   services.privoxy.enable = true;
   services.privoxy.package = privoxy;
   services.privoxy.config = "forward / .";

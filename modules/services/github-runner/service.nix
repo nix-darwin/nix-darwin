@@ -57,22 +57,19 @@ in
         text = mkBefore (''
           echo >&2 "setting up GitHub Runner '${cfg.name}'..."
 
-          (
-            umask -S u=rwx,g=rx,o= > /dev/null
+          # shellcheck disable=SC2174
+          ${getExe' pkgs.coreutils "mkdir"} -p -m u=rwx,g=rx,o= ${escapeShellArg (mkStateDir cfg)}
+          ${getExe' pkgs.coreutils "chown"} ${user}:${group} ${escapeShellArg (mkStateDir cfg)}
 
-            ${getExe' pkgs.coreutils "mkdir"} -p ${escapeShellArg (mkStateDir cfg)}
-            ${getExe' pkgs.coreutils "chown"} ${user}:${group} ${escapeShellArg (mkStateDir cfg)}
+          # shellcheck disable=SC2174
+          ${getExe' pkgs.coreutils "mkdir"} -p -m u=rwx,g=rx,o= ${escapeShellArg (mkLogDir cfg)}
+          ${getExe' pkgs.coreutils "chown"} ${user}:${group} ${escapeShellArg (mkLogDir cfg)}
 
-            ${getExe' pkgs.coreutils "mkdir"} -p ${escapeShellArg (mkLogDir cfg)}
-            # launchd will fail to start the service if the outer direction doesn't have sufficient permissions
-            ${getExe' pkgs.coreutils "chmod"} o+rx ${escapeShellArg (mkLogDir { name = ""; })}
-            ${getExe' pkgs.coreutils "chown"} ${user}:${group} ${escapeShellArg (mkLogDir cfg)}
-
-            ${optionalString (cfg.workDir == null) ''
-              ${getExe' pkgs.coreutils "mkdir"} -p ${escapeShellArg (mkWorkDir cfg)}
-              ${getExe' pkgs.coreutils "chown"} ${user}:${group} ${escapeShellArg (mkWorkDir cfg)}
-            ''}
-          )
+          ${optionalString (cfg.workDir == null) ''
+            # shellcheck disable=SC2174
+            ${getExe' pkgs.coreutils "mkdir"} -p -m u=rwx,g=rx,o= ${escapeShellArg (mkWorkDir cfg)}
+            ${getExe' pkgs.coreutils "chown"} ${user}:${group} ${escapeShellArg (mkWorkDir cfg)}
+          ''}
         '');
       };
     }));

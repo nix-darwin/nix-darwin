@@ -126,6 +126,7 @@ in
       serviceConfig.RunAtLoad = true;
       serviceConfig.KeepAlive = true;
       serviceConfig.ProcessType = "Interactive";
+      managedBy = "services.chunkwm.enable";
     };
 
   };

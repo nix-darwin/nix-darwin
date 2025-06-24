@@ -36,13 +36,13 @@ in
       # TODO: Remove this default and the assertion below.
       default = config.system.maxStateVersion;
       description = ''
-        Every once in a while, a new NixOS release may change
+        Every once in a while, a new nix-darwin release may change
         configuration defaults in a way incompatible with stateful
         data. For instance, if the default version of PostgreSQL
         changes, the new version will probably be unable to read your
         existing databases. To prevent such breakage, you can set the
-        value of this option to the NixOS release with which you want
-        to be compatible. The effect is that NixOS will option
+        value of this option to the nix-darwin release with which you want
+        to be compatible. The effect is that nix-darwin will option
         defaults corresponding to the specified release (such as using
         an older version of PostgreSQL).
       '';

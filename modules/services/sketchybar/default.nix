@@ -54,6 +54,7 @@ in
         ++ optionals (cfg.config != "") [ "--config" "${configFile}" ];
       serviceConfig.KeepAlive = true;
       serviceConfig.RunAtLoad = true;
+      managedBy = "services.sketchybar.enable";
     };
   };
 }
