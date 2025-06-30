@@ -49,9 +49,9 @@ sudo chown $(id -nu):$(id -ng) /etc/nix-darwin
 cd /etc/nix-darwin
 
 # To use Nixpkgs unstable:
-nix flake init -t nix-darwin/master
+nix flake init -t nix-darwin/master --extra-experimental-features "nix-command flakes"
 # To use Nixpkgs 24.11:
-nix flake init -t nix-darwin/nix-darwin-24.11
+nix flake init -t nix-darwin/nix-darwin-24.11 --extra-experimental-features "nix-command flakes"
 
 sed -i '' "s/simple/$(scutil --get LocalHostName)/" flake.nix
 ```
