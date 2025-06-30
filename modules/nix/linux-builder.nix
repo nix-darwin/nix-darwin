@@ -36,6 +36,13 @@ in
 
         {
           environment.systemPackages = [ pkgs.neovim ];
+          virtualisation = {
+            # Larger linux-builder cores, ram, and disk.
+            cores = 6;
+            memorySize = lib.mkForce (1024 * 4);
+            diskSize = lib.mkForce (1024 * 5);
+          };
+
         })
       '';
       description = ''
