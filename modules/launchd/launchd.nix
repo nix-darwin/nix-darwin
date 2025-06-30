@@ -310,7 +310,7 @@ in
     };
 
     WatchPaths = mkOption {
-      type = types.nullOr (types.listOf types.path);
+      type = types.nullOr (types.listOf (types.either types.str types.path));
       default = null;
       description = ''
         This optional key causes the job to be started if any one of the listed paths are modified.
