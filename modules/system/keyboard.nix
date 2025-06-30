@@ -51,6 +51,9 @@ in
       description = ''
         List of keyboard mappings to apply, for more information see
         <https://developer.apple.com/library/content/technotes/tn2450/_index.html>.
+        <https://hidutil-generator.netlify.app/>.
+        Number Base Converter: 16 -> 10
+        <https://codepen.io/rahulsahofficial/pen/oNzPbNM>.
       '';
     };
   };
