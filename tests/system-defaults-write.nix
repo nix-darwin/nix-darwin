@@ -110,7 +110,7 @@
   system.defaults.screensaver.askForPassword = true;
   system.defaults.screensaver.askForPasswordDelay = 5;
   system.defaults.smb.NetBIOSName = "IMAC-000000";
-  system.defaults.smb.ServerDescription = ''Darwin\\\\U2019's iMac'';
+  system.defaults.smb.ServerDescription = ''Darwin\\U2019's iMac'';
   system.defaults.universalaccess.mouseDriverCursorSize = 1.5;
   system.defaults.universalaccess.reduceMotion = true;
   system.defaults.universalaccess.reduceTransparency = true;

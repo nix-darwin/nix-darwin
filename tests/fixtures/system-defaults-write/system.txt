@@ -1,10 +1,10 @@
-defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server 'NetBIOSName' $'<?xml version="1.0" encoding="UTF-8"?>
+defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server NetBIOSName '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <string>IMAC-000000</string>
 </plist>'
-defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server 'ServerDescription' $'<?xml version="1.0" encoding="UTF-8"?>
+defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server ServerDescription '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<string>Darwin\\\\U2019\'s iMac</string>
+<string>Darwin\\U2019&apos;s iMac</string>
 </plist>'
