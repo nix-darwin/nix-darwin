@@ -45,6 +45,7 @@ let
   ActivityMonitor = userDefaultsToList "com.apple.ActivityMonitor" cfg.ActivityMonitor;
   WindowManager = userDefaultsToList "com.apple.WindowManager" cfg.WindowManager;
   controlcenter = userDefaultsToList "~${config.system.primaryUser}/Library/Preferences/ByHost/com.apple.controlcenter" cfg.controlcenter;
+  Spotlight = userDefaultsToList "~${config.system.primaryUser}/Library/Preferences/ByHost/com.apple.Spotlight" cfg.Spotlight; 
   CustomUserPreferences = flatten (mapAttrsToList (name: value: userDefaultsToList name value) cfg.CustomUserPreferences);
 
 
@@ -124,6 +125,7 @@ in
         CustomUserPreferences
         WindowManager
         controlcenter
+        Spotlight
       ]
       ''
         # Set defaults
@@ -150,6 +152,7 @@ in
         ${concatStringsSep "\n" CustomUserPreferences}
         ${concatStringsSep "\n" WindowManager}
         ${concatStringsSep "\n" controlcenter}
+        ${concatStringsSep "\n" Spotlight}
 
         ${optionalString (length dock > 0) ''
           echo >&2 "restarting Dock..."
