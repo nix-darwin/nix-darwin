@@ -20,7 +20,6 @@ let
   dockFiltered = (builtins.removeAttrs cfg.dock ["expose-group-by-app"]);
 
   # defaults
-  alf = defaultsToList "/Library/Preferences/com.apple.alf" cfg.alf;
   loginwindow = defaultsToList "/Library/Preferences/com.apple.loginwindow" cfg.loginwindow;
   smb = defaultsToList "/Library/Preferences/SystemConfiguration/com.apple.smb.server" cfg.smb;
   SoftwareUpdate = defaultsToList "/Library/Preferences/com.apple.SoftwareUpdate" cfg.SoftwareUpdate;
@@ -89,7 +88,6 @@ in
       ];
 
     system.activationScripts.defaults.text = mkIfLists [
-      alf
       loginwindow
       smb
       SoftwareUpdate
@@ -98,7 +96,6 @@ in
       ''
         # Set defaults
         echo >&2 "system defaults..."
-        ${concatStringsSep "\n" alf}
         ${concatStringsSep "\n" loginwindow}
         ${concatStringsSep "\n" smb}
         ${concatStringsSep "\n" SoftwareUpdate}

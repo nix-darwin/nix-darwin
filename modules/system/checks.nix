@@ -173,7 +173,7 @@ let
       printf >&2 'Make sure that %s exists,\n' \
         ${escapeDoubleQuote (
           if config.environment.darwinConfig == null then
-            "the \\`<darwin-config>\\` entry in `nix.nixPath`"
+            "the \\`<darwin-config>\\` entry in \\`nix.nixPath\\`"
           else
             "\\`${config.environment.darwinConfig}\\`"
         )}
