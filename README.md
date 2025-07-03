@@ -98,9 +98,9 @@ Unlike NixOS, `nix-darwin` does not have an installer, you can just run `darwin-
 
 ```bash
 # To use Nixpkgs unstable:
-sudo nix run nix-darwin/master#darwin-rebuild -- switch
+sudo -i nix run nix-darwin/master#darwin-rebuild -- switch
 # To use Nixpkgs 25.05:
-sudo nix run nix-darwin/nix-darwin-25.05#darwin-rebuild -- switch
+sudo -i nix run nix-darwin/nix-darwin-25.05#darwin-rebuild -- switch
 ```
 
 ### Step 3. Using `nix-darwin`
@@ -108,7 +108,7 @@ sudo nix run nix-darwin/nix-darwin-25.05#darwin-rebuild -- switch
 After installing, you can run `darwin-rebuild` to apply changes to your system:
 
 ```bash
-sudo darwin-rebuild switch
+sudo -i darwin-rebuild switch
 ```
 
 #### Using flake inputs
@@ -142,11 +142,11 @@ Copy the [simple](./modules/examples/simple.nix) example to `/etc/nix-darwin/con
 
 ```bash
 # If you use Nixpkgs unstable (the default):
-sudo nix-channel --add https://github.com/nix-darwin/nix-darwin/archive/master.tar.gz darwin
+sudo -i nix-channel --add https://github.com/nix-darwin/nix-darwin/archive/master.tar.gz darwin
 # If you use Nixpkgs 25.05:
-sudo nix-channel --add https://github.com/nix-darwin/nix-darwin/archive/nix-darwin-25.05.tar.gz darwin
+sudo -i nix-channel --add https://github.com/nix-darwin/nix-darwin/archive/nix-darwin-25.05.tar.gz darwin
 
-sudo nix-channel --update
+sudo -i nix-channel --update
 ```
 
 ### Step 3. Installing `nix-darwin`
@@ -155,7 +155,7 @@ To install `nix-darwin`, you can just run `darwin-rebuild switch` to install nix
 
 ```bash
 nix-build '<darwin>' -A darwin-rebuild
-sudo ./result/bin/darwin-rebuild switch -I darwin-config=/etc/nix-darwin/configuration.nix
+sudo -i ./result/bin/darwin-rebuild switch -I darwin-config=/etc/nix-darwin/configuration.nix
 ```
 
 ### Step 4. Using `nix-darwin`
@@ -163,7 +163,7 @@ sudo ./result/bin/darwin-rebuild switch -I darwin-config=/etc/nix-darwin/configu
 After installing, you can run `darwin-rebuild` to apply changes to your system:
 
 ```bash
-sudo darwin-rebuild switch
+sudo -i darwin-rebuild switch
 ```
 
 ### Step 5. Updating `nix-darwin`
@@ -171,7 +171,7 @@ sudo darwin-rebuild switch
 You can update Nixpkgs and `nix-darwin` using the following command:
 
 ```bash
-sudo nix-channel --update
+sudo -i nix-channel --update
 ```
 </details>
 
@@ -186,13 +186,13 @@ The documentation is also available as manpages by running `man 5 configuration.
 To run the latest version of the uninstaller, you can run the following command:
 
 ```
-sudo nix --extra-experimental-features "nix-command flakes" run nix-darwin#darwin-uninstaller
+sudo -i nix --extra-experimental-features "nix-command flakes" run nix-darwin#darwin-uninstaller
 ```
 
 If that command doesn't work for you, you can try the locally installed uninstaller:
 
 ```
-sudo darwin-uninstaller
+sudo -i darwin-uninstaller
 ```
 
 ## Tests
@@ -218,7 +218,7 @@ flag can also be used to override darwin-config or nixpkgs, for more
 information on the `-I` flag look at the nix-build [manpage](https://nixos.org/manual/nix/stable/command-ref/nix-build.html).
 
 ```bash
-sudo darwin-rebuild switch -I darwin=.
+sudo -i darwin-rebuild switch -I darwin=.
 ```
 
 If you're adding a module, please add yourself to `meta.maintainers`, for example
