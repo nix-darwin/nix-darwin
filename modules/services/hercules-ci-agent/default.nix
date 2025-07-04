@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 let
@@ -33,7 +38,10 @@ in
     launchd.daemons.hercules-ci-agent = {
       script = "exec ${cfg.package}/bin/hercules-ci-agent --config ${cfg.tomlFile}";
 
-      path = [ config.nix.package config.environment.systemPath ];
+      path = [
+        config.nix.package
+        config.environment.systemPath
+      ];
       environment = {
         NIX_SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
       };
@@ -60,8 +68,14 @@ in
     nix.settings.trusted-users = [ "_hercules-ci-agent" ];
     services.hercules-ci-agent.settings.nixUserIsTrusted = true;
 
-    users.knownGroups = [ "hercules-ci-agent" "_hercules-ci-agent" ];
-    users.knownUsers = [ "hercules-ci-agent" "_hercules-ci-agent" ];
+    users.knownGroups = [
+      "hercules-ci-agent"
+      "_hercules-ci-agent"
+    ];
+    users.knownUsers = [
+      "hercules-ci-agent"
+      "_hercules-ci-agent"
+    ];
 
     users.users._hercules-ci-agent = {
       uid = mkDefault 399;

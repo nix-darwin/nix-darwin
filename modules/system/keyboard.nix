@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -47,7 +52,7 @@ in
     system.keyboard.userKeyMapping = mkOption {
       internal = true;
       type = types.listOf (types.attrsOf types.int);
-      default = [];
+      default = [ ];
       description = ''
         List of keyboard mappings to apply, for more information see
         <https://developer.apple.com/library/content/technotes/tn2450/_index.html>.
@@ -57,13 +62,23 @@ in
 
   config = {
 
-    warnings = mkIf (!cfg.enableKeyMapping && cfg.userKeyMapping != [])
-      [ "system.keyboard.enableKeyMapping is not enabled, keyboard mappings will not be configured." ];
+    warnings = mkIf (!cfg.enableKeyMapping && cfg.userKeyMapping != [ ]) [
+      "system.keyboard.enableKeyMapping is not enabled, keyboard mappings will not be configured."
+    ];
 
     system.keyboard.userKeyMapping = [
-      (mkIf cfg.remapCapsLockToControl { HIDKeyboardModifierMappingSrc = 30064771129; HIDKeyboardModifierMappingDst = 30064771296; })
-      (mkIf cfg.remapCapsLockToEscape { HIDKeyboardModifierMappingSrc = 30064771129; HIDKeyboardModifierMappingDst = 30064771113; })
-      (mkIf cfg.nonUS.remapTilde { HIDKeyboardModifierMappingSrc = 30064771172; HIDKeyboardModifierMappingDst = 30064771125; })
+      (mkIf cfg.remapCapsLockToControl {
+        HIDKeyboardModifierMappingSrc = 30064771129;
+        HIDKeyboardModifierMappingDst = 30064771296;
+      })
+      (mkIf cfg.remapCapsLockToEscape {
+        HIDKeyboardModifierMappingSrc = 30064771129;
+        HIDKeyboardModifierMappingDst = 30064771113;
+      })
+      (mkIf cfg.nonUS.remapTilde {
+        HIDKeyboardModifierMappingSrc = 30064771172;
+        HIDKeyboardModifierMappingDst = 30064771125;
+      })
       (mkIf cfg.swapLeftCommandAndLeftAlt {
         HIDKeyboardModifierMappingSrc = 30064771299;
         HIDKeyboardModifierMappingDst = 30064771298;

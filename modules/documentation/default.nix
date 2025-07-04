@@ -1,4 +1,11 @@
-{ config, lib, pkgs, baseModules, modules, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  baseModules,
+  modules,
+  ...
+}:
 
 with lib;
 
@@ -11,16 +18,21 @@ let
   regularConfig = config;
 
   argsModule = {
-    config._module.args = lib.mkForce (regularConfig._module.args // {
-      modules = [ ];
-    });
+    config._module.args = lib.mkForce (
+      regularConfig._module.args
+      // {
+        modules = [ ];
+      }
+    );
   };
 
-  /* For the purpose of generating docs, evaluate options with each derivation
+  /*
+    For the purpose of generating docs, evaluate options with each derivation
     in `pkgs` (recursively) replaced by a fake with path "\${pkgs.attribute.path}".
     It isn't perfect, but it seems to cover a vast majority of use cases.
     Caveat: even if the package is reached by a different means,
-    the path above will be shown and not e.g. `${config.services.foo.package}`. */
+    the path above will be shown and not e.g. `${config.services.foo.package}`.
+  */
   manual = import ../../doc/manual {
     inherit pkgs config;
     version = config.system.darwinVersion;
@@ -31,25 +43,31 @@ let
         scrubbedEval = import ../../eval-config.nix {
           inherit lib;
           modules = [ argsModule ];
-          specialArgs = { pkgs = scrubDerivations "pkgs" pkgs; };
+          specialArgs = {
+            pkgs = scrubDerivations "pkgs" pkgs;
+          };
         };
-        scrubDerivations = namePrefix: pkgSet: mapAttrs
-          (name: value:
-            let wholeName = "${namePrefix}.${name}"; in
+        scrubDerivations =
+          namePrefix: pkgSet:
+          mapAttrs (
+            name: value:
+            let
+              wholeName = "${namePrefix}.${name}";
+            in
             if isAttrs value then
               scrubDerivations wholeName value
               // (optionalAttrs (isDerivation value) { outPath = "\${${wholeName}}"; })
-            else value
-          )
-          pkgSet;
-      in scrubbedEval.options;
+            else
+              value
+          ) pkgSet;
+      in
+      scrubbedEval.options;
   };
 
-  helpScript = pkgs.writeScriptBin "darwin-help"
-    ''
-      #! ${pkgs.stdenv.shell} -e
-      open ${manual.manualHTMLIndex}
-    '';
+  helpScript = pkgs.writeScriptBin "darwin-help" ''
+    #! ${pkgs.stdenv.shell} -e
+    open ${manual.manualHTMLIndex}
+  '';
 in
 
 {
@@ -102,7 +120,10 @@ in
 
     environment.systemPackages = mkMerge [
       (mkIf cfg.man.enable [ manual.manpages ])
-      (mkIf cfg.doc.enable [ manual.manualHTML helpScript ])
+      (mkIf cfg.doc.enable [
+        manual.manualHTML
+        helpScript
+      ])
     ];
 
     system.build.manual = manual;

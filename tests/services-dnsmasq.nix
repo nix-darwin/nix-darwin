@@ -1,9 +1,14 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
-  dnsmasq = pkgs.runCommand "dnsmasq-0.0.0" {} "mkdir $out";
+  dnsmasq = pkgs.runCommand "dnsmasq-0.0.0" { } "mkdir $out";
 in
 
 {

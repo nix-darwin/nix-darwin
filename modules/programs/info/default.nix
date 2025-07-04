@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -19,7 +24,10 @@ in
 
     environment.systemPackages = [ pkgs.texinfoInteractive ];
 
-    environment.pathsToLink = [ "/info" "/share/info" ];
+    environment.pathsToLink = [
+      "/info"
+      "/share/info"
+    ];
     environment.extraOutputsToInstall = [ "info" ];
 
     environment.extraSetup = ''

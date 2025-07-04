@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -21,7 +26,6 @@ in
       description = "This option specifies the nix-index package to use.";
     };
   };
-
 
   config = mkIf config.programs.nix-index.enable {
 

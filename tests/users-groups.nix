@@ -1,15 +1,31 @@
-{ lib, config, pkgs, ... }:
+{
+  lib,
+  config,
+  pkgs,
+  ...
+}:
 
 {
-  users.knownGroups = [ "foo" "created.group" "deleted.group" ];
+  users.knownGroups = [
+    "foo"
+    "created.group"
+    "deleted.group"
+  ];
   users.groups.foo.gid = 42000;
   users.groups.foo.description = "Foo group";
-  users.groups.foo.members = [ "admin" "foo" ];
+  users.groups.foo.members = [
+    "admin"
+    "foo"
+  ];
 
   users.groups."created.group".gid = 42001;
   users.groups."unknown.group".gid = 42002;
 
-  users.knownUsers = [ "foo" "created.user" "deleted.user" ];
+  users.knownUsers = [
+    "foo"
+    "created.user"
+    "deleted.user"
+  ];
   users.users.foo.uid = 42000;
   users.users.foo.gid = 42000;
   users.users.foo.description = "Foo user";
@@ -39,7 +55,12 @@
     (! grep "dscl . -create ${lib.escapeShellArg "/Groups/deleted.group"}" ${config.out}/activate)
 
     echo "checking group membership in /activate" >&2
-    grep "dscl . -create ${lib.escapeShellArg "/Groups/foo"} GroupMembership ${lib.escapeShellArgs [ "admin" "foo" ]}" ${config.out}/activate
+    grep "dscl . -create ${lib.escapeShellArg "/Groups/foo"} GroupMembership ${
+      lib.escapeShellArgs [
+        "admin"
+        "foo"
+      ]
+    }" ${config.out}/activate
     grep "dscl . -create ${lib.escapeShellArg "/Groups/created.group"} GroupMembership" ${config.out}/activate
 
     # checking unknown group in /activate
@@ -48,10 +69,40 @@
     (! grep "dscl . -delete ${lib.escapeShellArg "/Groups/unknown.group"}" ${config.out}/activate)
 
     # checking user creation in /activate
-    grep "sysadminctl -addUser ${lib.escapeShellArgs [ "foo" "-UID" 42000 "-GID" 42000 "-fullName" "Foo user" "-home" "/Users/foo" "-shell" "/run/current-system/sw/bin/bash" ]}" ${config.out}/activate
+    grep "sysadminctl -addUser ${
+      lib.escapeShellArgs [
+        "foo"
+        "-UID"
+        42000
+        "-GID"
+        42000
+        "-fullName"
+        "Foo user"
+        "-home"
+        "/Users/foo"
+        "-shell"
+        "/run/current-system/sw/bin/bash"
+      ]
+    }" ${config.out}/activate
     grep "createhomedir -cu ${lib.escapeShellArg "foo"}" ${config.out}/activate
-    grep "sysadminctl -addUser ${lib.escapeShellArgs [ "created.user" "-UID" 42001 ]} .* ${lib.escapeShellArgs [ "-shell" "/usr/bin/false" ] }" ${config.out}/activate
-    grep "sysadminctl -addUser ${lib.escapeShellArg "created.user"} .* ${lib.escapeShellArgs [ "-home" "/var/empty" ]}" ${config.out}/activate
+    grep "sysadminctl -addUser ${
+      lib.escapeShellArgs [
+        "created.user"
+        "-UID"
+        42001
+      ]
+    } .* ${
+      lib.escapeShellArgs [
+        "-shell"
+        "/usr/bin/false"
+      ]
+    }" ${config.out}/activate
+    grep "sysadminctl -addUser ${lib.escapeShellArg "created.user"} .* ${
+      lib.escapeShellArgs [
+        "-home"
+        "/var/empty"
+      ]
+    }" ${config.out}/activate
     (! grep "dscl . -delete ${lib.escapeShellArg "/Users/created.user"}" ${config.out}/activate)
     (! grep "dscl . -delete ${lib.escapeShellArg "/Groups/created.user"}" ${config.out}/activate)
 

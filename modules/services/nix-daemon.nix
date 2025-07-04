@@ -3,7 +3,14 @@
 let
   cfg = config.services.nix-daemon;
 
-  inherit (lib) mkRemovedOptionModule mkDefault mkIf mkMerge mkOption types;
+  inherit (lib)
+    mkRemovedOptionModule
+    mkDefault
+    mkIf
+    mkMerge
+    mkOption
+    types
+    ;
 in
 
 {
@@ -52,17 +59,17 @@ in
 
       serviceConfig.KeepAlive = mkIf (!cfg.enableSocketListener) true;
 
-      serviceConfig.Sockets = mkIf cfg.enableSocketListener
-        { Listeners.SockType = "stream";
-          Listeners.SockPathName = "/nix/var/nix/daemon-socket/socket";
-        };
+      serviceConfig.Sockets = mkIf cfg.enableSocketListener {
+        Listeners.SockType = "stream";
+        Listeners.SockPathName = "/nix/var/nix/daemon-socket/socket";
+      };
 
       serviceConfig.EnvironmentVariables = mkMerge [
         config.nix.envVars
         {
-          NIX_SSL_CERT_FILE = mkIf
-            (config.environment.variables ? NIX_SSL_CERT_FILE)
-            (mkDefault config.environment.variables.NIX_SSL_CERT_FILE);
+          NIX_SSL_CERT_FILE = mkIf (config.environment.variables ? NIX_SSL_CERT_FILE) (
+            mkDefault config.environment.variables.NIX_SSL_CERT_FILE
+          );
           TMPDIR = mkIf (cfg.tempDir != null) cfg.tempDir;
           # FIXME: workaround for https://github.com/NixOS/nix/issues/2523
           OBJC_DISABLE_INITIALIZE_FORK_SAFETY = mkDefault "YES";

@@ -46,7 +46,7 @@ with lib;
       default = null;
       description = ''
         Hide items on desktop.
-        '';
+      '';
     };
 
     system.defaults.WindowManager.HideDesktop = mkOption {
@@ -93,8 +93,8 @@ with lib;
       type = types.nullOr types.bool;
       default = null;
       description = ''
-          Hide widgets on desktop.
-        '';
+        Hide widgets on desktop.
+      '';
     };
 
     system.defaults.WindowManager.StageManagerHideWidgets = mkOption {

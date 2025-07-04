@@ -3,20 +3,28 @@
   lib,
   pkgs,
   ...
-}: let
-  inherit (lib) maintainers mkEnableOption mkIf mkPackageOption mkOption types;
+}:
+let
+  inherit (lib)
+    maintainers
+    mkEnableOption
+    mkIf
+    mkPackageOption
+    mkOption
+    types
+    ;
 
   cfg = config.services.jankyborders;
   joinStrings = strings: builtins.concatStringsSep "," strings;
 
-  optionalArg = arg: value:
-    if value != null && value != ""
-    then
-      if lib.isList value
-      then lib.map (val: "${arg}=${val}") value
-      else ["${arg}=${value}"]
-    else [];
-in {
+  optionalArg =
+    arg: value:
+    if value != null && value != "" then
+      if lib.isList value then lib.map (val: "${arg}=${val}") value else [ "${arg}=${value}" ]
+    else
+      [ ];
+in
+{
   meta.maintainers = [
     maintainers.amsynist or "amsynist"
   ];
@@ -24,7 +32,7 @@ in {
   options.services.jankyborders = {
     enable = mkEnableOption "Enable the jankyborders service.";
 
-    package = mkPackageOption pkgs "jankyborders" {};
+    package = mkPackageOption pkgs "jankyborders" { };
 
     width = mkOption {
       type = types.float;
@@ -81,7 +89,10 @@ in {
     };
 
     order = mkOption {
-      type = types.enum [ "above" "below" ];
+      type = types.enum [
+        "above"
+        "below"
+      ];
       default = "below";
       example = "above";
       description = ''
@@ -108,8 +119,11 @@ in {
 
     blacklist = mkOption {
       type = types.listOf types.str;
-      default = [];
-      example = ["Safari" "kitty"];
+      default = [ ];
+      example = [
+        "Safari"
+        "kitty"
+      ];
       description = ''
         The applications specified here are excluded from being bordered.
         For example, blacklist = [ "Safari" "kitty" ] excludes Safari and kitty from being bordered.
@@ -118,8 +132,11 @@ in {
 
     whitelist = mkOption {
       type = types.listOf types.str;
-      default = [];
-      example = ["Arc" "USB Overdrive"];
+      default = [ ];
+      example = [
+        "Arc"
+        "USB Overdrive"
+      ];
       description = ''
         Once this list is populated, only applications listed here are considered for receiving a border.
         If the whitelist is empty (default) it is inactive.
@@ -130,11 +147,11 @@ in {
   config = mkIf cfg.enable {
     assertions = [
       {
-        assertion = !(cfg.blacklist != [] && cfg.whitelist != []);
+        assertion = !(cfg.blacklist != [ ] && cfg.whitelist != [ ]);
         message = "Cannot define both a blacklist and a whitelist for jankyborders.";
       }
     ];
-    environment.systemPackages = [cfg.package];
+    environment.systemPackages = [ cfg.package ];
 
     launchd.user.agents.jankyborders = {
       serviceConfig.ProgramArguments =
@@ -142,21 +159,13 @@ in {
           "${cfg.package}/bin/borders"
         ]
         ++ (optionalArg "width" (toString cfg.width))
-        ++ (optionalArg "hidpi" (
-          if cfg.hidpi
-          then "on"
-          else "off"
-        ))
+        ++ (optionalArg "hidpi" (if cfg.hidpi then "on" else "off"))
         ++ (optionalArg "active_color" cfg.active_color)
         ++ (optionalArg "inactive_color" cfg.inactive_color)
         ++ (optionalArg "background_color" cfg.background_color)
         ++ (optionalArg "style" cfg.style)
         ++ (optionalArg "blur_radius" (toString cfg.blur_radius))
-        ++ (optionalArg "ax_focus" (
-          if cfg.ax_focus
-          then "on"
-          else "off"
-        ))
+        ++ (optionalArg "ax_focus" (if cfg.ax_focus then "on" else "off"))
         ++ (optionalArg "blacklist" (joinStrings cfg.blacklist))
         ++ (optionalArg "whitelist" (joinStrings cfg.whitelist))
         ++ (optionalArg "order" cfg.order);

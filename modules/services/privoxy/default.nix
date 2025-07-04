@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -58,7 +63,7 @@ in
     launchd.user.agents.privoxy = {
       path = [ config.environment.systemPath ];
       command = ''
-      ${cfg.package}/bin/privoxy /etc/privoxy-config
+        ${cfg.package}/bin/privoxy /etc/privoxy-config
       '';
       serviceConfig.KeepAlive = true;
       managedBy = "services.privoxy.enable";

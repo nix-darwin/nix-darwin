@@ -5,7 +5,8 @@ with lib;
 let
   # Should only be used with options that previously used floats defined as strings.
   inherit (config.lib.defaults.types) floatWithDeprecationError;
-in {
+in
+{
   options = {
     system.defaults.NSGlobalDomain.AppleShowAllFiles = mkOption {
       type = types.nullOr types.bool;
@@ -32,7 +33,13 @@ in {
     };
 
     system.defaults.NSGlobalDomain.AppleFontSmoothing = mkOption {
-      type = types.nullOr (types.enum [ 0 1 2 ]);
+      type = types.nullOr (
+        types.enum [
+          0
+          1
+          2
+        ]
+      );
       default = null;
       description = ''
         Sets the level of font smoothing (sub-pixel font rendering).
@@ -61,7 +68,13 @@ in {
     };
 
     system.defaults.NSGlobalDomain.AppleKeyboardUIMode = mkOption {
-      type = types.nullOr (types.enum [ 0 2 3 ]);
+      type = types.nullOr (
+        types.enum [
+          0
+          2
+          3
+        ]
+      );
       default = null;
       description = ''
         Configures the keyboard control behavior. The default is 0.
@@ -89,7 +102,13 @@ in {
     };
 
     system.defaults.NSGlobalDomain.AppleShowScrollBars = mkOption {
-      type = types.nullOr (types.enum [ "WhenScrolling" "Automatic" "Always" ]);
+      type = types.nullOr (
+        types.enum [
+          "WhenScrolling"
+          "Automatic"
+          "Always"
+        ]
+      );
       default = null;
       description = ''
         When to show the scrollbars. Options are 'WhenScrolling', 'Automatic' and 'Always'.
@@ -185,7 +204,13 @@ in {
     };
 
     system.defaults.NSGlobalDomain.AppleWindowTabbingMode = mkOption {
-      type = types.nullOr (types.enum [ "manual" "always" "fullscreen" ]);
+      type = types.nullOr (
+        types.enum [
+          "manual"
+          "always"
+          "fullscreen"
+        ]
+      );
       default = null;
       description = ''
         Sets the window tabbing when opening a new document: 'manual', 'always', or 'fullscreen'. The default is 'fullscreen'.
@@ -209,7 +234,13 @@ in {
     };
 
     system.defaults.NSGlobalDomain.NSTableViewDefaultSizeMode = mkOption {
-      type = types.nullOr (types.enum [ 1 2 3 ]);
+      type = types.nullOr (
+        types.enum [
+          1
+          2
+          3
+        ]
+      );
       default = null;
       description = ''
         Sets the size of the finder sidebar icons: 1 (small), 2 (medium) or 3 (large). The default is 3.
@@ -400,7 +431,12 @@ in {
     };
 
     system.defaults.NSGlobalDomain.AppleMeasurementUnits = mkOption {
-      type = types.nullOr (types.enum [ "Centimeters" "Inches" ]);
+      type = types.nullOr (
+        types.enum [
+          "Centimeters"
+          "Inches"
+        ]
+      );
       default = null;
       description = ''
         Whether to use centimeters (metric) or inches (US, UK) as the measurement unit. The default is based on region settings.
@@ -408,7 +444,12 @@ in {
     };
 
     system.defaults.NSGlobalDomain.AppleMetricUnits = mkOption {
-      type = types.nullOr (types.enum [ 0 1 ]);
+      type = types.nullOr (
+        types.enum [
+          0
+          1
+        ]
+      );
       default = null;
       description = ''
         Whether to use the metric system. The default is based on region settings.
@@ -416,7 +457,12 @@ in {
     };
 
     system.defaults.NSGlobalDomain.AppleTemperatureUnit = mkOption {
-      type = types.nullOr (types.enum [ "Celsius" "Fahrenheit" ]);
+      type = types.nullOr (
+        types.enum [
+          "Celsius"
+          "Fahrenheit"
+        ]
+      );
       default = null;
       description = ''
         Whether to use Celsius or Fahrenheit. The default is based on region settings.

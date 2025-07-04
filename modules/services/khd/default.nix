@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -46,17 +51,24 @@ in
     environment.etc."khdrc".text = cfg.khdConfig;
 
     launchd.user.agents.khd = {
-      path = [ cfg.package config.environment.systemPath ];
+      path = [
+        cfg.package
+        config.environment.systemPath
+      ];
 
-      serviceConfig.ProgramArguments = [ "${cfg.package}/bin/khd" ]
-        ++ optionals (cfg.khdConfig != "") [ "-c" "/etc/khdrc" ];
+      serviceConfig.ProgramArguments =
+        [ "${cfg.package}/bin/khd" ]
+        ++ optionals (cfg.khdConfig != "") [
+          "-c"
+          "/etc/khdrc"
+        ];
       serviceConfig.KeepAlive = true;
       serviceConfig.ProcessType = "Interactive";
-      serviceConfig.Sockets.Listeners =
-        { SockServiceName = "3021";
-          SockType = "dgram";
-          SockFamily = "IPv4";
-        };
+      serviceConfig.Sockets.Listeners = {
+        SockServiceName = "3021";
+        SockType = "dgram";
+        SockFamily = "IPv4";
+      };
 
       managedBy = "services.khd.enable";
     };
