@@ -55,7 +55,9 @@ in
     "google-chrome"
     {
       name = "firefox";
-      args = { appdir = "~/my-apps/Applications"; };
+      args = {
+        appdir = "~/my-apps/Applications";
+      };
     }
     {
       name = "opera";

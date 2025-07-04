@@ -48,7 +48,7 @@ in
     knownSha256Hashes = mkOption {
       internal = true;
       type = types.listOf types.str;
-      default = [];
+      default = [ ];
     };
   };
 

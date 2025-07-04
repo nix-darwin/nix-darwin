@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -36,11 +41,11 @@ in
 
     services.dnsmasq.addresses = mkOption {
       type = types.attrs;
-      default = {};
+      default = { };
       description = "List of domains that will be redirected by the DNSmasq.";
       example = literalExpression ''
         { localhost = "127.0.0.1"; }
-        '';
+      '';
     };
   };
 
@@ -59,15 +64,17 @@ in
       serviceConfig.RunAtLoad = true;
     };
 
-    environment.etc = builtins.listToAttrs (builtins.map (domain: {
-      name = "resolver/${domain}";
-      value = {
-        enable = true;
-        text = ''
-          port ${toString cfg.port}
-          nameserver ${cfg.bind}
+    environment.etc = builtins.listToAttrs (
+      builtins.map (domain: {
+        name = "resolver/${domain}";
+        value = {
+          enable = true;
+          text = ''
+            port ${toString cfg.port}
+            nameserver ${cfg.bind}
           '';
-      };
-    }) (builtins.attrNames cfg.addresses));
+        };
+      }) (builtins.attrNames cfg.addresses)
+    );
   };
 }

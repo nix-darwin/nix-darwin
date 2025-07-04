@@ -1,10 +1,19 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
   cfg = config.services.chunkwm;
-  plugins = [ "border" "ffm" "tiling" ];
+  plugins = [
+    "border"
+    "ffm"
+    "tiling"
+  ];
 in
 
 {
@@ -43,7 +52,7 @@ in
     services.chunkwm.plugins.list = mkOption {
       type = types.listOf (types.enum plugins);
       default = plugins;
-      example = ["tiling"];
+      example = [ "tiling" ];
       description = "Chunkwm Plugins to enable.";
     };
 
@@ -114,15 +123,25 @@ in
         chunkc core::plugin_dir ${toString cfg.plugins.dir}
         chunkc core::hotload ${if cfg.hotload then "1" else "0"}
       ''
-        + concatMapStringsSep "\n" (p: "# Config for chunkwm-${p} plugin\n"+cfg.plugins.${p}.config or "# Nothing to configure") cfg.plugins.list
-        + concatMapStringsSep "\n" (p: "chunkc core::load "+p+".so") cfg.plugins.list
-        + "\n" + cfg.extraConfig
+      + concatMapStringsSep "\n" (
+        p: "# Config for chunkwm-${p} plugin\n" + cfg.plugins.${p}.config or "# Nothing to configure"
+      ) cfg.plugins.list
+      + concatMapStringsSep "\n" (p: "chunkc core::load " + p + ".so") cfg.plugins.list
+      + "\n"
+      + cfg.extraConfig
     );
 
     launchd.user.agents.chunkwm = {
-      path = [ cfg.package config.environment.systemPath ];
-      serviceConfig.ProgramArguments = [ "${getOutput "out" cfg.package}/bin/chunkwm" ]
-        ++ [ "-c" "/etc/chunkwmrc" ];
+      path = [
+        cfg.package
+        config.environment.systemPath
+      ];
+      serviceConfig.ProgramArguments =
+        [ "${getOutput "out" cfg.package}/bin/chunkwm" ]
+        ++ [
+          "-c"
+          "/etc/chunkwmrc"
+        ];
       serviceConfig.RunAtLoad = true;
       serviceConfig.KeepAlive = true;
       serviceConfig.ProcessType = "Interactive";

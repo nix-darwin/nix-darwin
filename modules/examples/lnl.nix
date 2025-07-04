@@ -1,4 +1,10 @@
-{ config, lib, inputs, pkgs, ... }:
+{
+  config,
+  lib,
+  inputs,
+  pkgs,
+  ...
+}:
 
 {
   system.primaryUser = "lnl";
@@ -32,27 +38,26 @@
   system.keyboard.enableKeyMapping = true;
   system.keyboard.remapCapsLockToControl = true;
 
-  environment.systemPackages =
-    [
-      config.programs.vim.package
+  environment.systemPackages = [
+    config.programs.vim.package
 
-      pkgs.awscli
-      pkgs.brotli
-      pkgs.ctags
-      pkgs.curl
-      pkgs.direnv
-      pkgs.entr
-      pkgs.fzf
-      pkgs.gettext
-      pkgs.git
-      pkgs.gnupg
-      pkgs.htop
-      pkgs.jq
-      pkgs.ripgrep
-      pkgs.shellcheck
+    pkgs.awscli
+    pkgs.brotli
+    pkgs.ctags
+    pkgs.curl
+    pkgs.direnv
+    pkgs.entr
+    pkgs.fzf
+    pkgs.gettext
+    pkgs.git
+    pkgs.gnupg
+    pkgs.htop
+    pkgs.jq
+    pkgs.ripgrep
+    pkgs.shellcheck
 
-      pkgs.qes
-    ];
+    pkgs.qes
+  ];
 
   services.yabai.enable = true;
   services.yabai.package = pkgs.yabai;
@@ -89,11 +94,17 @@
     log-lines = 128
   '';
 
-  nix.settings.trusted-public-keys = [ "cache.daiderd.com-1:R8KOWZ8lDaLojqD+v9dzXAqGn29gEzPTTbr/GIpCTrI=" ];
+  nix.settings.trusted-public-keys = [
+    "cache.daiderd.com-1:R8KOWZ8lDaLojqD+v9dzXAqGn29gEzPTTbr/GIpCTrI="
+  ];
   nix.settings.trusted-substituters = [ "https://d3i7ezr9vxxsfy.cloudfront.net" ];
 
   nix.settings.sandbox = true;
-  nix.settings.extra-sandbox-paths = [ "/private/tmp" "/private/var/tmp" "/usr/bin/env" ];
+  nix.settings.extra-sandbox-paths = [
+    "/private/tmp"
+    "/private/var/tmp"
+    "/usr/bin/env"
+  ];
 
   programs.nix-index.enable = true;
 
@@ -204,7 +215,6 @@
   programs.zsh.variables.cfg = "/etc/nix-darwin/configuration.nix";
   programs.zsh.variables.darwin = "$HOME/.nix-defexpr/darwin";
   programs.zsh.variables.nixpkgs = "$HOME/.nix-defexpr/nixpkgs";
-
 
   programs.zsh.promptInit = ''
     autoload -U promptinit && promptinit

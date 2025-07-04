@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -114,19 +119,27 @@ in
 
   };
 
-
   config = mkMerge [
     (mkIf cfg.client.enable {
       launchd.user.agents."synergy-client" = {
         path = [ config.environment.systemPath ];
-        serviceConfig.ProgramArguments = [
-          "${cfg.package}/bin/synergyc" "-f"
-        ] ++ optionals (cfg.client.tls.enable) [ "--enable-crypto" ]
-          ++ optionals (cfg.client.tls.cert != null) [ "--tls-cert" cfg.client.tls.cert ]
-          ++ optionals (cfg.client.screenName != "") [ "-n" cfg.client.screenName ]
+        serviceConfig.ProgramArguments =
+          [
+            "${cfg.package}/bin/synergyc"
+            "-f"
+          ]
+          ++ optionals (cfg.client.tls.enable) [ "--enable-crypto" ]
+          ++ optionals (cfg.client.tls.cert != null) [
+            "--tls-cert"
+            cfg.client.tls.cert
+          ]
+          ++ optionals (cfg.client.screenName != "") [
+            "-n"
+            cfg.client.screenName
+          ]
           ++ [
-          cfg.client.serverAddress
-        ];
+            cfg.client.serverAddress
+          ];
         serviceConfig.KeepAlive = true;
         serviceConfig.RunAtLoad = cfg.client.autoStart;
         serviceConfig.ProcessType = "Interactive";
@@ -137,12 +150,26 @@ in
     (mkIf cfg.server.enable {
       launchd.user.agents."synergy-server" = {
         path = [ config.environment.systemPath ];
-        serviceConfig.ProgramArguments = [
-          "${cfg.package}/bin/synergys" "-c" "${cfg.server.configFile}" "-f"
-        ] ++ optionals (cfg.server.tls.enable) [ "--enable-crypto" ]
-          ++ optionals (cfg.server.tls.cert != null) [ "--tls-cert" cfg.server.tls.cert ]
-          ++ optionals (cfg.server.screenName != "") [ "-n" cfg.server.screenName ]
-          ++ optionals (cfg.server.address != "") [ "-a" cfg.server.address ];
+        serviceConfig.ProgramArguments =
+          [
+            "${cfg.package}/bin/synergys"
+            "-c"
+            "${cfg.server.configFile}"
+            "-f"
+          ]
+          ++ optionals (cfg.server.tls.enable) [ "--enable-crypto" ]
+          ++ optionals (cfg.server.tls.cert != null) [
+            "--tls-cert"
+            cfg.server.tls.cert
+          ]
+          ++ optionals (cfg.server.screenName != "") [
+            "-n"
+            cfg.server.screenName
+          ]
+          ++ optionals (cfg.server.address != "") [
+            "-a"
+            cfg.server.address
+          ];
         serviceConfig.KeepAlive = true;
         serviceConfig.RunAtLoad = cfg.server.autoStart;
         serviceConfig.ProcessType = "Interactive";

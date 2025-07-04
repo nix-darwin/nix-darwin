@@ -1,20 +1,24 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
   cfg = config.services.spacebar;
 
-  toSpacebarConfig = opts:
-    concatStringsSep "\n" (mapAttrsToList
-      (p: v: "spacebar -m config ${p} ${toString v}") opts);
+  toSpacebarConfig =
+    opts: concatStringsSep "\n" (mapAttrsToList (p: v: "spacebar -m config ${p} ${toString v}") opts);
 
-  configFile = mkIf (cfg.config != {} || cfg.extraConfig != "")
-    "${pkgs.writeScript "spacebarrc" (
-      (if (cfg.config != {})
-       then "${toSpacebarConfig cfg.config}"
-       else "")
-      + optionalString (cfg.extraConfig != "") cfg.extraConfig)}";
+  configFile =
+    mkIf (cfg.config != { } || cfg.extraConfig != "")
+      "${pkgs.writeScript "spacebarrc" (
+        (if (cfg.config != { }) then "${toSpacebarConfig cfg.config}" else "")
+        + optionalString (cfg.extraConfig != "") cfg.extraConfig
+      )}";
 in
 
 {
@@ -32,7 +36,7 @@ in
 
     services.spacebar.config = mkOption {
       type = attrs;
-      default = {};
+      default = { };
       example = literalExpression ''
         {
           clock_format     = "%R";
@@ -61,8 +65,12 @@ in
     environment.systemPackages = [ cfg.package ];
 
     launchd.user.agents.spacebar = {
-      serviceConfig.ProgramArguments = [ "${cfg.package}/bin/spacebar" ]
-                                       ++ optionals (cfg.config != {} || cfg.extraConfig != "") [ "-c" configFile ];
+      serviceConfig.ProgramArguments =
+        [ "${cfg.package}/bin/spacebar" ]
+        ++ optionals (cfg.config != { } || cfg.extraConfig != "") [
+          "-c"
+          configFile
+        ];
 
       serviceConfig.KeepAlive = true;
       serviceConfig.RunAtLoad = true;

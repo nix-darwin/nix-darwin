@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -7,20 +12,18 @@ let
 
   cfg = config.programs.tmux;
 
-  tmux = pkgs.runCommand pkgs.tmux.name
-    { buildInputs = [ pkgs.makeWrapper ]; }
-    ''
-      source $stdenv/setup
+  tmux = pkgs.runCommand pkgs.tmux.name { buildInputs = [ pkgs.makeWrapper ]; } ''
+    source $stdenv/setup
 
-      mkdir -p $out/bin
-      makeWrapper ${pkgs.tmux}/bin/tmux $out/bin/tmux \
-        --set __ETC_BASHRC_SOURCED "" \
-        --set __ETC_ZPROFILE_SOURCED  "" \
-        --set __ETC_ZSHENV_SOURCED "" \
-        --set __ETC_ZSHRC_SOURCED "" \
-        --set __NIX_DARWIN_SET_ENVIRONMENT_DONE "" \
-        --add-flags -f --add-flags /etc/tmux.conf
-    '';
+    mkdir -p $out/bin
+    makeWrapper ${pkgs.tmux}/bin/tmux $out/bin/tmux \
+      --set __ETC_BASHRC_SOURCED "" \
+      --set __ETC_ZPROFILE_SOURCED  "" \
+      --set __ETC_ZSHENV_SOURCED "" \
+      --set __ETC_ZSHRC_SOURCED "" \
+      --set __NIX_DARWIN_SET_ENVIRONMENT_DONE "" \
+      --add-flags -f --add-flags /etc/tmux.conf
+  '';
 
   text = import ../lib/write-text.nix {
     inherit lib;
@@ -41,7 +44,9 @@ in
 {
   imports = [
     (mkRenamedOptionModule [ "programs" "tmux" "tmuxConfig" ] [ "programs" "tmux" "extraConfig" ])
-    (mkRemovedOptionModule [ "programs" "tmux" "defaultCommand" ] "Use `programs.tmux.extraConfig` to configure the default command instead. If unset, tmux will default to using your system configured login shell.")
+    (mkRemovedOptionModule [ "programs" "tmux" "defaultCommand" ]
+      "Use `programs.tmux.extraConfig` to configure the default command instead. If unset, tmux will default to using your system configured login shell."
+    )
   ];
   options = {
     programs.tmux.enable = mkOption {
@@ -88,7 +93,7 @@ in
     programs.tmux.tmuxOptions = mkOption {
       internal = true;
       type = types.attrsOf (types.submodule text);
-      default = {};
+      default = { };
     };
 
     programs.tmux.extraConfig = mkOption {
@@ -104,10 +109,10 @@ in
       "The programs.tmux.iTerm2 is no longer needed and doesn't do anything anymore"
     ];
 
-    environment.systemPackages =
-      [ # Include wrapped tmux package.
-        tmux
-      ];
+    environment.systemPackages = [
+      # Include wrapped tmux package.
+      tmux
+    ];
 
     environment.etc."tmux.conf".text = ''
       ${tmuxOptions}
@@ -149,23 +154,27 @@ in
       bind-key -n M-s run "tmux split-window -p 40 'tmux send-keys -t #{pane_id} \"$(${fzfTmuxSession})\"'"
     '';
 
-    programs.tmux.tmuxOptions.vim.text = mkIf cfg.enableVim (''
-      setw -g mode-keys vi
+    programs.tmux.tmuxOptions.vim.text = mkIf cfg.enableVim (
+      ''
+        setw -g mode-keys vi
 
-      bind h select-pane -L
-      bind j select-pane -D
-      bind k select-pane -U
-      bind l select-pane -R
-      bind s split-window -v -c '#{pane_current_path}'
-      bind v split-window -h -c '#{pane_current_path}'
+        bind h select-pane -L
+        bind j select-pane -D
+        bind k select-pane -U
+        bind l select-pane -R
+        bind s split-window -v -c '#{pane_current_path}'
+        bind v split-window -h -c '#{pane_current_path}'
 
-      bind-key -T copy-mode-vi p send-keys -X copy-pipe-and-cancel "tmux paste-buffer"
-      bind-key -T copy-mode-vi v send-keys -X begin-selection
-    '' + optionalString stdenv.isLinux ''
-      bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
-    '' + optionalString stdenv.isDarwin ''
-      bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "pbcopy"
-    '');
+        bind-key -T copy-mode-vi p send-keys -X copy-pipe-and-cancel "tmux paste-buffer"
+        bind-key -T copy-mode-vi v send-keys -X begin-selection
+      ''
+      + optionalString stdenv.isLinux ''
+        bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
+      ''
+      + optionalString stdenv.isDarwin ''
+        bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "pbcopy"
+      ''
+    );
 
   };
 }

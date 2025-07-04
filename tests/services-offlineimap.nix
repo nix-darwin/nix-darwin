@@ -1,9 +1,14 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
-  offlineimap = pkgs.runCommand "offlineimap-0.0.0" {} "mkdir -p $out";
+  offlineimap = pkgs.runCommand "offlineimap-0.0.0" { } "mkdir -p $out";
 in
 
 {

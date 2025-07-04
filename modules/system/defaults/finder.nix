@@ -149,26 +149,34 @@ in
     };
 
     system.defaults.finder.NewWindowTarget = mkOption {
-      type = types.nullOr (types.enum [
-        "Computer"
-        "OS volume"
-        "Home"
-        "Desktop"
-        "Documents"
-        "Recents"
-        "iCloud Drive"
-        "Other"
-      ]);
-      apply = key: if key == null then null else {
-        "Computer" = "PfCm";
-        "OS volume" = "PfVo";
-        "Home" = "PfHm";
-        "Desktop" = "PfDe";
-        "Documents" = "PfDo";
-        "Recents" = "PfAF";
-        "iCloud Drive" = "PfID";
-        "Other" = "PfLo";
-      }.${key};
+      type = types.nullOr (
+        types.enum [
+          "Computer"
+          "OS volume"
+          "Home"
+          "Desktop"
+          "Documents"
+          "Recents"
+          "iCloud Drive"
+          "Other"
+        ]
+      );
+      apply =
+        key:
+        if key == null then
+          null
+        else
+          {
+            "Computer" = "PfCm";
+            "OS volume" = "PfVo";
+            "Home" = "PfHm";
+            "Desktop" = "PfDe";
+            "Documents" = "PfDo";
+            "Recents" = "PfAF";
+            "iCloud Drive" = "PfID";
+            "Other" = "PfLo";
+          }
+          .${key};
       default = null;
       description = ''
         Change the default folder shown in Finder windows. "Other" corresponds to the value of
@@ -189,13 +197,15 @@ in
   };
 
   config = {
-    assertions = [{
-      assertion = cfg.NewWindowTargetPath != null -> cfg.NewWindowTarget == "PfLo";
-      message = "`system.defaults.finder.NewWindowTarget` should be set to `Other` when `NewWindowTargetPath` is non-null.";
-    }
-    {
-      assertion = cfg.NewWindowTarget == "PfLo" -> cfg.NewWindowTargetPath != null;
-      message = "`system.defaults.finder.NewWindowTargetPath` should be non-null when `NewWindowTarget` is set to `Other`.";
-    }];
+    assertions = [
+      {
+        assertion = cfg.NewWindowTargetPath != null -> cfg.NewWindowTarget == "PfLo";
+        message = "`system.defaults.finder.NewWindowTarget` should be set to `Other` when `NewWindowTargetPath` is non-null.";
+      }
+      {
+        assertion = cfg.NewWindowTarget == "PfLo" -> cfg.NewWindowTargetPath != null;
+        message = "`system.defaults.finder.NewWindowTargetPath` should be non-null when `NewWindowTarget` is set to `Other`.";
+      }
+    ];
   };
 }

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -18,7 +23,8 @@ let
       [
         pkgs.gnugrep
         pkgs.coreutils
-      ] ++ lib.optionals config.nix.enable [ config.nix.package ]
+      ]
+      ++ lib.optionals config.nix.enable [ config.nix.package ]
     )
     + lib.optionalString (!config.nix.enable) ''
       $(
@@ -48,7 +54,7 @@ in
     system.activationScripts = mkOption {
       internal = true;
       type = types.attrsOf (types.submodule script);
-      default = {};
+      default = { };
       description = ''
         A set of shell script fragments that are executed when a NixOS
         system configuration is activated.  Examples are updating

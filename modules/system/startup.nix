@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.system.startup;
@@ -26,6 +31,8 @@ in
   };
 
   config = {
-    system.nvram.variables."StartupMute" = lib.mkIf (cfg.chime != null) (if cfg.chime then "%00" else "%01");
+    system.nvram.variables."StartupMute" = lib.mkIf (cfg.chime != null) (
+      if cfg.chime then "%00" else "%01"
+    );
   };
 }

@@ -3,10 +3,12 @@
   config,
   pkgs,
   ...
-}: let
+}:
+let
   cfg = config.programs.direnv;
-  format = pkgs.formats.toml {};
-in {
+  format = pkgs.formats.toml { };
+in
+{
   meta.maintainers = [
     lib.maintainers.mattpolzin or "mattpolzin"
   ];
@@ -17,7 +19,7 @@ in {
       integration.
     '';
 
-    package = lib.mkPackageOption pkgs "direnv" {};
+    package = lib.mkPackageOption pkgs "direnv" { };
 
     finalPackage = lib.mkOption {
       type = lib.types.package;
@@ -58,12 +60,12 @@ in {
           default = true;
         };
 
-      package = lib.mkPackageOption pkgs "nix-direnv" {};
+      package = lib.mkPackageOption pkgs "nix-direnv" { };
     };
 
     settings = lib.mkOption {
       inherit (format) type;
-      default = {};
+      default = { };
       example = lib.literalExpression ''
         {
           global = {
@@ -83,7 +85,7 @@ in {
       direnv = {
         finalPackage = pkgs.symlinkJoin {
           inherit (cfg.package) name;
-          paths = [cfg.package];
+          paths = [ cfg.package ];
           # direnv has a fish library which automatically sources direnv for some reason
           postBuild = ''
             rm -rf "$out/share/fish"
@@ -127,7 +129,7 @@ in {
         DIRENV_CONFIG = "/etc/direnv";
       };
       etc = {
-        "direnv/direnv.toml".source = lib.mkIf (cfg.settings != {}) (
+        "direnv/direnv.toml".source = lib.mkIf (cfg.settings != { }) (
           format.generate "direnv.toml" cfg.settings
         );
         "direnv/direnvrc".text = ''
