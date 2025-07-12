@@ -84,6 +84,7 @@ in {
   tests.environment-terminfo = makeTest ./tests/environment-terminfo.nix;
   tests.homebrew = makeTest ./tests/homebrew.nix;
   tests.launchd-daemons = makeTest ./tests/launchd-daemons.nix;
+  tests.launchd-daemons-cleanup = makeTest ./tests/launchd-daemons-cleanup.nix;
   tests.launchd-setenv = makeTest ./tests/launchd-setenv.nix;
   tests.networking-hostname = makeTest ./tests/networking-hostname.nix;
   tests.networking-networkservices = makeTest ./tests/networking-networkservices.nix;
