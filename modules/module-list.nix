@@ -66,6 +66,7 @@
   ./services/buildkite-agents.nix
   ./services/chunkwm.nix
   ./services/cachix-agent.nix
+  ./services/dictd.nix
   ./services/dnsmasq.nix
   ./services/dnscrypt-proxy.nix
   ./services/emacs.nix
