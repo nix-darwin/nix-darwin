@@ -266,7 +266,8 @@ in {
         If you press and hold certain keyboard keys when in a text area, the key’s character begins to repeat.
         For example, the Delete key continues to remove text for as long as you hold it down.
 
-        This sets how long you must hold down the key before it starts repeating.
+        This sets how long you must hold down the key before it starts repeating. Slider ticks in
+        "System Preferences" correspond to values 120, 94, 68, 30, 25, and 15.
       '';
     };
 
@@ -321,13 +322,8 @@ in {
       description = ''
         Apple menu > System Preferences > Sound
 
-        Sets the beep/alert volume level from 0.000 (muted) to 1.000 (100% volume).
-
-        75% = 0.7788008
-
-        50% = 0.6065307
-
-        25% = 0.4723665
+        Sets the beep/alert volume level. Slider ticks in "System Preferences" correspond to values
+        0.0, 0.4723665, 0.6065307, 0.7788008, and 1.0.
       '';
     };
 
@@ -362,7 +358,9 @@ in {
       type = types.nullOr floatWithDeprecationError;
       default = null;
       description = ''
-        Configures the trackpad tracking speed (0 to 3). The default is "1".
+        Sets the trackpad tracking speed. Found in the "Trackpad" section of
+        "System Preferences". Slider ticks in "System Preferences" correspond to
+        values 0.0, 0.125, 0.5, 0.6875, 0.875, 1.0, 1.5, 2.0, 2.5, and 3.0.
       '';
     };
 
@@ -388,6 +386,8 @@ in {
       example = 1.0;
       description = ''
         Set the spring loading delay for directories. The default is given in the example.
+        Slider ticks in "System Preferences" correspond to values 1.0, 0.83333, 0.66667,
+        0.5, 0.33333, 0.16667, and 0.0.
       '';
     };
 
