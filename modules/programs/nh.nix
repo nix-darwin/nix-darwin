@@ -21,9 +21,11 @@ with lib;
       type = with types; nullOr str;
       default = null;
       description = ''
-        The path that will be used for the `NH_FLAKE` environment variable.
+        The path that will be used for the `NH_DARWIN_FLAKE` environment variable.
 
-        `NH_FLAKE` is used by nh as the default flake for performing actions, like `nh darwin switch`.
+        `NH_DARWIN_FLAKE` is used by nh as the default flake for performing actions, like
+        `nh darwin switch`. This must be a path to a directory containing a nix flake, not
+        the `flake.nix` file itself.
       '';
     };
 
