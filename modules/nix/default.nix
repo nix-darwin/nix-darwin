@@ -814,9 +814,12 @@ in
         { assertion = config.users.groups ? "nixbld" -> config.users.groups.nixbld.members != []; message = "refusing to remove all members from nixbld group, this would break nix"; }
 
         {
-          # Should be fixed in Lix by https://gerrit.lix.systems/c/lix/+/2100
+          # Should be fixed in Lix by https://gerrit.lix.systems/c/lix/+/2100, Nix by https://github.com/NixOS/nix/commit/d888846b68dd5fad998b84c5cb6246b1b63398cd
           # Lix 2.92.0 will set `VERSION_SUFFIX` to `""`; `lib.versionAtLeast "" "pre20241107"` will return `true`.
-          assertion = cfg.settings.auto-optimise-store -> (cfg.package.pname == "lix" && (isNixAtLeast "2.92.0" && versionAtLeast (strings.removePrefix "-" cfg.package.VERSION_SUFFIX) "pre20241107"));
+          assertion = cfg.settings.auto-optimise-store -> (
+            (cfg.package.pname == "lix" && (isNixAtLeast "2.92.0" && versionAtLeast (strings.removePrefix "-" cfg.package.VERSION_SUFFIX) "pre20241107"))
+            || (cfg.package.pname == "nix" && ((isNixAtLeast "2.31.3" && !isNixAtLeast "2.32") || isNixAtLeast "2.32.5" || isNixAtLeast "2.33"))
+          );
           message = "`nix.settings.auto-optimise-store` is known to corrupt the Nix Store, please use `nix.optimise.automatic` instead.";
         }
       ];
