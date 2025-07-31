@@ -7,6 +7,8 @@ let
 in
 
 {
+  system.primaryUser = "test-skhd-user";
+
   services.skhd.enable = true;
   services.skhd.package = skhd;
   services.skhd.skhdConfig = "alt + shift - r  :  chunkc quit";

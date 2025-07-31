@@ -64,6 +64,7 @@ in
         StandardErrorPath = cfg.logFile;
         EnvironmentVariables = {} // (optionalAttrs (cfg.ipfsPath != null) { IPFS_PATH = cfg.ipfsPath; });
       };
+      managedBy = "services.ipfs.enable";
     };
   };
 }

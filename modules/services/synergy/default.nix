@@ -130,6 +130,7 @@ in
         serviceConfig.KeepAlive = true;
         serviceConfig.RunAtLoad = cfg.client.autoStart;
         serviceConfig.ProcessType = "Interactive";
+        managedBy = "services.synergy.client.enable";
       };
     })
 
@@ -145,6 +146,7 @@ in
         serviceConfig.KeepAlive = true;
         serviceConfig.RunAtLoad = cfg.server.autoStart;
         serviceConfig.ProcessType = "Interactive";
+        managedBy = "services.synergy.server.enable";
       };
     })
   ];

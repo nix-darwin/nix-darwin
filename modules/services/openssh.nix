@@ -5,14 +5,25 @@ let
 in
 {
   options = {
-    services.openssh.enable = lib.mkOption {
-      type = lib.types.nullOr lib.types.bool;
-      default = null;
-      description = ''
-        Whether to enable Apple's built-in OpenSSH server.
+    services.openssh = {
+      enable = lib.mkOption {
+        type = lib.types.nullOr lib.types.bool;
+        default = null;
+        description = ''
+          Whether to enable Apple's built-in OpenSSH server.
 
-        The default is null which means let macOS manage the OpenSSH server.
-      '';
+          The default is null which means let macOS manage the OpenSSH server.
+        '';
+      };
+
+      extraConfig = lib.mkOption {
+        type = lib.types.lines;
+        default = "";
+        description = ''
+          Extra configuration text loaded in {file}`sshd_config`.
+          See {manpage}`sshd_config(5)` for help.
+        '';
+      };
     };
   };
 
@@ -29,5 +40,7 @@ in
         launchctl disable system/com.openssh.sshd
       fi
     '');
+
+    environment.etc."ssh/sshd_config.d/100-nix-darwin.conf".text = cfg.extraConfig;
   };
 }

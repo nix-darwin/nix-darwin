@@ -7,6 +7,8 @@ let
 in
 
 {
+  system.primaryUser = "test-spotify-user";
+
   services.spotifyd.enable = true;
   services.spotifyd.package = spotifyd;
 

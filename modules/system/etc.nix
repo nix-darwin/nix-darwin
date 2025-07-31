@@ -39,7 +39,7 @@ in
         '') etc}
       '';
 
-    system.activationScripts.etcChecks.text = ''
+    system.activationScripts.checks.text = mkAfter ''
       declare -A etcSha256Hashes=(
         ${concatMapStringsSep "\n  "
           (attr:

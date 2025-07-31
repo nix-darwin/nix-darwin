@@ -9,6 +9,5 @@
     grep "scutil --set ComputerName 'EVE’s MacBook Pro'" ${config.out}/activate
     grep "scutil --set LocalHostName ${lib.escapeShellArg "EVE"}" ${config.out}/activate
     grep "scutil --set HostName ${lib.escapeShellArg "EVE"}" ${config.out}/activate
-    echo checking defaults write in ${config.out}/activate-user >&2
   '';
 }

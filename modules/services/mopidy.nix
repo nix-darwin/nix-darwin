@@ -41,6 +41,7 @@ in
         serviceConfig.Program = "${cfg.package}/bin/mopidy";
         serviceConfig.RunAtLoad = true;
         serviceConfig.KeepAlive = true;
+        managedBy = "services.mopidy.enable";
       };
     })
     (mkIf cfg.mediakeys.enable {
@@ -48,6 +49,7 @@ in
         serviceConfig.Program = "${cfg.package}/bin/mpdkeys";
         serviceConfig.RunAtLoad = true;
         serviceConfig.KeepAlive = true;
+        managedBy = "services.mopidy.mediakeys.enable";
       };
     })
   ];

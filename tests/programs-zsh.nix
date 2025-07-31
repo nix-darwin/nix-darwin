@@ -8,6 +8,7 @@
    programs.zsh.enable = true;
    programs.zsh.enableCompletion = true;
    programs.zsh.enableBashCompletion = false;
+   programs.zsh.enableAutosuggestions = true;
 
    programs.zsh.shellInit = "source /etc/zshenv.d/*.conf";
    programs.zsh.interactiveShellInit = "source /etc/zshrc.d/*.conf";
@@ -35,6 +36,8 @@
      grep 'autoload -U compinit && compinit' ${config.out}/etc/zshrc
      echo >&2 "checking bashcompinit in /etc/zshrc"
      (! grep 'bashcompinit' ${config.out}/etc/zshrc)
+     echo >&2 "checking zsh-autosuggestions in /etc/zshrc"
+     grep 'source ${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions/zsh-autosuggestions.zsh' ${config.out}/etc/zshrc
 
      echo >&2 "checking zprofile.d in /etc/zprofile"
      grep 'source /etc/zprofile.d/\*.conf' ${config.out}/etc/zprofile
