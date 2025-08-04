@@ -9,7 +9,7 @@ let
 
   toEnvironmentText = name: value: {
     name = "${value.serviceConfig.Label}.plist";
-    value.text = generators.toPlist { } value.serviceConfig;
+    value.text = generators.toPlist { escape = true; } value.serviceConfig;
   };
 
   launchdConfig = import ./launchd.nix;
