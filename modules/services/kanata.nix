@@ -49,8 +49,7 @@ let
           example = "danger-enable-cmd yes";
           description = ''
             Configuration of `defcfg` other than `macos-dev-names-include` (generated
-            from the devices option) and
-            `linux-continue-if-no-devs-found` (hardcoded to be yes).
+            from the devices option).
 
             ${upstreamDoc}
           '';
