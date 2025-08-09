@@ -9,7 +9,7 @@ let
 
   toEnvironmentText = name: value: {
     name = "${value.serviceConfig.Label}.plist";
-    value.text = generators.toPlist { } value.serviceConfig;
+    value.text = generators.toPlist { escape = true; } value.serviceConfig;
   };
 
   launchdConfig = import ./launchd.nix;
@@ -90,7 +90,7 @@ let
         serviceConfig.ProgramArguments = mkIf (config.command != "") [
           "/bin/sh"
           "-c"
-          "/bin/wait4path /nix/store &amp;&amp; exec ${config.command}"
+          "/bin/wait4path /nix/store && exec ${config.command}"
         ];
         serviceConfig.EnvironmentVariables = mkIf (env != {}) env;
       };

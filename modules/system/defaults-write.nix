@@ -6,7 +6,7 @@ let
   cfg = config.system.defaults;
 
   writeDefault = domain: key: value:
-    "defaults write ${domain} '${key}' $'${strings.escape [ "'" ] (generators.toPlist { } value)}'";
+    "defaults write ${domain} ${escapeShellArg key} ${escapeShellArg (generators.toPlist { escape = true; } value)}";
 
   defaultsToList = domain: attrs: mapAttrsToList (writeDefault domain) (filterAttrs (n: v: v != null) attrs);
   userDefaultsToList = domain: attrs: let
