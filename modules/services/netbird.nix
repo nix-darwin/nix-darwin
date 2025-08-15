@@ -73,8 +73,8 @@ let
         };
         interface = mkOption {
           type = types.str;
-          default = "utun${toString (8120 + (lib.lists.findFirstIndex (x: x == name) null (builtins.attrNames cfg.clients)))}";
-          description = "Name of the network interface managed by this client. Uses utun812+ prefix (leetspeak for bird) to avoid conflicts with system interfaces.";
+          default = "utun${toString (100 + (lib.lists.findFirstIndex (x: x == name) 0 (builtins.attrNames cfg.clients)))}";
+          description = "Name of the network interface managed by this client. Uses utun100+ prefix to avoid conflicts with system interfaces.";
         };
         config = mkOption {
           type = (pkgs.formats.json { }).type;
@@ -190,16 +190,25 @@ in
             # Create necessary directories
             mkdir -p ${paths.runtimeDir} ${paths.configDir} ${paths.configDirEtc}
             
+            echo "Debug: Created directories for ${clientCfg.name}"
+            echo "Debug: Config file: ${paths.configFile}"
+            echo "Debug: Config.d directory: ${paths.configDirEtc}"
+            
             # Initialize config.json if it doesn't exist
             if [ ! -f ${paths.configFile} ]; then
               echo '{}' > ${paths.configFile}
+              echo "Debug: Created empty config.json"
+            else
+              echo "Debug: Using existing config.json"
             fi
             
             # Show what's in config.d
-            ls -la ${paths.configDirEtc}/*.json 2>/dev/null
+            echo "Debug: Contents of config.d:"
+            ls -la ${paths.configDirEtc}/*.json 2>/dev/null || echo "Debug: No config.d files found"
             
             # Merge configuration files using jq (following NixOS pattern)
             if command -v jq >/dev/null 2>&1; then
+              echo "Debug: jq found, attempting to merge configs"
               # Create a temporary merged config
               jq -sS 'reduce .[] as $i ({}; . * $i)' \
                 ${paths.configFile} \
@@ -209,10 +218,16 @@ in
               # Update config if merge was successful
               if [ -f ${paths.configFile}.new ] && [ -s ${paths.configFile}.new ]; then
                 mv ${paths.configFile}.new ${paths.configFile}
+                echo "Debug: Config merged successfully"
+              else
+                echo "Debug: Config merge failed or produced empty result"
               fi
+            else
+              echo "Debug: jq not found, skipping config merge"
             fi
             
             # Show final config content
+            echo "Debug: Final config.json content:"
             cat ${paths.configFile}
             
             # Check if SetupKey is provided in the Nix configuration and automatically login if so
@@ -244,6 +259,7 @@ in
               wait $SERVICE_PID
             else
               # No SetupKey, just run the service normally
+              echo "Debug: No SetupKey found in Nix configuration, running service normally"
               exec ${clientCfg.package}/bin/netbird service run --config ${paths.configFile}
             fi
           '';
@@ -257,5 +273,24 @@ in
           };
         })
       )) cfg.clients);
+
+    # Ensure NetBird services are bootstrapped if missing (e.g., after manual bootout)
+    system.activationScripts.postActivation.text = lib.mkAfter (let
+      labelPrefix = config.launchd.labelPrefix;
+      enabledClients = lib.filterAttrs (n: t: t.enable) cfg.clients;
+      clientLabels = lib.mapAttrsToList (n: t: "${labelPrefix}.netbird-${t.name}") enabledClients;
+      defaultLabel = lib.optionals cfg.enable [ "${labelPrefix}.netbird" ];
+      allLabels = defaultLabel ++ clientLabels;
+      labelsString = lib.concatStringsSep " " allLabels;
+    in ''
+      for label in ${labelsString}; do
+        if ! /bin/launchctl print "system/''${label}" >/dev/null 2>&1; then
+          echo "bootstrapping netbird service ''${label}" >&2
+          /bin/launchctl bootstrap system "/Library/LaunchDaemons/''${label}.plist" || true
+          /bin/launchctl enable "system/''${label}" || true
+          /bin/launchctl kickstart -k "system/''${label}" || true
+        fi
+      done
+    '');
   };
 }
