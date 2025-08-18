@@ -79,19 +79,26 @@ let
         };
       };
 
-      config = {
+      config = let
+        keepAlive = (config.serviceConfig.KeepAlive != false && config.serviceConfig.KeepAlive != null);
+      in {
         command = mkIf (config.script != "") (pkgs.writeScript "${name}-start" ''
           #! ${stdenv.shell}
 
           ${config.script}
         '');
 
+        serviceConfig.QueueDirectories = mkIf keepAlive [ "/nix/store" ];
         serviceConfig.Label = mkDefault "${cfg.labelPrefix}.${name}";
-        serviceConfig.ProgramArguments = mkIf (config.command != "") [
-          "/bin/sh"
-          "-c"
-          "/bin/wait4path /nix/store &amp;&amp; exec ${config.command}"
-        ];
+        serviceConfig.ProgramArguments = mkIf (config.command != "") (
+          if keepAlive then [
+            "${config.command}"
+          ] else [
+            "/bin/sh"
+            "-c"
+            "/bin/wait4path /nix/store &amp;&amp; exec ${config.command}"
+          ]
+        );
         serviceConfig.EnvironmentVariables = mkIf (env != {}) env;
       };
     };
