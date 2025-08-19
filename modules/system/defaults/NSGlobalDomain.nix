@@ -5,8 +5,36 @@ with lib;
 let
   # Should only be used with options that previously used floats defined as strings.
   inherit (config.lib.defaults.types) floatWithDeprecationError;
-in {
+in
+{
   options = {
+    system.defaults.NSGlobalDomain.AppleActionOnDoubleClick = mkOption {
+      type = types.nullOr (
+        types.enum [
+          "Minimize"
+          "Maximise"
+          "Fill"
+          "None"
+        ]
+      );
+      apply =
+        key:
+        if key == null then
+          null
+        else
+          {
+            "Minimize" = "Minimize";
+            "Maximise" = "Zoom";
+            "Fill" = "Fill";
+            "None" = "None";
+          }
+          .${key};
+      default = null;
+      description = ''
+        Behaviour of double clicking a window's title bar.
+      '';
+    };
+
     system.defaults.NSGlobalDomain.AppleShowAllFiles = mkOption {
       type = types.nullOr types.bool;
       default = null;
