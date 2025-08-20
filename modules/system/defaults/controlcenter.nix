@@ -96,5 +96,19 @@
             24 = Hide icon in menu bar
         '';
     };
+
+        system.defaults.controlcenter.BatteryShowEnergyMode = lib.mkOption {
+        type = lib.types.nullOr lib.types.bool;
+        apply = v: if v == null then null else if v then 1 else 0;
+        default = null;
+        description = ''
+            Apple menu > System Settings > Control Center > Battery > Show Energy Mode
+
+            Show the Energy Mode toggle in menu bar. Default is null.
+
+            true = Display icon in the menu bar
+            false = Show energy mode when active
+        '';
+    };
   };
 }

@@ -140,6 +140,7 @@
   system.defaults.controlcenter.Display = false;
   system.defaults.controlcenter.FocusModes = false;
   system.defaults.controlcenter.NowPlaying = true;
+  system.defaults.controlcenter.BatteryShowEnergyMode = true;
   test = lib.strings.concatMapStringsSep "\n"
     (x: ''
       echo >&2 "checking ${x} defaults write in /activate"
