@@ -99,7 +99,6 @@
 
         system.defaults.controlcenter.BatteryShowEnergyMode = lib.mkOption {
         type = lib.types.nullOr lib.types.bool;
-        apply = v: if v == null then null else if v then 1 else 0;
         default = null;
         description = ''
             Apple menu > System Settings > Control Center > Battery > Show Energy Mode
