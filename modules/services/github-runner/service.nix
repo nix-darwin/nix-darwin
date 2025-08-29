@@ -76,7 +76,7 @@ in
 
   config.launchd.daemons = flip mapAttrs' config.services.github-runners (name: cfg:
     let
-      package = cfg.package.override (old: optionalAttrs (hasAttr "nodeRuntimes" old) { inherit (cfg) nodeRuntimes; });
+      package = cfg.package.override { inherit (cfg) nodeRuntimes; };
       stateDir = mkStateDir cfg;
       logDir = mkLogDir cfg;
       workDir = mkWorkDir cfg;
