@@ -50,6 +50,16 @@ in
       '';
     };
 
+    system.defaults.finder.FXPreferredGroupBy = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = ''
+        Change the default "Group By" option.
+        The options are: "Name", "Kind", "Application", "Date Last Opened", "Date Added", "Date Modified", "Date Created", "Size", and "Finder Tags".
+        The default is unset ("None").
+      '';
+    };
+
     system.defaults.finder.FXPreferredViewStyle = mkOption {
       type = types.nullOr types.str;
       default = null;
