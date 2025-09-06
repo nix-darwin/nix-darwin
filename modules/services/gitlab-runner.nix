@@ -1,7 +1,43 @@
 { config, lib, pkgs, ... }:
-with builtins;
-with lib;
 let
+  inherit (builtins)
+    hashString
+    map
+    substring
+    toJSON
+    toString
+    unsafeDiscardStringContext
+    ;
+
+  inherit (lib)
+    any
+    assertMsg
+    attrNames
+    attrValues
+    concatStringsSep
+    escapeShellArg
+    filterAttrs
+    hasPrefix
+    isStorePath
+    literalExpression
+    mapAttrs'
+    mapAttrsToList
+    mkDefault
+    mkEnableOption
+    mkIf
+    mkOption
+    mkPackageOption
+    mkRemovedOptionModule
+    mkRenamedOptionModule
+    nameValuePair
+    optional
+    optionalAttrs
+    optionals
+    teams
+    toShellVar
+    types
+    ;
+
   cfg = config.services.gitlab-runner;
   hasDocker = config.virtualisation.docker.enable;
   hashedServices = mapAttrs'
@@ -39,15 +75,20 @@ let
       ${concatStringsSep "\n" (mapAttrsToList (name: service: ''
         if echo "$NEW_SERVICES" | grep -xq ${name}; then
           bash -c ${escapeShellArg (concatStringsSep " \\\n " ([
-            "set -a && source ${service.registrationConfigFile} &&"
+            "set -a && source ${
+              if service.registrationConfigFile != null
+              then service.registrationConfigFile
+              else service.authenticationTokenConfigFile} &&"
             "gitlab-runner register"
             "--non-interactive"
             "--name ${name}"
             "--executor ${service.executor}"
             "--limit ${toString service.limit}"
             "--request-concurrency ${toString service.requestConcurrency}"
+          ]
+            ++ optional (service.authenticationTokenConfigFile == null)
             "--maximum-timeout ${toString service.maximumTimeout}"
-          ] ++ service.registrationFlags
+            ++ service.registrationFlags
             ++ optional (service.buildsDir != null)
             "--builds-dir ${service.buildsDir}"
             ++ optional (service.cloneUrl != null)
@@ -58,11 +99,11 @@ let
             "--pre-build-script ${service.preBuildScript}"
             ++ optional (service.postBuildScript != null)
             "--post-build-script ${service.postBuildScript}"
-            ++ optional (service.tagList != [ ])
+            ++ optional (service.authenticationTokenConfigFile == null && service.tagList != [ ])
             "--tag-list ${concatStringsSep "," service.tagList}"
-            ++ optional service.runUntagged
+            ++ optional (service.authenticationTokenConfigFile == null && service.runUntagged)
             "--run-untagged"
-            ++ optional service.protected
+            ++ optional (service.authenticationTokenConfigFile == null && service.protected)
             "--access-level ref_protected"
             ++ optional service.debugTraceDisabled
             "--debug-trace-disabled"
@@ -255,9 +296,14 @@ in
           # nix store will be readable in runner, might be insecure
           nix = {
             # File should contain at least these two variables:
-            # `CI_SERVER_URL`
-            # `REGISTRATION_TOKEN`
+            # - `CI_SERVER_URL`
+            # - `REGISTRATION_TOKEN`
+            #
+            # NOTE: Support for runner registration tokens will be removed in GitLab 18.0.
+            # Please migrate to runner authentication tokens soon. For reference, the example
+            # runners below this one are configured with authentication tokens instead.
             registrationConfigFile = "/run/secrets/gitlab-runner-registration";
+
             dockerImage = "alpine";
             dockerVolumes = [
               "/nix/store:/nix/store:ro"
@@ -296,8 +342,9 @@ in
           docker-images = {
             # File should contain at least these two variables:
             # `CI_SERVER_URL`
-            # `REGISTRATION_TOKEN`
-            registrationConfigFile = "/run/secrets/gitlab-runner-registration";
+            # `CI_SERVER_TOKEN`
+            authenticationTokenConfigFile = "/run/secrets/gitlab-runner-docker-images-token-env";
+
             dockerImage = "docker:stable";
             dockerVolumes = [
               "/var/run/docker.sock:/var/run/docker.sock"
@@ -310,8 +357,9 @@ in
           shell = {
             # File should contain at least these two variables:
             # `CI_SERVER_URL`
-            # `REGISTRATION_TOKEN`
-            registrationConfigFile = "/run/secrets/gitlab-runner-registration";
+            # `CI_SERVER_TOKEN`
+            authenticationTokenConfigFile = "/run/secrets/gitlab-runner-shell-token-env";
+
             executor = "shell";
             tagList = [ "shell" ];
           };
@@ -319,27 +367,58 @@ in
           default = {
             # File should contain at least these two variables:
             # `CI_SERVER_URL`
-            # `REGISTRATION_TOKEN`
-            registrationConfigFile = "/run/secrets/gitlab-runner-registration";
+            # `CI_SERVER_TOKEN`
+            authenticationTokenConfigFile = "/run/secrets/gitlab-runner-default-token-env";
             dockerImage = "debian:stable";
           };
         }
       '';
       type = types.attrsOf (types.submodule {
         options = {
+          authenticationTokenConfigFile = mkOption {
+            type = with types; nullOr path;
+            default = null;
+            description = ''
+              Absolute path to a file containing environment variables used for
+              gitlab-runner registrations with *runner authentication tokens*.
+              They replace the deprecated *runner registration tokens*, as
+              outlined in the [GitLab documentation].
+              A list of all supported environment variables can be found with
+              `gitlab-runner register --help`.
+              The ones you probably want to set are:
+              - `CI_SERVER_URL=<CI server URL>`
+              - `CI_SERVER_TOKEN=<runner authentication token secret>`
+              ::: {.warning}
+              Make sure to use a quoted absolute path,
+              or it is going to be copied to Nix Store.
+              :::
+              [GitLab documentation]: https://docs.gitlab.com/17.0/ee/ci/runners/new_creation_workflow.html#estimated-time-frame-for-planned-changes
+            '';
+          };
           registrationConfigFile = mkOption {
-            type = types.path;
+            type = with types; nullOr path;
+            default = null;
             description = ''
               Absolute path to a file with environment variables
-              used for gitlab-runner registration.
+              used for gitlab-runner registration with *runner registration
+              tokens*.
+
               A list of all supported environment variables can be found in
               `gitlab-runner register --help`.
 
-              Ones that you probably want to set is
+              The ones you probably want to set are:
+              - `CI_SERVER_URL=<CI server URL>`
+              - `REGISTRATION_TOKEN=<registration secret>`
 
-              `CI_SERVER_URL=<CI server URL>`
+              Support for *runner registration tokens* is deprecated since
+              GitLab 16.0, has been disabled by default in GitLab 17.0 and
+              will be removed in GitLab 18.0, as outlined in the
+              [GitLab documentation]. Please consider migrating to
+              [runner authentication tokens] and check the documentation on
+              {option}`services.gitlab-runner.services.<name>.authenticationTokenConfigFile`.
 
-              `REGISTRATION_TOKEN=<registration secret>`
+              [GitLab documentation]: https://docs.gitlab.com/17.0/ee/ci/runners/new_creation_workflow.html#estimated-time-frame-for-planned-changes
+              [runner authentication tokens]: https://docs.gitlab.com/17.0/ee/ci/runners/new_creation_workflow.html#the-new-runner-registration-workflow
             '';
           };
           registrationFlags = mkOption {
@@ -470,6 +549,9 @@ in
             default = [ ];
             description = ''
               Tag list.
+
+              This option has no effect for runners registered with an runner
+              authentication tokens and will be ignored.
             '';
           };
           runUntagged = mkOption {
@@ -478,6 +560,9 @@ in
             description = ''
               Register to run untagged builds; defaults to
               `true` when {option}`tagList` is empty.
+
+              This option has no effect for runners registered with an runner
+              authentication tokens and will be ignored.
             '';
           };
           limit = mkOption {
@@ -501,6 +586,9 @@ in
             description = ''
               What is the maximum timeout (in seconds) that will be set for
               job when using this Runner. 0 (default) simply means don't limit.
+
+              This option has no effect for runners registered with an runner
+              authentication tokens and will be ignored.
             '';
           };
           protected = mkOption {
@@ -509,6 +597,9 @@ in
             description = ''
               When set to true Runner will only run on pipelines
               triggered on protected branches.
+
+              This option has no effect for runners registered with an runner
+              authentication tokens and will be ignored.
             '';
           };
           debugTraceDisabled = mkOption {
@@ -523,13 +614,14 @@ in
       });
     };
   };
-  config = mkIf cfg.enable {
 
+  config = mkIf cfg.enable {
     users.users.gitlab-runner =
       { name = "gitlab-runner";
         uid = mkDefault 532;
         # gid = mkDefault config.users.groups.gitlab-runner.gid;
         home = mkDefault "/var/lib/gitlab-runner";
+        createHome = true;
         shell = "/bin/bash";
         description = "Gitlab agent user";
       };
@@ -545,8 +637,68 @@ in
     #  chown ${toString user.uid}:${toString user.gid} '${user.home}'
     #'';
 
+    assertions =
+      mapAttrsToList (name: serviceConfig: {
+        assertion = serviceConfig.registrationConfigFile == null || serviceConfig.authenticationTokenConfigFile == null;
+        message = "`services.gitlab-runner.${name}.registrationConfigFile` and `services.gitlab-runner.services.${name}.authenticationTokenConfigFile` are mutually exclusive.";
+      }) cfg.services;
 
-    warnings = optional (cfg.configFile != null) "services.gitlab-runner.`configFile` is deprecated, please use services.gitlab-runner.`services`.";
+    warnings =
+      mapAttrsToList
+        (name: serviceConfig: "services.gitlab-runner.services.${name}.`registrationConfigFile` points to a file in Nix Store. You should use quoted absolute path to prevent this.")
+        (filterAttrs (name: serviceConfig: isStorePath serviceConfig.registrationConfigFile) cfg.services)
+      ++ mapAttrsToList
+        (name: serviceConfig: "services.gitlab-runner.services.${name}.`authenticationTokenConfigFile` points to a file in Nix Store. You should use quoted absolute path to prevent this.")
+        (filterAttrs (name: serviceConfig: isStorePath serviceConfig.authenticationTokenConfigFile) cfg.services)
+      ++ mapAttrsToList
+        (name: serviceConfig: ''
+          Runner registration tokens have been deprecated and disabled by default in GitLab >= 17.0.
+          Consider migrating to runner authentication tokens by setting `services.gitlab-runner.services.${name}.authenticationTokenConfigFile`.
+          https://docs.gitlab.com/17.0/ee/ci/runners/new_creation_workflow.html''
+        )
+        (
+          filterAttrs (name: serviceConfig:
+            serviceConfig.authenticationTokenConfigFile == null
+          ) cfg.services
+        )
+      ++ mapAttrsToList
+        (name: serviceConfig: ''
+          `services.gitlab-runner.services.${name}.protected` with runner authentication tokens has no effect and will be ignored. Please remove it from your configuration.''
+        )
+        (
+          filterAttrs (name: serviceConfig:
+            serviceConfig.authenticationTokenConfigFile != null && serviceConfig.protected == true
+          ) cfg.services
+        )
+      ++ mapAttrsToList
+        (name: serviceConfig: ''
+          `services.gitlab-runner.services.${name}.runUntagged` with runner authentication tokens has no effect and will be ignored. Please remove it from your configuration.''
+        )
+        (
+          filterAttrs (name: serviceConfig:
+            serviceConfig.authenticationTokenConfigFile != null && serviceConfig.runUntagged == true
+          ) cfg.services
+        )
+      ++ mapAttrsToList
+        (name: v: ''
+          `services.gitlab-runner.services.${name}.maximumTimeout` with runner authentication tokens has no effect and will be ignored. Please remove it from your configuration.''
+        )
+        (
+          filterAttrs (name: serviceConfig:
+            serviceConfig.authenticationTokenConfigFile != null && serviceConfig.maximumTimeout != 0
+          ) cfg.services
+        )
+      ++ mapAttrsToList
+        (name: v: ''
+          `services.gitlab-runner.services.${name}.tagList` with runner authentication tokens has no effect and will be ignored. Please remove it from your configuration.''
+        )
+        (
+          filterAttrs (serviceName: serviceConfig:
+            serviceConfig.authenticationTokenConfigFile != null && serviceConfig.tagList != [ ]
+          ) cfg.services
+        )
+      ;
+
     environment.systemPackages = [ cfg.package ];
 
     launchd.daemons.gitlab-runner = {
@@ -554,45 +706,48 @@ in
         HOME = "${config.users.users.gitlab-runner.home}";
         NIX_REMOTE = "daemon";
         NIX_SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-      };
-      path = with pkgs; [
-        bash
-        gawk
-        jq
-        moreutils
-        yq
-        # util-linux
-        cfg.package
-        coreutils
-        gnugrep
-        gnused
-      ] ++ cfg.extraPackages;
+      } // (if config.nix.useDaemon then { NIX_REMOTE = "daemon"; } else { });
 
-        script = ''
-            ${configureScript}/bin/gitlab-runner-configure && ${startScript}/bin/gitlab-runner-start
-        '';
+      path =
+        (with pkgs; [
+          bash
+          gawk
+          jq
+          moreutils
+          remarshal
+          # util-linux
+          coreutils
+          gnugrep
+          gnused
+        ])
+        ++ [ cfg.package ]
+        ++ cfg.extraPackages;
 
-        serviceConfig = {
-            ProcessType = "Interactive";
-            ThrottleInterval = 30;
+      script = ''
+        ${configureScript}/bin/gitlab-runner-configure && ${startScript}/bin/gitlab-runner-start
+      '';
 
-          # StandardOutPath = "/var/lib/gitlab-runner/out.log";
-          # StandardErrorPath = "/var/lib/gitlab-runner/err.log";
-          # The combination of KeepAlive.NetworkState and WatchPaths
-          # will ensure that buildkite-agent is started on boot, but
-          # after networking is available (so the hostname is
-          # correct).
-          RunAtLoad = true;
+      serviceConfig = {
+        ProcessType = "Interactive";
+        ThrottleInterval = 30;
+
+        # StandardOutPath = "/var/lib/gitlab-runner/out.log";
+        # StandardErrorPath = "/var/lib/gitlab-runner/err.log";
+        # The combination of KeepAlive.NetworkState and WatchPaths
+        # will ensure that buildkite-agent is started on boot, but
+        # after networking is available (so the hostname is
+        # correct).
+        RunAtLoad = true;
         #   KeepAlive.NetworkState = true;
-          WatchPaths = [
-            "/etc/resolv.conf"
-            "/Library/Preferences/SystemConfiguration/NetworkInterfaces.plist"
-          ];
+        WatchPaths = [
+          "/etc/resolv.conf"
+          "/Library/Preferences/SystemConfiguration/NetworkInterfaces.plist"
+        ];
 
-          GroupName = "gitlab-runner";
-          UserName  = "gitlab-runner";
-          WorkingDirectory = config.users.users.gitlab-runner.home;
-        };
+        GroupName = "gitlab-runner";
+        UserName = "gitlab-runner";
+        WorkingDirectory = config.users.users.gitlab-runner.home;
+      };
 
     };
     # systemd.services.gitlab-runner = {
