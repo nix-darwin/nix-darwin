@@ -81,6 +81,12 @@
         they will be created with the shell `/usr/bin/false` to prevent
         interactive login. If the user already exists, the value is
         considered managed by macOS and `nix-darwin` will not change it.
+
+        To ensure consistent user management, also add this user to
+        {option}`users.knownUsers` and explicitly configure their UID, for example:
+        ```
+        users.users.<name>.uid = 501;
+        ```
       '';
     };
 
