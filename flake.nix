@@ -51,7 +51,9 @@
     };
 
     overlays.default = final: prev: {
-      inherit (prev.callPackage ./pkgs/nix-tools { }) darwin-rebuild darwin-option darwin-version;
+      inherit (prev.callPackage ./pkgs/nix-tools {
+        nixPackage = prev.nix;
+      }) darwin-rebuild darwin-option darwin-version;
 
       darwin-uninstaller = prev.callPackage ./pkgs/darwin-uninstaller { };
     };
