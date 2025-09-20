@@ -113,7 +113,7 @@
 
 
           ${lib.getExe pkgs.rsync} "''${rsyncFlags[@]}" ${config.system.build.applications}/Applications/ "$targetFolder"
-      	  if [ -d "${config.system.build.applications}/Library/Application Support" ]; then
+      	  if [ -d "${config.system.build.applications}/Library/Application Support"  || -e "${config.system.build.applications}/Library/Application Support" ]; then
 
 
            echo "Setting up library paths for apps" >&2
