@@ -18,6 +18,11 @@ launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user
 <plist version="1.0">
 <true/>
 </plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g AppleIconAppearanceTheme '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<string>DarkRegular</string>
+</plist>'
 launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write -g AppleKeyboardUIMode '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
