@@ -59,56 +59,85 @@
     system.build.applications = pkgs.buildEnv {
       name = "system-applications";
       paths = config.environment.systemPackages;
-      pathsToLink = "/Applications";
+      pathsToLink = [
+        "/Applications"
+        "/Library"
+      ];
     };
 
     system.activationScripts.applications.text = ''
-      # Set up applications.
-      echo "setting up /Applications/Nix Apps..." >&2
+            # Set up applications.
+            echo "setting up /Applications/Nix Apps..." >&2
 
-      ourLink () {
-        local link
-        link=$(readlink "$1")
-        [ -L "$1" ] && [ "''${link#*-}" = 'system-applications/Applications' ]
-      }
+            ourLink () {
+              local link
+              link=$(readlink "$1")
+              [ -L "$1" ] && [ "''${link#*-}" = 'system-applications/Applications' ]
+            }
 
-      ${lib.optionalString (config.system.primaryUser != null) ''
-        # Clean up for links created at the old location in HOME
-        # TODO: Remove this in 25.11.
-        if ourLink ~${config.system.primaryUser}/Applications; then
-          rm ~${config.system.primaryUser}/Applications
-        elif ourLink ~${config.system.primaryUser}/Applications/'Nix Apps'; then
-          rm ~${config.system.primaryUser}/Applications/'Nix Apps'
-        fi
-      ''}
+            ${lib.optionalString (config.system.primaryUser != null) ''
+              # Clean up for links created at the old location in HOME
+              # TODO: Remove this in 25.11.
+              if ourLink ~${config.system.primaryUser}/Applications; then
+                rm ~${config.system.primaryUser}/Applications
+              elif ourLink ~${config.system.primaryUser}/Applications/'Nix Apps'; then
+                rm ~${config.system.primaryUser}/Applications/'Nix Apps'
+              fi
+            ''}
 
-      targetFolder='/Applications/Nix Apps'
+            targetFolder='/Applications/Nix Apps'
 
-      # Clean up old style symlink to nix store
-      if [ -e "$targetFolder" ] && ourLink "$targetFolder"; then
-        rm "$targetFolder"
-      fi
+            # Clean up old style symlink to nix store
+            if [ -e "$targetFolder" ] && ourLink "$targetFolder"; then
+              rm "$targetFolder"
+            fi
 
-      mkdir -p "$targetFolder"
+            mkdir -p "$targetFolder"
 
-      rsyncFlags=(
-        # mtime is standardized in the nix store, which would leave only file size to distinguish files.
-        # Thus we need checksums, despite the speed penalty.
-        --checksum
-        # Converts all symlinks pointing outside of the copied tree (thus unsafe) into real files and directories.
-        # This neatly converts all the symlinks pointing to application bundles in the nix store into
-        # real directories, without breaking any relative symlinks inside of application bundles.
-        # This is good enough, because the make-symlinks-relative.sh setup hook converts all $out internal
-        # symlinks to relative ones.
-        --copy-unsafe-links
-        --archive
-        --delete
-        --chmod=-w
-        --no-group
-        --no-owner
-      )
+            rsyncFlags=(
+              # mtime is standardized in the nix store, which would leave only file size to distinguish files.
+              # Thus we need checksums, despite the speed penalty.
+              --checksum
+              # Converts all symlinks pointing outside of the copied tree (thus unsafe) into real files and directories.
+              # This neatly converts all the symlinks pointing to application bundles in the nix store into
+              # real directories, without breaking any relative symlinks inside of application bundles.
+              # This is good enough, because the make-symlinks-relative.sh setup hook converts all $out internal
+              # symlinks to relative ones.
+              --copy-unsafe-links
+              --archive
+              --delete
+              --chmod=-w
+              --no-group
+              --no-owner
+            )
 
-      ${lib.getExe pkgs.rsync} "''${rsyncFlags[@]}" ${config.system.build.applications}/Applications/ "$targetFolder"
+
+          ${lib.getExe pkgs.rsync} "''${rsyncFlags[@]}" ${config.system.build.applications}/Applications/ "$targetFolder"
+
+           echo "Setting up library paths for apps" >&2
+      	  if [ -d "${config.system.build.applications}/Library/Application Support" ]  || [ -e "${config.system.build.applications}/Library/Application Support" ]; then
+
+
+           targetFolder='/Library/Application Support'
+           # delete folders that are just below target folder and in the source folder
+            find "$targetFolder" -maxdepth 1 -type d -exec bash -c \
+              'folderName=$(basename "$0"); \
+               if [ -d "${config.system.build.applications}/Library/Application Support/$folderName" ] && [ "$folderName" != "Application Support" ]; then \
+                 rm -rf "$0"; \
+               fi \
+              ' {} \;
+            echo "Copying library paths to $targetFolder" >&2
+
+
+            rsyncFlags=(
+              --checksum
+              --archive
+              --copy-unsafe-links
+               --chmod=-w
+            )
+            ${lib.getExe pkgs.rsync} "''${rsyncFlags[@]}" "${config.system.build.applications}/Library/Application Support/" "$targetFolder"
+      		fi
+
     '';
   };
 }
