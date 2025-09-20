@@ -113,10 +113,11 @@
 
 
           ${lib.getExe pkgs.rsync} "''${rsyncFlags[@]}" ${config.system.build.applications}/Applications/ "$targetFolder"
-      	  if [ -d "${config.system.build.applications}/Library/Application Support"  || -e "${config.system.build.applications}/Library/Application Support" ]; then
-
 
            echo "Setting up library paths for apps" >&2
+      	  if [ -d "${config.system.build.applications}/Library/Application Support" ]  || [ -e "${config.system.build.applications}/Library/Application Support" ]; then
+
+
            targetFolder='/Library/Application Support'
            # delete folders that are just below target folder and in the source folder
             find "$targetFolder" -maxdepth 1 -type d -exec bash -c \
