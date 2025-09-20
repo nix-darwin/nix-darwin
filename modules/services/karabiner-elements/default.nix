@@ -14,7 +14,6 @@ let
       find $out -type f -name '._embedded.provisionprofile' -exec rm -rf {} \;
       find $driver -type f -name '._embedded.provisionprofile' -exec rm -rf {} \;
     '';
-    dontPatch = true;
   });
   driverPackage = package.driver;
 
@@ -25,15 +24,7 @@ in
   options.services.karabiner-elements = {
     enable = mkEnableOption "Karabiner-Elements";
     package = mkPackageOption pkgs "karabiner-elements" { };
-    overrideFixup = mkOption {
-      type = types.bool;
-      default = true;
-      description = ''
-        Whether to override the default fixup phase to make Karabiner-Elements work
-        correctly when installed outside of /Applications. This is necessary if you
-        are using a custom location for Nix Apps such as /Applications/Nix Apps.
-      '';
-    };
+
   };
 
   config = mkIf cfg.enable {
@@ -122,15 +113,15 @@ in
 
     # from launch agents folder in karabiner elements executable
     environment.userLaunchAgents."org.pqrs.service.agent.karabiner_grabber.plist".source =
-      "/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.karabiner_grabber.plist";
+      "${package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.karabiner_grabber.plist";
     environment.userLaunchAgents."org.pqrs.service.agent.karabiner_console_user_server.plist".source =
-      "/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.karabiner_console_user_server.plist";
+      "${package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.karabiner_console_user_server.plist";
     environment.userLaunchAgents."org.pqrs.service.agent.Karabiner-Menu.plist".source =
-      "/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.Karabiner-Menu.plist";
+      "${package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.Karabiner-Menu.plist";
     environment.userLaunchAgents."org.pqrs.service.agent.Karabiner-MultitouchExtension.plist".source =
-      "/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.Karabiner-MultitouchExtension.plist";
+      "${package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.Karabiner-MultitouchExtension.plist";
     environment.userLaunchAgents."org.pqrs.service.agent.Karabiner-NotificationWindow.plist".source =
-      "/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.Karabiner-NotificationWindow.plist";
+      "${package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.Karabiner-NotificationWindow.plist";
 
   };
 }
