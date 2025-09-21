@@ -9,15 +9,6 @@ with lib;
 
 let
   cfg = config.services.karabiner-elements;
-  package = cfg.package.overrideAttrs (attrs: {
-    fixupPhase = ''
-      find $out -type f -name '._embedded.provisionprofile' -exec rm -rf {} \;
-      find $driver -type f -name '._embedded.provisionprofile' -exec rm -rf {} \;
-    '';
-  });
-  driverPackage = package.driver;
-
-  parentAppDir = "/Applications/Nix Apps";
 in
 
 {
@@ -29,9 +20,12 @@ in
 
   config = mkIf cfg.enable {
     environment.systemPackages = [
-      package
-      driverPackage
+      cfg.package
     ];
+    services.karabiner-dk = {
+      enable = true;
+      package = cfg.package.driver;
+    };
 
     system.activationScripts.postActivation.text = ''
       echo "attempt to activate karabiner system extension and start daemons" >&2
@@ -49,7 +43,7 @@ in
     # which will block until the system extension is activated.
     launchd.daemons.start_karabiner_daemons = {
       script = ''
-        "${parentAppDir}/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager" activate
+        launchctl kickstart -k system/org.nixos.start-karabiner-dk
         launchctl kickstart -k system/org.pqrs.service.daemon.karabiner_grabber
         launchctl kickstart -k system/org.pqrs.Karabiner-DriverKit-VirtualHIDDevice-Daemon
       '';
@@ -68,34 +62,15 @@ in
       serviceConfig.KeepAlive.AfterInitialDemand = true;
     };
 
-    launchd.daemons.Karabiner-DriverKit-VirtualHIDDeviceClient = {
-      serviceConfig.ProgramArguments = [
-        "/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon"
-      ];
-      serviceConfig.ProcessType = "Interactive";
-      serviceConfig.Label = "org.pqrs.Karabiner-DriverKit-VirtualHIDDevice-Daemon";
-      serviceConfig.RunAtLoad = true;
-      serviceConfig.KeepAlive = true;
-    };
-
     # Normally karabiner_console_user_server calls activate on the manager but
     # because we use a custom location we need to call activate manually.
-    launchd.user.agents.activate_karabiner_system_ext = {
-      serviceConfig.ProgramArguments = [
-        "${parentAppDir}/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager"
-        "activate"
-      ];
-      serviceConfig.RunAtLoad = true;
-      managedBy = "services.karabiner-elements.enable";
-    };
-
     # We need this to run every reboot as /run gets nuked so we can't put this
     # inside the preActivation script as it only gets run on darwin-rebuild switch.
     launchd.daemons.setsuid_karabiner_session_monitor = {
       script = ''
         rm -rf /run/wrappers
         mkdir -p /run/wrappers/bin
-        install -m4555 "${package}/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_session_monitor" /run/wrappers/bin
+        install -m4555 "${cfg.package}/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_session_monitor" /run/wrappers/bin
       '';
       serviceConfig.RunAtLoad = true;
       serviceConfig.KeepAlive.SuccessfulExit = false;
@@ -113,15 +88,15 @@ in
 
     # from launch agents folder in karabiner elements executable
     environment.userLaunchAgents."org.pqrs.service.agent.karabiner_grabber.plist".source =
-      "${package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.karabiner_grabber.plist";
+      "${cfg.package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.karabiner_grabber.plist";
     environment.userLaunchAgents."org.pqrs.service.agent.karabiner_console_user_server.plist".source =
-      "${package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.karabiner_console_user_server.plist";
+      "${cfg.package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.karabiner_console_user_server.plist";
     environment.userLaunchAgents."org.pqrs.service.agent.Karabiner-Menu.plist".source =
-      "${package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.Karabiner-Menu.plist";
+      "${cfg.package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.Karabiner-Menu.plist";
     environment.userLaunchAgents."org.pqrs.service.agent.Karabiner-MultitouchExtension.plist".source =
-      "${package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.Karabiner-MultitouchExtension.plist";
+      "${cfg.package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.Karabiner-MultitouchExtension.plist";
     environment.userLaunchAgents."org.pqrs.service.agent.Karabiner-NotificationWindow.plist".source =
-      "${package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.Karabiner-NotificationWindow.plist";
+      "${cfg.package}/Library/Application Support/org.pqrs/Karabiner-Elements/Karabiner-Elements Non-Privileged Agents.app/Contents/Library/LaunchAgents/org.pqrs.service.agent.Karabiner-NotificationWindow.plist";
 
   };
 }
