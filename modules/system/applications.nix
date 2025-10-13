@@ -128,7 +128,7 @@
                     # delete folders that are just below target folder and in the source folder
                     find "$targetFolder" -maxdepth 1 -type d -exec bash -c \
                       'folderName=$(basename "$0"); \
-                       if [ -d "${config.system.build.applications}/Library/$subdir/$folderName" ] && [ "$folderName" != "'"$subdir"'"  ]; then \
+                       if [ -d "${config.system.build.applications}/Library/$subdir/$folderName" ] && [ "$folderName" != "$(basename $subdir)"  ]; then \
                          rm -rf "$0"; \
                        fi \
                       ' {} \;
