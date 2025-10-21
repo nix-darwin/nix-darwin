@@ -19,7 +19,7 @@ jobs:
   # TODO: Change them once the repository configuration is updated.
 
   test-stable:
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
     - uses: actions/checkout@v4
     - name: Install Nix
@@ -29,7 +29,7 @@ jobs:
     - run: nix flake check --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
 
   install-against-stable:
-    runs-on: macos-13
+    runs-on: macos-14
     timeout-minutes: 30
     steps:
     - uses: actions/checkout@v4
@@ -88,7 +88,7 @@ jobs:
           --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
 
   install-flake:
-    runs-on: macos-13
+    runs-on: macos-14
     timeout-minutes: 30
     steps:
     - uses: actions/checkout@v4

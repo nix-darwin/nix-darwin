@@ -102,7 +102,7 @@ in
     launchd.user.agents.karabiner_session_monitor = {
       serviceConfig.ProgramArguments = [
         "/bin/sh" "-c"
-        "/bin/wait4path /run/wrappers/bin &amp;&amp; /run/wrappers/bin/karabiner_session_monitor"
+        "/bin/wait4path /run/wrappers/bin && /run/wrappers/bin/karabiner_session_monitor"
       ];
       serviceConfig.Label = "org.pqrs.karabiner.karabiner_session_monitor";
       serviceConfig.KeepAlive = true;

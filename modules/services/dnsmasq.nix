@@ -42,6 +42,27 @@ in
         { localhost = "127.0.0.1"; }
         '';
     };
+
+    services.dnsmasq.servers = mkOption {
+      type = types.listOf types.str;
+      default = [];
+      description = ''
+        List of upstream DNS servers to forward queries to.
+        If empty, dnsmasq will use the servers from /etc/resolv.conf.
+        Each entry can be:
+        - An IP address (e.g., "1.2.3.4")
+        - A domain-specific server (e.g., "/example.com/1.2.3.4")
+        - A server with port (e.g., "1.2.3.4#5353")
+        See dnsmasq(8) man page for --server option for full syntax.
+      '';
+      example = literalExpression ''
+        [
+          "8.8.8.8"
+          "8.8.4.4"
+          "/internal.example.com/192.168.1.1"
+        ]
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
@@ -53,7 +74,8 @@ in
         "--listen-address=${cfg.bind}"
         "--port=${toString cfg.port}"
         "--keep-in-foreground"
-      ] ++ (mapA (domain: addr: "--address=/${domain}/${addr}") cfg.addresses);
+      ] ++ (mapA (domain: addr: "--address=/${domain}/${addr}") cfg.addresses)
+        ++ (map (server: "--server=${server}") cfg.servers);
 
       serviceConfig.KeepAlive = true;
       serviceConfig.RunAtLoad = true;

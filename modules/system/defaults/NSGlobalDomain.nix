@@ -52,6 +52,19 @@ in {
       '';
     };
 
+    system.defaults.NSGlobalDomain.AppleIconAppearanceTheme = mkOption {
+      type = types.nullOr (types.enum [ "RegularDark" "RegularAutomatic" "ClearLight" "ClearDark" "ClearAutomatic" "TintedLight" "TintedDark" "TintedAutomatic" ]);
+      default = null;
+      description = ''
+        Set icon and widget style
+
+        To set to default mode, set this to `null` and you'll need to manually run
+        {command}`defaults delete -g AppleIconAppearanceTheme`.
+
+        This option requires logging out and logging back in to apply.
+      '';
+    };
+
     system.defaults.NSGlobalDomain.AppleInterfaceStyleSwitchesAutomatically = mkOption {
       type = types.nullOr types.bool;
       default = null;
@@ -254,6 +267,24 @@ in {
       default = null;
       description = ''
         Whether to enable moving window by holding anywhere on it like on Linux. The default is false.
+      '';
+    };
+
+    system.defaults.NSGlobalDomain.NSStatusItemSpacing = mkOption {
+      type = types.nullOr types.int;
+      default = null;
+      example = 12;
+      description = ''
+        Sets the spacing between status icons in the menu bar.
+      '';
+    };
+
+    system.defaults.NSGlobalDomain.NSStatusItemSelectionPadding = mkOption {
+      type = types.nullOr types.int;
+      default = null;
+      example = 6;
+      description = ''
+        Sets the padding around status icons in the menu bar.
       '';
     };
 

@@ -120,6 +120,18 @@ in
         This key maps to the second argument of `execvp(3)`.  This key is required in the absence of the Program
         key. Please note: many people are confused by this key. Please read `execvp(3)` very carefully!
       '';
+      # TODO: Remove this some time after 25.11.
+      apply =
+        val:
+        if (builtins.isNull val) then
+          val
+        else
+          (map (
+            item:
+            lib.warnIf (lib.hasInfix "&amp;" item)
+              "A value for `ProgramArguments` contains the literal string `&amp;`. This is no longer necessary and will lead to double-escaping, as nix-darwin now automatically escapes special characters."
+            item
+          ) val);
     };
 
     EnableGlobbing = mkOption {

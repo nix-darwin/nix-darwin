@@ -26,6 +26,7 @@
   system.defaults.NSGlobalDomain.AppleEnableMouseSwipeNavigateWithScrolls = false;
   system.defaults.NSGlobalDomain.AppleEnableSwipeNavigateWithScrolls = false;
   system.defaults.NSGlobalDomain.AppleFontSmoothing = 1;
+  system.defaults.NSGlobalDomain.AppleIconAppearanceTheme = "RegularDark";
   system.defaults.NSGlobalDomain.AppleICUForce24HourTime = true;
   system.defaults.NSGlobalDomain.AppleKeyboardUIMode = 3;
   system.defaults.NSGlobalDomain.ApplePressAndHoldEnabled = true;
@@ -110,7 +111,7 @@
   system.defaults.screensaver.askForPassword = true;
   system.defaults.screensaver.askForPasswordDelay = 5;
   system.defaults.smb.NetBIOSName = "IMAC-000000";
-  system.defaults.smb.ServerDescription = ''Darwin\\\\U2019's iMac'';
+  system.defaults.smb.ServerDescription = ''Darwin\\U2019's iMac'';
   system.defaults.universalaccess.mouseDriverCursorSize = 1.5;
   system.defaults.universalaccess.reduceMotion = true;
   system.defaults.universalaccess.reduceTransparency = true;

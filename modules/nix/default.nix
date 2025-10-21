@@ -835,7 +835,7 @@ in
 
     system.requiresPrimaryUser = mkIf (
       config.system.stateVersion < 2
-      && options.nix.nixPath.highestPrio == (mkDefault {}).priotity
+      && options.nix.nixPath.highestPrio == (mkDefault {}).priority
     ) [
       "nix.nixPath"
     ];

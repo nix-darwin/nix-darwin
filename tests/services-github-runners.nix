@@ -4,9 +4,6 @@
     enable = true;
     url = "https://github.com/nixos/nixpkgs";
     tokenFile = "/secret/path/to/a/github/token";
-    # We need an overridable derivation but cannot use the actual github-runner package
-    # since it still relies on Node.js 16 which is marked as insecure.
-    package = pkgs.hello;
   };
 
   test = ''
