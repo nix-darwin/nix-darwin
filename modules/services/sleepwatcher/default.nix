@@ -9,29 +9,27 @@ in
 {
   options = {
     services.sleepwatcher = {
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Whether to enable the sleepwatcher daemon.";
-      };
+      enable = mkEnableOption "sleepwatcher daemon to react to various system events";
 
-      package = mkOption {
-        type = types.package;
-        default = pkgs.darwin.sleepwatcher;
-        description = "This option specifies the sleepwatcher package to use.";
+      package = mkPackageOption pkgs [ "darwin" "sleepwatcher" ] { };
+
+      verbose = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Whether to verbosely log actions performed by sleepwatcher.";
       };
 
       on_sleep = mkOption {
         type = types.nullOr types.lines;
         default = null;
-        example = "pmset sleepnow";
+        example = "echo 'Going to sleep'";
         description = "Commands to execute when system goes to sleep.";
       };
 
       on_wakeup = mkOption {
         type = types.nullOr types.lines;
         default = null;
-        example = "say 'Good morning!'";
+        example = "echo 'Waking from sleep'";
         description = "Commands to execute when system wakes up.";
       };
 
@@ -63,20 +61,6 @@ in
         description = "Commands to execute when display undims.";
       };
 
-      on_idle = mkOption {
-        type = types.nullOr types.lines;
-        default = null;
-        example = "echo 'User idle'";
-        description = "Commands to execute when user becomes idle (requires idleTime).";
-      };
-
-      on_idle_resume = mkOption {
-        type = types.nullOr types.lines;
-        default = null;
-        example = "echo 'User active again'";
-        description = "Commands to execute when user resumes activity after idle.";
-      };
-
       on_plug = mkOption {
         type = types.nullOr types.lines;
         default = null;
@@ -91,20 +75,34 @@ in
         description = "Commands to execute when power adapter is unplugged.";
       };
 
-      idleTime = mkOption {
+      idle_time = mkOption {
         type = types.nullOr types.int;
         default = null;
         example = 600;
-        description = "Idle time in seconds before executing on_idle command.";
+        description = "Idle time in seconds before executing on_idle commands.";
       };
 
-      daemonMode = mkOption {
+      on_idle = mkOption {
+        type = types.nullOr types.lines;
+        default = null;
+        example = "echo 'User idle'";
+        description = "Commands to execute when user becomes idle (requires idle_time to be set).";
+      };
+
+      on_idle_resume = mkOption {
+        type = types.nullOr types.lines;
+        default = null;
+        example = "echo 'User active again'";
+        description = "Commands to execute when user resumes activity after idle (requires idle_time to be set).";
+      };
+
+      run_as_system = mkOption {
         type = types.bool;
         default = false;
         description = ''
           Whether to run sleepwatcher as a system daemon (true) or user agent (false).
-          Daemon mode runs as root and can execute system-level commands.
-          User agent mode runs as the user and is preferred for user-specific actions.
+          System daemon runs as root and can execute system-level commands.
+          User agent runs as the user and is preferred for user-specific actions.
         '';
       };
     };
@@ -112,33 +110,28 @@ in
 
   config = mkIf cfg.enable (
     let
-      sleepScript = pkgs.writeShellScript "sleepwatcher-sleep" cfg.on_sleep;
-      wakeupScript = pkgs.writeShellScript "sleepwatcher-wakeup" cfg.on_wakeup;
-      displaySleepScript = pkgs.writeShellScript "sleepwatcher-display-sleep" cfg.on_display_sleep;
-      displayWakeupScript = pkgs.writeShellScript "sleepwatcher-display-wakeup" cfg.on_display_wakeup;
-      displayDimScript = pkgs.writeShellScript "sleepwatcher-display-dim" cfg.on_display_dim;
-      displayUndimScript = pkgs.writeShellScript "sleepwatcher-display-undim" cfg.on_display_undim;
-      idleScript = pkgs.writeShellScript "sleepwatcher-idle" cfg.on_idle;
-      idleResumeScript = pkgs.writeShellScript "sleepwatcher-idle-resume" cfg.on_idle_resume;
-      plugScript = pkgs.writeShellScript "sleepwatcher-plug" cfg.on_plug;
-      unplugScript = pkgs.writeShellScript "sleepwatcher-unplug" cfg.on_unplug;
-      
+      optionalHook = longArg: hookValue:
+        let hookScript = pkgs.writeShellScript "sleepwatcher-${longArg}-hook" hookValue;
+        in optionals (hookValue != null) [ "--${longArg}" "${hookScript}" ];
+
       launchdConfig = {
         path = [ config.environment.systemPath ];
         serviceConfig = {
           ProgramArguments = [
             "${cfg.package}/bin/sleepwatcher"
-            "-V"
-          ] ++ optionals (cfg.on_sleep != null) [ "-s" "${sleepScript}" ]
-            ++ optionals (cfg.on_wakeup != null) [ "-w" "${wakeupScript}" ]
-            ++ optionals (cfg.on_display_sleep != null) [ "-S" "${displaySleepScript}" ]
-            ++ optionals (cfg.on_display_wakeup != null) [ "-W" "${displayWakeupScript}" ]
-            ++ optionals (cfg.on_display_dim != null) [ "-D" "${displayDimScript}" ]
-            ++ optionals (cfg.on_display_undim != null) [ "-E" "${displayUndimScript}" ]
-            ++ optionals (cfg.on_idle != null && cfg.idleTime != null) [ "-t" "${toString cfg.idleTime}" "-i" "${idleScript}" ]
-            ++ optionals (cfg.on_idle_resume != null) [ "-R" "${idleResumeScript}" ]
-            ++ optionals (cfg.on_plug != null) [ "-P" "${plugScript}" ]
-            ++ optionals (cfg.on_unplug != null) [ "-U" "${unplugScript}" ];
+          ] ++ optionals cfg.verbose [ "--verbose" ]
+            ++ optionalHook "sleep" cfg.on_sleep
+            ++ optionalHook "wakeup" cfg.on_wakeup
+            ++ optionalHook "displaysleep" cfg.on_display_sleep
+            ++ optionalHook "displaywakeup" cfg.on_display_wakeup
+            ++ optionalHook "displaydim" cfg.on_display_dim
+            ++ optionalHook "displayundim" cfg.on_display_undim
+            ++ optionals (cfg.on_idle != null && cfg.idle_time != null)
+              ([ "--timeout" "${toString cfg.idle_time}" ] ++
+              (optionalHook "idle" cfg.on_idle))
+            ++ optionalHook "idleresume" cfg.on_idle_resume
+            ++ optionalHook "plug" cfg.on_plug
+            ++ optionalHook "unplug" cfg.on_unplug;
           KeepAlive = true;
           RunAtLoad = true;
         };
@@ -147,9 +140,9 @@ in
     {
       environment.systemPackages = [ cfg.package ];
 
-      launchd.user.agents.sleepwatcher = mkIf (!cfg.daemonMode) launchdConfig;
-      
-      launchd.daemons.sleepwatcher = mkIf cfg.daemonMode launchdConfig;
+      launchd.user.agents.sleepwatcher = mkIf (!cfg.run_as_system) launchdConfig;
+
+      launchd.daemons.sleepwatcher = mkIf cfg.run_as_system launchdConfig;
     }
   );
 }
