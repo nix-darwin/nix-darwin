@@ -11,7 +11,7 @@ in
     services.sleepwatcher = {
       enable = mkEnableOption "sleepwatcher daemon to react to various system events";
 
-      package = mkPackageOption pkgs [ "darwin" "sleepwatcher" ] { };
+      package = mkPackageOption pkgs [ "sleepwatcher" ] { };
 
       verbose = mkOption {
         type = types.bool;
