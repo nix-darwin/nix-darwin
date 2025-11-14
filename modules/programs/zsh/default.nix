@@ -59,6 +59,18 @@ in
       description = "Shell script code used to initialise the zsh prompt.";
     };
 
+    programs.zsh.histSize = mkOption {
+      type = types.int;
+      default = 2000;
+      description = "Change history size.";
+    };
+
+    programs.zsh.histFile = mkOption {
+      type = types.str;
+      default = "$HOME/.zsh_history";
+      description = "Change history file.";
+    };
+
     programs.zsh.enableCompletion = mkOption {
       type = types.bool;
       default = true;
@@ -189,10 +201,11 @@ in
       if [ -n "$__ETC_ZSHRC_SOURCED" -o -n "$NOSYSZSHRC" ]; then return; fi
       __ETC_ZSHRC_SOURCED=1
 
-      # history defaults
-      SAVEHIST=2000
-      HISTSIZE=2000
-      HISTFILE=$HOME/.zsh_history
+      # Setup command line history.
+      # Don't export these, otherwise other shells (bash) will try to use same HISTFILE.
+      SAVEHIST=${builtins.toString cfg.histSize}
+      HISTSIZE=${builtins.toString cfg.histSize}
+      HISTFILE=${cfg.histFile}
 
       setopt HIST_IGNORE_DUPS SHARE_HISTORY HIST_FCNTL_LOCK
 
