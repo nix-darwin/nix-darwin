@@ -2,6 +2,7 @@
 , coreutils
 , jq
 , git
+, openssh
 , replaceVarsWith
 , stdenv
 , profile ? "/nix/var/nix/profiles/system"
@@ -61,8 +62,9 @@ in
     src = ./darwin-rebuild.sh;
 
     replacements = {
-      inherit path nixPath profile;
+      inherit nixPath profile;
       inherit (stdenv) shell;
+      path = "${lib.makeBinPath [ openssh ]}:${path}";
     };
 
     postInstall = ''
