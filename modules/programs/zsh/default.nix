@@ -12,6 +12,55 @@ let
   fzfCompletion = ./fzf-completion.zsh;
   fzfGit = ./fzf-git.zsh;
   fzfHistory = ./fzf-history.zsh;
+
+  bindkeyCommands = {
+    emacs = "-e";
+    viins = "-v";
+    vicmd = "-a";
+  };
+
+  historyModule = types.submodule (
+    { config, ... }:
+    {
+      options = {
+        save = mkOption {
+          type = types.int;
+          defaultText = 2000;
+          default = config.size;
+          description = "Number of history lines to save.";
+        };
+
+        size = mkOption {
+          type = types.int;
+          default = 2000;
+          description = "Number of history lines to keep.";
+        };
+
+        path = mkOption {
+          type = types.str;
+          default = "$HOME/.zsh_history";
+          example = literalExpression ''"$HOME/.local/share/zsh/zsh_history"'';
+          description = "History file location.";
+        };
+
+        ignoreDups = mkOption {
+          type = types.bool;
+          default = true;
+          description = ''
+            Do not enter command lines into the history list
+            if they are duplicates of the previous event.
+          '';
+        };
+
+        share = mkOption {
+          type = types.bool;
+          default = true;
+          description = "Share command history between zsh sessions.";
+        };
+      };
+    }
+);
+
 in
 
 {
@@ -33,6 +82,19 @@ in
         characters.
       '';
       apply = mapAttrs (n: v: if isList v then concatStringsSep ":" v else v);
+    };
+
+    programs.zsh.history = mkOption {
+      type = historyModule;
+      default = { };
+      description = "Options related to commands history configuration.";
+    };
+
+    programs.zsh.defaultKeymap = mkOption {
+      type = types.enum (lib.attrNames bindkeyCommands);
+      default = "emacs";
+      example = "viins";
+      description = "The default base keymap to use.";
     };
 
     programs.zsh.shellInit = mkOption {
@@ -189,14 +251,17 @@ in
       if [ -n "$__ETC_ZSHRC_SOURCED" -o -n "$NOSYSZSHRC" ]; then return; fi
       __ETC_ZSHRC_SOURCED=1
 
-      # history defaults
-      SAVEHIST=2000
-      HISTSIZE=2000
-      HISTFILE=$HOME/.zsh_history
+      # History
+      HISTFILE="${cfg.history.path}"
+      HISTSIZE=${toString cfg.history.size}
+      SAVEHIST=${toString cfg.history.save}
 
-      setopt HIST_IGNORE_DUPS SHARE_HISTORY HIST_FCNTL_LOCK
+      setopt HIST_FCNTL_LOCK
+      ${if cfg.history.ignoreDups then "setopt" else "unsetopt"} HIST_IGNORE_DUPS
+      ${if cfg.history.share then "setopt" else "unsetopt"} SHARE_HISTORY
 
-      bindkey -e
+      # Use ${cfg.defaultKeymap} keymap as the default.
+      bindkey ${lib.getAttr cfg.defaultKeymap bindkeyCommands}
 
       ${config.environment.interactiveShellInit}
       ${cfg.interactiveShellInit}
