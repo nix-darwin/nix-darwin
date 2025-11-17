@@ -38,10 +38,7 @@ let
 
         path = mkOption {
           type = types.str;
-          default = "\${\ZDOTDIR:-$HOME\}/.zsh_history";
-          # defaultText = literalExpression ''
-          #   "''${ZDOTDIR:-$HOME}/.zsh_history"
-          # '';
+          default = "$HOME/.zsh_history";
           example = literalExpression ''"$HOME/.local/share/zsh/zsh_history"'';
           description = "History file location.";
         };
