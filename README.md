@@ -15,18 +15,8 @@ The only prerequisite is a Nix implementation; both Nix and Lix are supported.
 
 As the official Nix installer does not include an automated uninstaller, and manual uninstallation on macOS is a complex process, we recommend using one of the following installers instead:
 
-* The [Nix installer from Determinate Systems](https://github.com/DeterminateSystems/nix-installer?tab=readme-ov-file#determinate-nix-installer) is only recommended for use with flake-based setups.
-  It can install one of two distributions of Nix:
-
-  * To install the **recommended** vanilla upstream [Nix](https://nixos.org), you will need to explicitly pass the `--prefer-upstream-nix` flag to the installer.
-
-  * When run without the `--prefer-upstream-nix` flag, it will install the [Determinate](https://docs.determinate.systems/) distribution.
-    As Determinate manages the Nix installation itself, you will need to set `nix.enable = false;` in your configuration to disable nix-darwin’s own Nix management.
-    Some nix-darwin functionality that relies on managing the Nix installation, like the `nix.*` options to adjust Nix settings or configure a Linux builder, will be unavailable.
-
-* The [Lix installer](https://lix.systems/install/#on-any-other-linuxmacos-system) supports both flake-based and channel-based setups.
-
-
+- The [Experimental Nix installer](https://github.com/NixOS/experimental-nix-installer?tab=readme-ov-file)
+- The [Lix installer](https://lix.systems/install/#on-any-other-linuxmacos-system)
 
 ## Getting started
 
