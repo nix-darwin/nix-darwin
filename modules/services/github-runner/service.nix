@@ -2,8 +2,8 @@
 
 let
   inherit (lib) any attrValues boolToString concatStringsSep escapeShellArg
-    flatten flip getExe getExe' hasAttr hasPrefix mapAttrsToList mapAttrs' mkBefore
-    mkDefault mkIf mkMerge nameValuePair optionalAttrs optionalString replaceStrings;
+    flatten flip getExe getExe' hasPrefix mapAttrsToList mapAttrs' mkBefore
+    mkDefault mkIf mkMerge nameValuePair optionalString replaceStrings;
 
   mkSvcName = name: "github-runner-${name}";
   mkStateDir = cfg: "/var/lib/github-runners/${cfg.name}";
@@ -54,7 +54,7 @@ in
     in
     {
       launchd = mkIf cfg.enable {
-        text = mkBefore (''
+        text = mkBefore ''
           echo >&2 "setting up GitHub Runner '${cfg.name}'..."
 
           # shellcheck disable=SC2174
@@ -70,7 +70,7 @@ in
             ${getExe' pkgs.coreutils "mkdir"} -p -m u=rwx,g=rx,o= ${escapeShellArg (mkWorkDir cfg)}
             ${getExe' pkgs.coreutils "chown"} ${user}:${group} ${escapeShellArg (mkWorkDir cfg)}
           ''}
-        '');
+        '';
       };
     }));
 
