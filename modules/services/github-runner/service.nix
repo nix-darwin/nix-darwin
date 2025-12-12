@@ -8,7 +8,7 @@ let
   mkSvcName = name: "github-runner-${name}";
   mkStateDir = cfg: "/var/lib/github-runners/${cfg.name}";
   mkLogDir = cfg: "/var/log/github-runners/${cfg.name}";
-  mkWorkDir = cfg: if (cfg.workDir != null) then cfg.workDir else "/var/lib/github-runners/_work/${cfg.name}";
+  mkWorkDir = cfg: if (cfg.workDir != null) then cfg.workDir else "/private/var/lib/github-runners/_work/${cfg.name}";
 in
 {
   config.assertions = flatten (
