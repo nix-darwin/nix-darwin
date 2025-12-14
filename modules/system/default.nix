@@ -11,7 +11,7 @@ let
   failedAssertions = map (x: x.message) (filter (x: !x.assertion) config.assertions);
 
   throwAssertions = res: if (failedAssertions != []) then throw "\nFailed assertions:\n${concatStringsSep "\n" (map (x: "- ${x}") failedAssertions)}" else res;
-  showWarnings = res: fold (w: x: builtins.trace "[1;31mwarning: ${w}[0m" x) res config.warnings;
+  showWarnings = res: foldr (w: x: builtins.trace "[1;31mwarning: ${w}[0m" x) res config.warnings;
 
 in
 

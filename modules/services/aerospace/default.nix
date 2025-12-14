@@ -199,6 +199,7 @@ in
               type = enum [
                 "qwerty"
                 "dvorak"
+                "colemak"
               ];
               default = "qwerty";
               description = "Keymapping preset.";

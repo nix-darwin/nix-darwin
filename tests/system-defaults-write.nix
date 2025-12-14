@@ -26,6 +26,7 @@
   system.defaults.NSGlobalDomain.AppleEnableMouseSwipeNavigateWithScrolls = false;
   system.defaults.NSGlobalDomain.AppleEnableSwipeNavigateWithScrolls = false;
   system.defaults.NSGlobalDomain.AppleFontSmoothing = 1;
+  system.defaults.NSGlobalDomain.AppleIconAppearanceTheme = "RegularDark";
   system.defaults.NSGlobalDomain.AppleICUForce24HourTime = true;
   system.defaults.NSGlobalDomain.AppleKeyboardUIMode = 3;
   system.defaults.NSGlobalDomain.ApplePressAndHoldEnabled = true;
@@ -79,7 +80,14 @@
     { folder = "/Applications/Utilities"; }
     { file = "/Users/example/Downloads/test.csv"; }
   ];
-  system.defaults.dock.persistent-others = ["~/Documents" "~/Downloads/file.txt"];
+  system.defaults.dock.persistent-others = [
+    # ./. # TODO: how to test for paths while NOT being brittle?
+    "/file"
+    { file = "/file"; }
+    "/folder.d"
+    { folder = { path = "/folder.d"; arrangement="kind"; displayas="folder"; showas = "grid"; }; }
+    { folder = "/folder"; }
+  ];
   system.defaults.dock.scroll-to-open = false;
   system.defaults.finder.AppleShowAllFiles = true;
   system.defaults.finder.ShowStatusBar = true;

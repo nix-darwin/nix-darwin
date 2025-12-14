@@ -197,16 +197,93 @@ in {
     };
 
     system.defaults.dock.persistent-others = mkOption {
-      type = types.nullOr (types.listOf (types.either types.path types.str));
+      type = let
+        folderType = types.submodule {
+          options.path = mkOption {
+            description = "Path to a folder to be added to the dock.";
+            type = types.str;
+          };
+          options.arrangement = mkOption {
+            description = "Sort order for files in folder when clicked.";
+            type = types.enum ["name" "date-added" "date-modified" "date-created" "kind"];
+            default = "name";
+          };
+          options.displayas = mkOption {
+            description = "How to display the folder before clicked.  stack: Stack of file previews.  folder: A folder icon";
+            type = types.enum ["stack" "folder"];
+            default = "stack";
+          };
+          options.showas = mkOption {
+            description = "Effect to show files when clicked.  fan: fan-out effect, grid: box, list: list";
+            type = types.enum ["automatic" "fan" "grid" "list"];
+            default = "automatic";
+          };
+        };
+        taggedType = types.attrTag {
+          file = mkOption {
+            description = "A file to be added to the dock.";
+            type = types.str;
+          };
+          folder = mkOption {
+            description = "A folder to be added to the dock.";
+            type = types.coercedTo types.str (str: { path = str; }) folderType;
+          };
+        };
+        simpleType = types.either types.str types.path;
+        # Below to NOT break exisiting config
+        toTagged = _path: let path = builtins.toString _path; in if strings.hasInfix "." (last (splitString "/" path)) then { file = path; } else { folder = path; };
+        # toTagged = path: { folder = path; }; # or this to be consistent with persistent-apps
+      in
+        types.nullOr (types.listOf (types.coercedTo simpleType toTagged taggedType));
       default = null;
-      example = [ "~/Documents" "~/Downloads" ];
+      example = lib.literalExpression ''
+      [
+        ./flake.nix
+        "/Volumes"
+        { folder = "/Users/@username@/Downloads"; }
+        { folder = { path = "/Users/@username@/.emacs.d"; showas = "grid"; }; }
+        { file = "/Users/@username@/Desktop/this_is_a_file"; }      
+      ]'';
       description = ''
-        Persistent folders in the dock.
+        Persistent files, and folders in the dock.
       '';
-      apply = value:
-        if !(isList value)
-        then value
-        else map (folder: { tile-data = { file-data = { _CFURLString = "file://" + folder; _CFURLStringType = 15; }; }; tile-type = if strings.hasInfix "." (last (splitString "/" folder)) then "file-tile" else "directory-tile"; }) value;
+      apply = let
+        arrangementMap = {
+          name          = 1;
+          date-added    = 2;
+          date-modified = 3;
+          date-created  = 4;
+          kind          = 5;
+        };
+        displayasMap = {
+          stack  = 0;
+          folder = 1;
+        };
+        showasMap = {
+          automatic = 0;
+          fan       = 1;
+          grid      = 2;
+          list      = 3;
+        };
+        parseFolder = (folder:
+          builtins.mapAttrs (name: val:
+            if name == "arrangement" then arrangementMap.${val}
+            else if name == "displayas" then displayasMap.${val}
+            else if name == "showas" then showasMap.${val}
+            else val
+          ) folder
+        );
+        toTile = item: {
+          tile-data = {
+            file-data = {
+              _CFURLString = "file://" + (if item ? folder then item.folder.path else item.file);
+              _CFURLStringType = 15;
+            };
+          } // (if item ? folder then {inherit (parseFolder item.folder) arrangement displayas showas;} else {});
+          tile-type = if item ? folder then "directory-tile" else "file-tile";
+        };
+      in
+        value: if value == null then null else map toTile value;
     };
 
     system.defaults.dock.scroll-to-open = mkOption {
@@ -214,6 +291,38 @@ in {
       default = null;
       description = ''
         Scroll up on a Dock icon to show all Space's opened windows for an app, or open stack. The default is false.
+      '';
+    };
+
+    system.defaults.dock.showAppExposeGestureEnabled = mkOption {
+      type = types.nullOr types.bool;
+      default = null;
+      description = ''
+        Whether to enable trackpad gestures (three- or four-finger vertical swipe) to show App Exposé. The default is false. This feature interacts with `system.defaults.trackpad.TrackpadFourFingerVertSwipeGesture` and `system.defaults.trackpad.TrackpadThreeFingerVertSwipeGesture` to determine which gesture triggers App Exposé.
+      '';
+    };
+
+    system.defaults.dock.showDesktopGestureEnabled = mkOption {
+      type = types.nullOr types.bool;
+      default = null;
+      description = ''
+        Whether to enable four-finger spread gesture to show the Desktop. The default is false. 
+      '';
+    };
+
+    system.defaults.dock.showLaunchpadGestureEnabled = mkOption {
+      type = types.nullOr types.bool;
+      default = null;
+      description = ''
+        Whether to enable four-finger pinch gesture to show the Launchpad. The default is false. 
+      '';
+    };
+
+    system.defaults.dock.showMissionControlGestureEnabled = mkOption {
+      type = types.nullOr types.bool;
+      default = null;
+      description = ''
+        Whether to enable trackpad gestures (three- or four-finger vertical swipe) to show Mission Control. The default is false. This feature interacts with `system.defaults.trackpad.TrackpadFourFingerVertSwipeGesture` and `system.defaults.trackpad.TrackpadThreeFingerVertSwipeGesture` to determine which gesture triggers Mission Control.
       '';
     };
 
@@ -367,3 +476,4 @@ in {
 
     };
 }
+

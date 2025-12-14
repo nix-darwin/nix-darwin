@@ -2,13 +2,13 @@
 
 let
   inherit (lib) any attrValues boolToString concatStringsSep escapeShellArg
-    flatten flip getExe getExe' hasAttr hasPrefix mapAttrsToList mapAttrs' mkBefore
-    mkDefault mkIf mkMerge nameValuePair optionalAttrs optionalString replaceStrings;
+    flatten flip getExe getExe' hasPrefix mapAttrsToList mapAttrs' mkBefore
+    mkDefault mkIf mkMerge nameValuePair optionalString replaceStrings;
 
   mkSvcName = name: "github-runner-${name}";
   mkStateDir = cfg: "/var/lib/github-runners/${cfg.name}";
   mkLogDir = cfg: "/var/log/github-runners/${cfg.name}";
-  mkWorkDir = cfg: if (cfg.workDir != null) then cfg.workDir else "/var/lib/github-runners/_work/${cfg.name}";
+  mkWorkDir = cfg: if (cfg.workDir != null) then cfg.workDir else "/private/var/lib/github-runners/_work/${cfg.name}";
 in
 {
   config.assertions = flatten (
@@ -54,7 +54,7 @@ in
     in
     {
       launchd = mkIf cfg.enable {
-        text = mkBefore (''
+        text = mkBefore ''
           echo >&2 "setting up GitHub Runner '${cfg.name}'..."
 
           # shellcheck disable=SC2174
@@ -70,13 +70,13 @@ in
             ${getExe' pkgs.coreutils "mkdir"} -p -m u=rwx,g=rx,o= ${escapeShellArg (mkWorkDir cfg)}
             ${getExe' pkgs.coreutils "chown"} ${user}:${group} ${escapeShellArg (mkWorkDir cfg)}
           ''}
-        '');
+        '';
       };
     }));
 
   config.launchd.daemons = flip mapAttrs' config.services.github-runners (name: cfg:
     let
-      package = cfg.package.override (old: optionalAttrs (hasAttr "nodeRuntimes" old) { inherit (cfg) nodeRuntimes; });
+      package = cfg.package.override { inherit (cfg) nodeRuntimes; };
       stateDir = mkStateDir cfg;
       logDir = mkLogDir cfg;
       workDir = mkWorkDir cfg;

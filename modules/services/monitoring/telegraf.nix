@@ -66,6 +66,9 @@ in {
         KeepAlive = true;
         RunAtLoad = true;
       };
+
+      # https://github.com/influxdata/telegraf/issues/17607
+      environment.HOME = "/var/root";
     };
   };
 }
