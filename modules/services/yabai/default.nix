@@ -96,6 +96,7 @@ in
         script = "${cfg.package}/bin/yabai --load-sa";
         serviceConfig.RunAtLoad = true;
         serviceConfig.KeepAlive.SuccessfulExit = false;
+        serviceConfig.UserName = "root";
       };
 
       environment.etc."sudoers.d/yabai".source = pkgs.runCommand "sudoers-yabai" {} ''
