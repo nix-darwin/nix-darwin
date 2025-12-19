@@ -116,6 +116,15 @@ in
       '';
     };
 
+    system.defaults.finder._FXEnableColumnAutoSizing = mkOption {
+      type = types.nullOr types.bool;
+      default = null;
+      description = ''
+        Resize columns to fit filenames.
+        The default is false.
+      '';
+    };
+
     system.defaults.finder._FXShowPosixPathInTitle = mkOption {
       type = types.nullOr types.bool;
       default = null;
