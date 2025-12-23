@@ -50,8 +50,6 @@
       pkgs.jq
       pkgs.ripgrep
       pkgs.shellcheck
-
-      pkgs.qes
     ];
 
   services.yabai.enable = true;
