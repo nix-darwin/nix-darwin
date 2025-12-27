@@ -21,6 +21,17 @@ _arguments \
   '(--keep-going -k)'{--keep-going,-k}"[keep going until all builds are finished]"\
   '(--keep-failed -K)'{--keep-failed,-K}'[keep failed builds (usually in /tmp)]'\
   '--fallback[If binary download fails, fall back on building from source]'\
+  '--flake[Build from the given flake URI]:flake uri:'\
+  '--no-flake[Disable implicit flake detection]'\
+  '(-L -vL --print-build-logs)'{-L,-vL,--print-build-logs}'[Print build logs during the build]'\
+  '--refresh[Refresh flake inputs]'\
+  '--impure[Allow impure evaluation for flakes]'\
+  '--recreate-lock-file[Recreate flake.lock from scratch]'\
+  '*--update-input[Update a specific flake input]:input name:'\
+  '*--override-input[Override a flake input]:input name: :flake url: '\
+  '--offline[Do not access the network]'\
+  '--dry-run[Show what would be done without making changes]'\
+  '-Q[Only print the resulting store path]'\
   '--show-trace[Print stack trace of evaluation errors]'\
   '*--option[set Nix configuration option]:options:_nix_options:value:_nix_options_value'\
   '*--arg[argument to pass to the Nix function]:Name:_nix_complete_function_arg:Value: '\
