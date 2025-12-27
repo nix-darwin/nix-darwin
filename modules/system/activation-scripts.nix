@@ -133,6 +133,7 @@ in
       ${cfg.activationScripts.keyboard.text}
       ${cfg.activationScripts.fonts.text}
       ${cfg.activationScripts.nvram.text}
+      ${cfg.activationScripts.mas.text}
       ${cfg.activationScripts.homebrew.text}
 
       ${cfg.activationScripts.postActivation.text}
