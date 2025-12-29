@@ -83,7 +83,7 @@ let
       preDown = mkOption {
         type = with types; coercedTo (listOf str) (concatStringsSep "\n") lines;
         default = "";
-        description = "List of commadns to run before interface shutdown.";
+        description = "List of commands to run before interface shutdown.";
       };
 
       preUp = mkOption {
