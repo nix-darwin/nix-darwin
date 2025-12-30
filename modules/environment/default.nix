@@ -13,9 +13,10 @@ let
 
   # Merge regular variables with profile relative
   # Profile relative paths come first then regular variables (fallbacks)
+  # Note: cfg.variables values are already strings (due to apply), so we wrap them in lists
   allVariables = zipAttrsWith (n: concatLists) [
     profileRelativeVars
-    (mapAttrs (n: v: if isList v then v else [ v ]) cfg.variables)
+    (mapAttrs (n: v: [ v ]) cfg.variables)
   ];
 
   exportVariables =
@@ -81,6 +82,7 @@ in
         strings.  The latter is concatenated, interspersed with colon
         characters.
       '';
+      apply = mapAttrs (n: v: if isList v then concatStringsSep ":" v else v);
     };
 
     environment.shellAliases = mkOption {
