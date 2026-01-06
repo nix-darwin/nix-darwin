@@ -85,10 +85,12 @@ in {
   tests.homebrew = makeTest ./tests/homebrew.nix;
   tests.launchd-daemons = makeTest ./tests/launchd-daemons.nix;
   tests.launchd-setenv = makeTest ./tests/launchd-setenv.nix;
+  tests.networking-firewall = makeTest ./tests/networking-firewall.nix;
   tests.networking-hostname = makeTest ./tests/networking-hostname.nix;
   tests.networking-networkservices = makeTest ./tests/networking-networkservices.nix;
   tests.nix-enable = makeTest ./tests/nix-enable.nix;
   tests.nixpkgs-overlays = makeTest ./tests/nixpkgs-overlays.nix;
+  tests.programs-gnupg = makeTest ./tests/programs-gnupg.nix;
   tests.programs-ssh = makeTest ./tests/programs-ssh.nix;
   tests.programs-tmux = makeTest ./tests/programs-tmux.nix;
   tests.programs-zsh = makeTest ./tests/programs-zsh.nix;

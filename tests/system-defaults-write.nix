@@ -80,7 +80,14 @@
     { folder = "/Applications/Utilities"; }
     { file = "/Users/example/Downloads/test.csv"; }
   ];
-  system.defaults.dock.persistent-others = ["~/Documents" "~/Downloads/file.txt"];
+  system.defaults.dock.persistent-others = [
+    # ./. # TODO: how to test for paths while NOT being brittle?
+    "/file"
+    { file = "/file"; }
+    "/folder.d"
+    { folder = { path = "/folder.d"; arrangement="kind"; displayas="folder"; showas = "grid"; }; }
+    { folder = "/folder"; }
+  ];
   system.defaults.dock.scroll-to-open = false;
   system.defaults.finder.AppleShowAllFiles = true;
   system.defaults.finder.ShowStatusBar = true;
