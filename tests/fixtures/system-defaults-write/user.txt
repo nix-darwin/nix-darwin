@@ -545,15 +545,15 @@ launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user
 <plist version="1.0">
 <true/>
 </plist>'
-launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.screencapture save-selections '<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<true/>
-</plist>'
 launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.screencapture location '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <string>/tmp</string>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.screencapture save-selections '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
 </plist>'
 launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.screencapture target '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
