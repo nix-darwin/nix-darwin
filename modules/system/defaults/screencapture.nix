@@ -41,6 +41,14 @@ with lib;
       '';
     };
 
+    system.defaults.screencapture.save-selections = mkOption {
+      type = types.nullOr types.bool;
+      default = null;
+      description = ''
+        Remember the selection window of the last screencapture. The default is true.
+      '';
+    };
+
     system.defaults.screencapture.show-thumbnail = mkOption {
       type = types.nullOr types.bool;
       default = null;
