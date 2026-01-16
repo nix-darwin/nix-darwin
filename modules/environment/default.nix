@@ -5,8 +5,22 @@ with lib;
 let
   cfg = config.environment;
 
+  # Convert profileRelativeSessionVariables to absolute paths
+  profileRelativeVars = flip mapAttrs cfg.profileRelativeSessionVariables (
+    envVar: suffixes:
+    concatMap (profile: map (suffix: "${profile}${suffix}") suffixes) cfg.profiles
+  );
+
+  # Merge regular variables with profile relative
+  # Profile relative paths come first then regular variables (fallbacks)
+  # Note: cfg.variables values are already strings (due to apply), so we wrap them in lists
+  allVariables = zipAttrsWith (n: concatLists) [
+    profileRelativeVars
+    (mapAttrs (n: v: [ v ]) cfg.variables)
+  ];
+
   exportVariables =
-    mapAttrsToList (n: v: ''export ${n}="${v}"'') cfg.variables;
+    mapAttrsToList (n: v: ''export ${n}="${concatStringsSep ":" v}"'') allVariables;
 
   aliasCommands =
     mapAttrsToList (n: v: ''alias ${n}=${escapeShellArg v}'')
@@ -117,10 +131,25 @@ in
       default = "";
       description = ''
         Shell script code called during interactive shell initialisation.
-        This code is asumed to be shell-independent, which means you should
+        This code is assumed to be shell-independent, which means you should
         stick to pure sh without sh word split.
       '';
       type = types.lines;
+    };
+
+    environment.profileRelativeSessionVariables = mkOption {
+      type = types.attrsOf (types.listOf types.str);
+      default = {};
+      example = {
+        PATH = [ "/bin" ];
+        MANPATH = [ "/man" "/share/man" ];
+      };
+      description = ''
+        Attribute set of environment variables. Each attribute maps to a list
+        of relative paths. Each relative path is appended to each profile of
+        {option}`environment.profiles` to form the content of the
+        corresponding environment variable.
+      '';
     };
   };
 
