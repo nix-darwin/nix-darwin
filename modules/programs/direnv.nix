@@ -5,6 +5,13 @@
   ...
 }: let
   cfg = config.programs.direnv;
+  enabledOption =
+    x:
+    lib.mkEnableOption x
+    // {
+      default = true;
+      example = false;
+    };
   format = pkgs.formats.toml {};
 in {
   meta.maintainers = [
@@ -24,6 +31,16 @@ in {
       readOnly = true;
       description = "The wrapped direnv package.";
     };
+
+    enableBashIntegration = enabledOption ''
+      Bash integration
+    '';
+    enableZshIntegration = enabledOption ''
+      Zsh integration
+    '';
+    enableFishIntegration = enabledOption ''
+      Fish integration
+    '';
 
     direnvrcExtra = lib.mkOption {
       type = lib.types.lines;
@@ -97,7 +114,7 @@ in {
           };
         };
       };
-      zsh.interactiveShellInit = ''
+      zsh.interactiveShellInit = lib.mkIf cfg.enableZshIntegration ''
         if ${lib.boolToString cfg.loadInNixShell} || printenv PATH | grep -vqc '/nix/store'; then
          eval "$(${lib.getExe cfg.finalPackage} hook zsh)"
         fi
@@ -105,13 +122,13 @@ in {
 
       #$NIX_GCROOT for "nix develop" https://github.com/NixOS/nix/blob/6db66ebfc55769edd0c6bc70fcbd76246d4d26e0/src/nix/develop.cc#L530
       #$IN_NIX_SHELL for "nix-shell"
-      bash.interactiveShellInit = ''
+      bash.interactiveShellInit = lib.mkIf cfg.enableBashIntegration ''
         if ${lib.boolToString cfg.loadInNixShell} || [ -z "$IN_NIX_SHELL$NIX_GCROOT$(printenv PATH | grep '/nix/store')" ] ; then
          eval "$(${lib.getExe cfg.finalPackage} hook bash)"
         fi
       '';
 
-      fish.interactiveShellInit = ''
+      fish.interactiveShellInit = lib.mkIf cfg.enableFishIntegration ''
         if ${lib.boolToString cfg.loadInNixShell};
         or printenv PATH | grep -vqc '/nix/store';
          ${lib.getExe cfg.finalPackage} hook fish | source
