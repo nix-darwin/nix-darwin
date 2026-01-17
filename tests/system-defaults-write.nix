@@ -115,6 +115,7 @@
   system.defaults.screencapture.location = "/tmp";
   system.defaults.screencapture.target = "file";
   system.defaults.screencapture.include-date = true;
+  system.defaults.screencapture.save-selections = true;
   system.defaults.screensaver.askForPassword = true;
   system.defaults.screensaver.askForPasswordDelay = 5;
   system.defaults.smb.NetBIOSName = "IMAC-000000";
