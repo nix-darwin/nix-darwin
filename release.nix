@@ -88,6 +88,7 @@ in {
   tests.networking-firewall = makeTest ./tests/networking-firewall.nix;
   tests.networking-hostname = makeTest ./tests/networking-hostname.nix;
   tests.networking-networkservices = makeTest ./tests/networking-networkservices.nix;
+  tests.networking-networkservices-no-dhcp-client-id = makeTest ./tests/networking-networkservices-no-dhcp-client-id.nix;
   tests.nix-enable = makeTest ./tests/nix-enable.nix;
   tests.nixpkgs-overlays = makeTest ./tests/nixpkgs-overlays.nix;
   tests.programs-gnupg = makeTest ./tests/programs-gnupg.nix;
