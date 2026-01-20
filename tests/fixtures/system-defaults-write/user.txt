@@ -701,10 +701,25 @@ launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user
 <plist version="1.0">
 <true/>
 </plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter AccessibilityShortcuts '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>3</integer>
+</plist>'
 launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter AirDrop '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <integer>18</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter Battery '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>3</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter BatteryShowEnergyMode '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
 </plist>'
 launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter BatteryShowPercentage '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -719,14 +734,34 @@ launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user
 launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter Display '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<integer>24</integer>
+<integer>18</integer>
 </plist>'
 launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter FocusModes '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<integer>24</integer>
+<integer>18</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter Hearing '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>3</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter KeyboardBrightness '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>3</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter MusicRecognition '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>3</integer>
 </plist>'
 launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter NowPlaying '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>18</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter ScreenMirroring '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <integer>18</integer>
@@ -734,5 +769,25 @@ launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user
 launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter Sound '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<integer>24</integer>
+<integer>18</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter StageManager '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>2</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter UserSwitcher '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>19</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.controlcenter WiFi '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<integer>18</integer>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write ~test-defaults-user/Library/Preferences/ByHost/com.apple.Spotlight MenuItemHidden '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
 </plist>'
