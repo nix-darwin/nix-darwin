@@ -28,7 +28,7 @@ showSyntax() {
   echo "                             [--no-update-lock-file] [--no-write-lock-file]" >&2
   echo "                             [--override-input input flake] [--update-input input]" >&2
   echo "                             [--no-registries] [--offline] [--refresh]]" >&2
-  echo "               [--substituters substituters-list] ..." >&2
+  echo "               [--substituters substituters-list] [--log-format format] ..." >&2
   exit 1
 }
 
@@ -135,6 +135,14 @@ while [ $# -gt 0 ]; do
       fi
       j=$1; shift 1
       extraMetadataFlags+=("$i" "$j")
+      extraBuildFlags+=("$i" "$j")
+      ;;
+    --log-format)
+      if [ -z "$1" ]; then
+        echo "$0: '$i' requires an argument"
+        exit 1
+      fi
+      j=$1; shift 1
       extraBuildFlags+=("$i" "$j")
       ;;
     *)

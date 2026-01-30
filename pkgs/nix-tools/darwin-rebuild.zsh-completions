@@ -29,6 +29,7 @@ _arguments \
   '--rollback[Roll back to the previous configuration]'\
   {--switch-generation,-G}'[Activate specified generation]'\
   '(--profile-name -p)'{--profile-name,-p}'[Profile to use to track current and previous system configurations]:Profile:_nix_profiles'\
+  '--log-format[configure how output is formatted]'\
   '1:: :->subcmds' && return 0
 
 case $state in
