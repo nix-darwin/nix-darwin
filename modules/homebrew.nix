@@ -811,7 +811,7 @@ in
       if [ -f "${cfg.brewPrefix}/brew" ]; then
         PATH="${cfg.brewPrefix}:${lib.makeBinPath [ pkgs.mas ]}:$PATH" \
         sudo \
-          --preserve-env=PATH \
+          --preserve-env=PATH,HTTPS_PROXY \
           --user=${escapeShellArg cfg.user} \
           --set-home \
           env \
