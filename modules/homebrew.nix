@@ -12,7 +12,7 @@ let
 
   mkBrewfileSectionString = heading: entries: optionalString (entries != [ ]) ''
     # ${heading}
-    ${concatMapStringsSep "\n" (v: v.brewfileLine or v) entries}
+    ${concatStringsSep "\n" (unique (map (v: v.brewfileLine or v) entries))}
 
   '';
 
