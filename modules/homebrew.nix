@@ -562,16 +562,18 @@ in
   options.homebrew = {
     enable = mkEnableOption ''
       {command}`nix-darwin` to manage installing/updating/upgrading Homebrew taps, formulae,
-      and casks, as well as Mac App Store apps and Docker containers, using Homebrew Bundle.
+      casks, Mac App Store apps, Go packages, and Docker containers, using Homebrew Bundle.
 
       Note that enabling this option does not install Homebrew, see the Homebrew
       [website](https://brew.sh) for installation instructions.
 
       Use the [](#opt-homebrew.brews), [](#opt-homebrew.casks),
-      [](#opt-homebrew.masApps), [](#opt-homebrew.whalebrews), [](#opt-homebrew.vscode) options
-      to list the Homebrew formulae, casks, Mac App Store apps, Docker containers and Visual Studio
-      Code Extensions you'd like to install. Use the [](#opt-homebrew.taps) option, to make additional
-      formula repositories available to Homebrew. This module uses those options (along with the
+      [](#opt-homebrew.masApps), [](#opt-homebrew.goPackages),
+      [](#opt-homebrew.whalebrews), and [](#opt-homebrew.vscode) options to list the
+      Homebrew formulae, casks, Mac App Store apps, Go packages, Docker containers,
+      and Visual Studio Code extensions you'd like to install. Use the
+      [](#opt-homebrew.taps) option, to make additional formula repositories available to
+      Homebrew. This module uses those options (along with the
       [](#opt-homebrew.caskArgs) options) to generate a Brewfile that
       {command}`nix-darwin` passes to the {command}`brew bundle` command during
       system activation.
@@ -775,6 +777,18 @@ in
       '';
     };
 
+    goPackages = mkOption {
+      type = with types; listOf str;
+      default = [ ];
+      example = [ "github.com/charmbracelet/crush" ];
+      description = ''
+        List of Go packages to install using {command}`go install`.
+
+        Homebrew will automatically install the {command}`go` formula if it is not already
+        installed.
+      '';
+    };
+
     whalebrews = mkOption {
       type = with types; listOf str;
       default = [ ];
@@ -852,6 +866,7 @@ in
       + mkBrewfileSectionString "Casks" cfg.casks
       + mkBrewfileSectionString "Mac App Store apps"
         (mapAttrsToList (n: id: ''mas "${n}", id: ${toString id}'') cfg.masApps)
+      + mkBrewfileSectionString "Go packages" (map (v: ''go "${v}"'') cfg.goPackages)
       + mkBrewfileSectionString "Docker containers" (map (v: ''whalebrew "${v}"'') cfg.whalebrews)
       + mkBrewfileSectionString "Visual Studio Code extensions" (map (v: ''vscode "${v}"'') cfg.vscode)
       + optionalString (cfg.extraConfig != "") ("# Extra config\n" + cfg.extraConfig);

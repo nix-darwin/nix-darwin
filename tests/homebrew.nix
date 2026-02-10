@@ -77,6 +77,10 @@ in
     Xcode = 497799835;
   };
 
+  homebrew.goPackages = [
+    "github.com/charmbracelet/crush"
+  ];
+
   homebrew.whalebrews = [
     "whalebrew/wget"
   ];
@@ -111,6 +115,9 @@ in
     echo "checking mas entries in Brewfile" >&2
     ${mkTest "1Password for Safari" ''mas "1Password for Safari", id: 1569813296''}
     ${mkTest "Xcode" ''mas "Xcode", id: 497799835''}
+
+    echo "checking go entries in Brewfile" >&2
+    ${mkTest "github.com/charmbracelet/crush" ''go "github.com/charmbracelet/crush"''}
 
     echo "checking whalebrew entries in Brewfile" >&2
     ${mkTest "whalebrew/wget" ''whalebrew "whalebrew/wget"''}
