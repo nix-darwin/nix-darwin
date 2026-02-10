@@ -50,6 +50,10 @@ in
       link = true;
       conflicts_with = [ "mysql" ];
     }
+    {
+      name = "postgresql@16";
+      postinstall = "\${HOMEBREW_PREFIX}/opt/postgresql@16/bin/postgres -D \${HOMEBREW_PREFIX}/var/postgresql@16";
+    }
   ];
 
   homebrew.casks = [
@@ -61,6 +65,10 @@ in
     {
       name = "opera";
       greedy = true;
+    }
+    {
+      name = "google-cloud-sdk";
+      postinstall = "\${HOMEBREW_PREFIX}/bin/gcloud components update";
     }
   ];
 
@@ -92,11 +100,13 @@ in
     ${mkTest "imagemagick" ''brew "imagemagick"''}
     ${mkTest "denji/nginx/nginx-full" ''brew "denji/nginx/nginx-full", args: ["with-rmtp"], link: :overwrite, restart_service: :always''}
     ${mkTest "mysql@5.6" ''brew "mysql@5.6", conflicts_with: ["mysql"], link: true, restart_service: true''}
+    ${mkTest "postgresql@16" ''brew "postgresql@16", postinstall: "''${HOMEBREW_PREFIX}/opt/postgresql@16/bin/postgres -D ''${HOMEBREW_PREFIX}/var/postgresql@16"''}
 
     echo "checking cask entries in Brewfile" >&2
     ${mkTest "google-chrome" ''cask "google-chrome"''}
     ${mkTest "firefox" ''cask "firefox", args: { appdir: "~/my-apps/Applications" }''}
     ${mkTest "opera" ''cask "opera", greedy: true''}
+    ${mkTest "google-cloud-sdk" ''cask "google-cloud-sdk", postinstall: "''${HOMEBREW_PREFIX}/bin/gcloud components update"''}
 
     echo "checking mas entries in Brewfile" >&2
     ${mkTest "1Password for Safari" ''mas "1Password for Safari", id: 1569813296''}

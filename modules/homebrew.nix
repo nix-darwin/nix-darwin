@@ -476,6 +476,16 @@ let
           linked and keg-only.
         '';
       };
+      postinstall = mkNullOrStrOption {
+        description = ''
+          A shell command to run after the formula is installed or upgraded. The command is passed
+          to the system shell and only executes when the formula actually changed (was freshly
+          installed or upgraded), not on every {command}`brew bundle` run.
+        '';
+      };
+      # `version_file` is intentionally not exposed: it writes the installed version to a file
+      # path relative to the `brew bundle` working directory, which is not meaningful during
+      # nix-darwin system activation.
 
       brewfileLine = mkInternalOption { type = types.nullOr types.str; };
     };
@@ -515,6 +525,13 @@ let
         description = ''
           Whether to always upgrade this cask regardless of whether it's unversioned or it updates
           itself.
+        '';
+      };
+      postinstall = mkNullOrStrOption {
+        description = ''
+          A shell command to run after the cask is installed or upgraded. The command is passed to
+          the system shell and only executes when the cask was actually installed or upgraded, not
+          on every {command}`brew bundle` run.
         '';
       };
 
@@ -681,6 +698,12 @@ in
             link = true;
             conflicts_with = [ "mysql" ];
           }
+
+          # `brew install`, run a post-install command on version changes
+          {
+            name = "postgresql@16";
+            postinstall = "\''${HOMEBREW_PREFIX}/opt/postgresql@16/bin/postgres -D \''${HOMEBREW_PREFIX}/var/postgresql@16";
+          }
         ]
       '';
       description = ''
@@ -711,6 +734,12 @@ in
           {
             name = "opera";
             greedy = true;
+          }
+
+          # `brew install --cask`, run a post-install command on install or upgrade
+          {
+            name = "google-cloud-sdk";
+            postinstall = "\''${HOMEBREW_PREFIX}/bin/gcloud components update";
           }
         ]
       '';
