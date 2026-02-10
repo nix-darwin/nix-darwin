@@ -128,5 +128,8 @@ in
 
     echo "checking that shell integration is absent by default" >&2
     (! grep 'brew shellenv' ${config.out}/etc/zshrc)
+
+    echo "checking that cleanup check is absent by default" >&2
+    (! grep 'brew bundle cleanup --file=' ${config.out}/activate)
   '';
 }
