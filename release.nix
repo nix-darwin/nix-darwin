@@ -83,6 +83,7 @@ in {
   tests.environment-path = makeTest ./tests/environment-path.nix;
   tests.environment-terminfo = makeTest ./tests/environment-terminfo.nix;
   tests.homebrew = makeTest ./tests/homebrew.nix;
+  tests.homebrew-shell-integration = makeTest ./tests/homebrew-shell-integration.nix;
   tests.launchd-daemons = makeTest ./tests/launchd-daemons.nix;
   tests.launchd-setenv = makeTest ./tests/launchd-setenv.nix;
   tests.networking-firewall = makeTest ./tests/networking-firewall.nix;

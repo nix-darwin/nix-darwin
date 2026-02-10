@@ -40,6 +40,11 @@ let
 
   # Option and submodule helper functions ----------------------------------------------------------
 
+  mkShellIntegrationOption = shell: mkEnableOption ''
+    Homebrew ${shell} shell integration, which sets up Homebrew's environment
+    and shell completions
+  '';
+
   mkNullOrBoolOption = args: mkOption (args // {
     type = types.nullOr types.bool;
     default = null;
@@ -587,6 +592,13 @@ in
       '';
     };
 
+    # These default to `false` (unlike direnv, which defaults to `true`) because existing users
+    # likely already have `brew shellenv` in their dotfiles, and enabling by default would cause
+    # duplicate evaluation.
+    enableBashIntegration = mkShellIntegrationOption "Bash";
+    enableFishIntegration = mkShellIntegrationOption "Fish";
+    enableZshIntegration = mkShellIntegrationOption "Zsh";
+
     onActivation = mkOption {
       type = types.submodule onActivationOptions;
       default = { };
@@ -839,6 +851,33 @@ in
       + optionalString (cfg.extraConfig != "") ("# Extra config\n" + cfg.extraConfig);
 
     environment.variables = mkIf cfg.enable cfg.global.homebrewEnvironmentVariables;
+
+    programs = mkIf cfg.enable {
+      bash.interactiveShellInit = mkIf cfg.enableBashIntegration ''
+        eval "$(${cfg.prefix}/bin/brew shellenv bash)"
+        if [[ -r "${cfg.prefix}/etc/profile.d/bash_completion.sh" ]]; then
+          source "${cfg.prefix}/etc/profile.d/bash_completion.sh"
+        else
+          for COMPLETION in "${cfg.prefix}/etc/bash_completion.d/"*; do
+            [[ -r "$COMPLETION" ]] && source "$COMPLETION"
+          done
+        fi
+      '';
+
+      zsh.interactiveShellInit = mkIf cfg.enableZshIntegration ''
+        eval "$(${cfg.prefix}/bin/brew shellenv zsh)"
+      '';
+
+      fish.interactiveShellInit = mkIf cfg.enableFishIntegration ''
+        eval (${cfg.prefix}/bin/brew shellenv fish)
+        if test -d "${cfg.prefix}/share/fish/completions"
+          set -p fish_complete_path "${cfg.prefix}/share/fish/completions"
+        end
+        if test -d "${cfg.prefix}/share/fish/vendor_completions.d"
+          set -p fish_complete_path "${cfg.prefix}/share/fish/vendor_completions.d"
+        end
+      '';
+    };
 
     system.activationScripts.homebrew.text = mkIf cfg.enable ''
       # Homebrew Bundle

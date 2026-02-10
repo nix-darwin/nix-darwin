@@ -125,5 +125,8 @@ in
 
     echo "checking vscode entries in Brewfile" >&2
     ${mkTest "golang.go" ''vscode "golang.go"''}
+
+    echo "checking that shell integration is absent by default" >&2
+    (! grep 'brew shellenv' ${config.out}/etc/zshrc)
   '';
 }
