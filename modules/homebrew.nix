@@ -530,6 +530,7 @@ in
   imports = [
     (mkRenamedOptionModule [ "homebrew" "autoUpdate" ] [ "homebrew" "onActivation" "autoUpdate" ])
     (mkRenamedOptionModule [ "homebrew" "cleanup" ] [ "homebrew" "onActivation" "cleanup" ])
+    (mkRemovedOptionModule [ "homebrew" "brewPrefix" ] "`homebrew.brewPrefix` has been renamed to `homebrew.prefix` and its semantics changed: the old option pointed to the bin directory (e.g., `/opt/homebrew/bin`), while the new option points to the Homebrew prefix (e.g., `/opt/homebrew`), matching `brew --prefix`. Please replace `homebrew.brewPrefix` with `homebrew.prefix`, removing the trailing `/bin` if present.")
     (mkRemovedOptionModule [ "homebrew" "whalebrews" ] "Whalebrew support was removed from Homebrew Bundle in Homebrew 4.7.0 (Nov 2025). `whalebrew` entries in a Brewfile now cause `brew bundle` to fail. Please manage Whalebrew images directly using the `whalebrew` CLI.")
   ];
 
@@ -572,17 +573,17 @@ in
       '';
     };
 
-    brewPrefix = mkOption {
+    prefix = mkOption {
       type = types.str;
-      default = if pkgs.stdenv.hostPlatform.isAarch64 then "/opt/homebrew/bin" else "/usr/local/bin";
+      default = if pkgs.stdenv.hostPlatform.isAarch64 then "/opt/homebrew" else "/usr/local";
       defaultText = literalExpression ''
-        if pkgs.stdenv.hostPlatform.isAarch64 then "/opt/homebrew/bin"
-        else "/usr/local/bin"
+        if pkgs.stdenv.hostPlatform.isAarch64 then "/opt/homebrew"
+        else "/usr/local"
       '';
       description = ''
-        The path prefix where the {command}`brew` executable is located. This will be set to
-        the correct value based on your system's platform, and should only need to be changed if you
-        manually installed Homebrew in a non-standard location.
+        The Homebrew prefix directory, i.e., the value that {command}`brew --prefix` returns.
+        The default is automatically set based on your system's platform, and should only need
+        to be changed if you manually installed Homebrew in a non-standard location.
       '';
     };
 
@@ -816,6 +817,7 @@ in
     warnings = [
       (mkIf (options.homebrew.autoUpdate.isDefined || options.homebrew.cleanup.isDefined) "The `homebrew' module no longer upgrades outdated formulae and apps by default during `nix-darwin' system activation. To enable upgrading, set `homebrew.onActivation.upgrade = true'.")
       (mkIf (cfg.global.noLock != null || cfg.global.lockfiles != null) "The options `homebrew.global.noLock' and `homebrew.global.lockfiles' have been deprecated. Homebrew Bundle removed lockfile support in Homebrew 4.4.0 (Oct 2024), so these options no longer have any effect. Please remove them from your configuration.")
+      (mkIf (hasSuffix "/bin" cfg.prefix) "`homebrew.prefix` should be the Homebrew prefix directory (e.g., `/opt/homebrew`), not the bin directory. The value should match what `brew --prefix` returns. Did you mean to remove the trailing `/bin`?")
     ];
 
     system.requiresPrimaryUser = mkIf (cfg.enable && options.homebrew.user.highestPrio == (mkOptionDefault {}).priority) [
@@ -841,8 +843,8 @@ in
     system.activationScripts.homebrew.text = mkIf cfg.enable ''
       # Homebrew Bundle
       echo >&2 "Homebrew bundle..."
-      if [ -f "${cfg.brewPrefix}/brew" ]; then
-        PATH="${cfg.brewPrefix}:${lib.makeBinPath [ pkgs.mas ]}:$PATH" \
+      if [ -f "${cfg.prefix}/bin/brew" ]; then
+        PATH="${cfg.prefix}/bin:${lib.makeBinPath [ pkgs.mas ]}:$PATH" \
         sudo \
           --preserve-env=PATH \
           --user=${escapeShellArg cfg.user} \

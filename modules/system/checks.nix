@@ -252,7 +252,7 @@ let
   '';
 
   homebrewInstalled = ''
-    if [[ ! -f ${escapeShellArg config.homebrew.brewPrefix}/brew && -z "''${INSTALLING_HOMEBREW:-}" ]]; then
+    if [[ ! -f ${escapeShellArg config.homebrew.prefix}/bin/brew && -z "''${INSTALLING_HOMEBREW:-}" ]]; then
         echo "[1;31merror: Using the homebrew module requires homebrew installed, aborting activation[0m" >&2
         echo "Homebrew doesn't seem to be installed. Please install homebrew separately." >&2
         echo "You can install homebrew using the following command:" >&2
