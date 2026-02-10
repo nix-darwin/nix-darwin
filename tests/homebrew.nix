@@ -81,6 +81,10 @@ in
     "github.com/charmbracelet/crush"
   ];
 
+  homebrew.cargoPackages = [
+    "ripgrep"
+  ];
+
   homebrew.whalebrews = [
     "whalebrew/wget"
   ];
@@ -118,6 +122,9 @@ in
 
     echo "checking go entries in Brewfile" >&2
     ${mkTest "github.com/charmbracelet/crush" ''go "github.com/charmbracelet/crush"''}
+
+    echo "checking cargo entries in Brewfile" >&2
+    ${mkTest "ripgrep" ''cargo "ripgrep"''}
 
     echo "checking whalebrew entries in Brewfile" >&2
     ${mkTest "whalebrew/wget" ''whalebrew "whalebrew/wget"''}
