@@ -118,7 +118,7 @@ let
           {command}`nix-darwin` system activation. The default is `false`
           so that repeated invocations of {command}`darwin-rebuild switch` are idempotent.
 
-          Note that Homebrew auto-updates when it's been more then 5 minutes since it last updated.
+          Note that Homebrew auto-updates when it's been more than 5 minutes since it last updated.
 
           Although auto-updating is disabled by default during system activation, note that Homebrew
           will auto-update when you manually invoke certain Homebrew commands. To modify this
@@ -191,7 +191,7 @@ let
           {command}`brew tap`, and {command}`brew bundle [install]`.
 
           Note that Homebrew auto-updates when you manually invoke commands like the ones mentioned
-          above if it's been more then 5 minutes since it last updated.
+          above if it's been more than 5 minutes since it last updated.
 
           You may want to consider disabling this option if you have
           [](#opt-homebrew.onActivation.upgrade) enabled, and
@@ -247,6 +247,10 @@ let
         description = ''
           Whether to auto-update the tap even if it is not hosted on GitHub. By default, only taps
           hosted on GitHub are auto-updated (for performance reasons).
+
+          Note: Homebrew Bundle accepts this option in Brewfile syntax but may silently ignore it
+          during installation. See [the Homebrew Bundle source](https://github.com/Homebrew/brew/tree/master/Library/Homebrew/bundle)
+          for current behavior.
         '';
       };
 
@@ -379,19 +383,34 @@ let
       };
       require_sha = mkNullOrBoolOption {
         description = ''
-          Whether to require cask(s) to have a checksum.
+          Whether to require casks to have a checksum.
 
           Homebrew's default is `false`.
         '';
       };
       no_quarantine = mkNullOrBoolOption {
-        description = "Whether to disable quarantining of downloads.";
+        description = ''
+          Whether to disable quarantining of downloads.
+
+          Note: this option is deprecated in Homebrew and may be removed in a
+          future release. See [Homebrew/brew#20755](https://github.com/Homebrew/brew/issues/20755).
+
+          Homebrew's default is `false`.
+        '';
       };
       no_binaries = mkNullOrBoolOption {
-        description = "Whether to disable linking of helper executables.";
+        description = ''
+          Whether to disable linking of helper executables.
+
+          Homebrew's default is `false`.
+        '';
       };
       ignore_dependencies = mkNullOrBoolOption {
-        description = "Ignore casks dependencies in case you manage them extrenally";
+        description = ''
+          Whether to ignore cask dependencies, e.g., when you manage them externally.
+
+          Homebrew's default is `false`.
+        '';
       };
 
       brewfileLine = mkInternalOption { type = types.nullOr types.str; };
@@ -418,7 +437,7 @@ let
         type = with types; nullOr (listOf str);
         default = null;
         description = ''
-          Arguments flags to pass to {command}`brew install`. Values should not include the
+          Argument flags to pass to {command}`brew install`. Values should not include the
           leading `"--"`.
         '';
       };
@@ -436,8 +455,9 @@ let
         description = ''
           Whether to run {command}`brew services restart` for the formula and register it to
           launch at login (or boot). If set to `"changed"`, the service will only
-          be restarted on version changes. If set to `"always"`, the service will
-          be restarted on every {command}`brew bundle` run, even if nothing changed.
+          be restarted when the formula is newly installed or upgraded. If set to
+          `"always"`, the service will be restarted on every {command}`brew bundle`
+          run, even if nothing changed.
 
           Homebrew's default is `false`.
         '';
@@ -445,7 +465,9 @@ let
       start_service = mkNullOrBoolOption {
         description = ''
           Whether to run {command}`brew services start` for the formula and register it to
-          launch at login (or boot).
+          launch at login (or boot). Unlike {option}`restart_service`, this only starts
+          the service if it is not currently running, without restarting an already-running
+          service.
 
           Homebrew's default is `false`.
         '';
@@ -456,7 +478,7 @@ let
         description = ''
           Whether to link the formula to the Homebrew prefix. When set to `"overwrite"`,
           existing symlinks will be overwritten ({command}`brew link --overwrite`). When this
-          option is `null`, Homebrew will use its default behavior which is to link the formula
+          option is `null`, Homebrew will use its default behavior, which is to link the formula
           if it's currently unlinked and not keg-only, and to unlink the formula if it's currently
           linked and keg-only.
         '';
@@ -549,16 +571,17 @@ in
   options.homebrew = {
     enable = mkEnableOption ''
       {command}`nix-darwin` to manage installing/updating/upgrading Homebrew taps, formulae,
-      casks, Mac App Store apps, Go packages, and Cargo crates using Homebrew Bundle.
+      casks, Mac App Store apps, Visual Studio Code extensions, Go packages, and Cargo
+      crates using Homebrew Bundle.
 
       Note that enabling this option does not install Homebrew, see the Homebrew
       [website](https://brew.sh) for installation instructions.
 
       Use the [](#opt-homebrew.brews), [](#opt-homebrew.casks),
-      [](#opt-homebrew.masApps), [](#opt-homebrew.goPackages),
-      [](#opt-homebrew.cargoPackages), and [](#opt-homebrew.vscode) options to list the
-      Homebrew formulae, casks, Mac App Store apps, Go packages, Cargo crates, and
-      Visual Studio Code extensions you'd like to install. Use the
+      [](#opt-homebrew.masApps), [](#opt-homebrew.vscode),
+      [](#opt-homebrew.goPackages), and [](#opt-homebrew.cargoPackages) options to list
+      the Homebrew formulae, casks, Mac App Store apps, Visual Studio Code extensions,
+      Go packages, and Cargo crates you'd like to install. Use the
       [](#opt-homebrew.taps) option, to make additional formula repositories available to
       Homebrew. This module uses those options (along with the
       [](#opt-homebrew.caskArgs) options) to generate a Brewfile that
@@ -668,6 +691,8 @@ in
       description = ''
         Whether to always upgrade casks listed in [](#opt-homebrew.casks) regardless
         of whether it's unversioned or it updates itself.
+
+        Homebrew's default is `false`.
       '';
     };
 
@@ -771,6 +796,22 @@ in
       '';
     };
 
+    vscode = mkOption {
+      type = with types; listOf str;
+      default = [ ];
+      example = [ "golang.go" ];
+      description = ''
+        List of Visual Studio Code extensions to install using Homebrew Bundle.
+
+        A compatible editor (Visual Studio Code, VSCodium, Cursor, or VS Code Insiders)
+        must be available. If none is found, Homebrew will attempt to install
+        `visual-studio-code` automatically.
+
+        For more information on {command}`code` see:
+        [VSCode Extension Marketplace](https://code.visualstudio.com/docs/editor/extension-marketplace).
+      '';
+    };
+
     goPackages = mkOption {
       type = with types; listOf str;
       default = [ ];
@@ -795,22 +836,6 @@ in
       '';
     };
 
-    vscode = mkOption {
-      type = with types; listOf str;
-      default = [ ];
-      example = [ "golang.go" ];
-      description = ''
-        List of Visual Studio Code extensions to install using Homebrew Bundle.
-
-        A compatible editor (Visual Studio Code, VSCodium, Cursor, or VS Code Insiders)
-        must be available. If none is found, Homebrew will attempt to install
-        `visual-studio-code` automatically.
-
-        For more information on {command}`code` see:
-        [VSCode Extension Marketplace](https://code.visualstudio.com/docs/editor/extension-marketplace).
-      '';
-    };
-
 
     extraConfig = mkOption {
       type = types.lines;
@@ -824,7 +849,7 @@ in
 
     brewfile = mkInternalOption {
       type = types.str;
-      description = "String reprensentation of the generated Brewfile useful for debugging.";
+      description = "String representation of the generated Brewfile useful for debugging.";
     };
   };
 
@@ -852,9 +877,9 @@ in
       + mkBrewfileSectionString "Casks" cfg.casks
       + mkBrewfileSectionString "Mac App Store apps"
         (mapAttrsToList (n: id: ''mas "${n}", id: ${toString id}'') cfg.masApps)
+      + mkBrewfileSectionString "Visual Studio Code extensions" (map (v: ''vscode "${v}"'') cfg.vscode)
       + mkBrewfileSectionString "Go packages" (map (v: ''go "${v}"'') cfg.goPackages)
       + mkBrewfileSectionString "Cargo packages" (map (v: ''cargo "${v}"'') cfg.cargoPackages)
-      + mkBrewfileSectionString "Visual Studio Code extensions" (map (v: ''vscode "${v}"'') cfg.vscode)
       + optionalString (cfg.extraConfig != "") ("# Extra config\n" + cfg.extraConfig);
 
     environment.variables = mkIf cfg.enable cfg.global.homebrewEnvironmentVariables;
@@ -929,4 +954,8 @@ in
       fi
     '';
   };
+
+  meta.maintainers = [
+    lib.maintainers.malo or "malo"
+  ];
 }

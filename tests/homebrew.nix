@@ -77,16 +77,16 @@ in
     Xcode = 497799835;
   };
 
+  homebrew.vscode = [
+    "golang.go"
+  ];
+
   homebrew.goPackages = [
     "github.com/charmbracelet/crush"
   ];
 
   homebrew.cargoPackages = [
     "ripgrep"
-  ];
-
-  homebrew.vscode = [
-    "golang.go"
   ];
 
 
@@ -117,14 +117,14 @@ in
     ${mkTest "1Password for Safari" ''mas "1Password for Safari", id: 1569813296''}
     ${mkTest "Xcode" ''mas "Xcode", id: 497799835''}
 
+    echo "checking vscode entries in Brewfile" >&2
+    ${mkTest "golang.go" ''vscode "golang.go"''}
+
     echo "checking go entries in Brewfile" >&2
     ${mkTest "github.com/charmbracelet/crush" ''go "github.com/charmbracelet/crush"''}
 
     echo "checking cargo entries in Brewfile" >&2
     ${mkTest "ripgrep" ''cargo "ripgrep"''}
-
-    echo "checking vscode entries in Brewfile" >&2
-    ${mkTest "golang.go" ''vscode "golang.go"''}
 
     echo "checking that shell integration is absent by default" >&2
     (! grep 'brew shellenv' ${config.out}/etc/zshrc)
