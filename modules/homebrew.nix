@@ -544,10 +544,10 @@ in
       [website](https://brew.sh) for installation instructions.
 
       Use the [](#opt-homebrew.brews), [](#opt-homebrew.casks),
-      [](#opt-homebrew.masApps), and [](#opt-homebrew.whalebrews) options
-      to list the Homebrew formulae, casks, Mac App Store apps, and Docker containers you'd like to
-      install. Use the [](#opt-homebrew.taps) option, to make additional formula
-      repositories available to Homebrew. This module uses those options (along with the
+      [](#opt-homebrew.masApps), [](#opt-homebrew.whalebrews), [](#opt-homebrew.vscode) options
+      to list the Homebrew formulae, casks, Mac App Store apps, Docker containers and Visual Studio
+      Code Extensions you'd like to install. Use the [](#opt-homebrew.taps) option, to make additional
+      formula repositories available to Homebrew. This module uses those options (along with the
       [](#opt-homebrew.caskArgs) options) to generate a Brewfile that
       {command}`nix-darwin` passes to the {command}`brew bundle` command during
       system activation.
@@ -754,6 +754,22 @@ in
       '';
     };
 
+    vscode = mkOption {
+      type = with types; listOf str;
+      default = [ ];
+      example = [ "golang.go" ];
+      description = ''
+        List of Visual Studio Code extensions to install using Homebrew Bundle.
+
+        A compatible editor (Visual Studio Code, VSCodium, Cursor, or VS Code Insiders)
+        must be available. If none is found, Homebrew will attempt to install
+        `visual-studio-code` automatically.
+
+        For more information on {command}`code` see:
+        [VSCode Extension Marketplace](https://code.visualstudio.com/docs/editor/extension-marketplace).
+      '';
+    };
+
     extraConfig = mkOption {
       type = types.lines;
       default = "";
@@ -801,6 +817,7 @@ in
       + mkBrewfileSectionString "Mac App Store apps"
         (mapAttrsToList (n: id: ''mas "${n}", id: ${toString id}'') cfg.masApps)
       + mkBrewfileSectionString "Docker containers" (map (v: ''whalebrew "${v}"'') cfg.whalebrews)
+      + mkBrewfileSectionString "Visual Studio Code extensions" (map (v: ''vscode "${v}"'') cfg.vscode)
       + optionalString (cfg.extraConfig != "") ("# Extra config\n" + cfg.extraConfig);
 
     environment.variables = mkIf cfg.enable cfg.global.homebrewEnvironmentVariables;
