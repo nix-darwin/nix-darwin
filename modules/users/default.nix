@@ -318,11 +318,11 @@ in
       ${concatMapStringsSep "\n" (name: ''
         u=$(id -u ${escapeShellArg name} 2> /dev/null) || true
         if [ -n "$u" ]; then
-          if [ "$u" -gt 501 ]; then
+          if [ "$u" -gt 501 ] || { [ "$u" -gt ${toString config.ids.uids.nixbld} ] && [ "$u" -le ${toString (config.ids.uids.nixbld + config.nix.maxBuildUsers)} ]; }; then
             echo "deleting user ${name}..." >&2
             dscl . -delete ${escapeShellArg "/Users/${name}"}
           else
-            echo "[1;31mwarning: existing user '${name}' has unexpected uid $u, skipping...[0m" >&2
+            echo "[1;31mwarning: skipping deletion of system user '${name}' with uid $u...[0m" >&2
           fi
         fi
       '') deletedUsers}
