@@ -85,13 +85,10 @@ in
     "ripgrep"
   ];
 
-  homebrew.whalebrews = [
-    "whalebrew/wget"
-  ];
-
   homebrew.vscode = [
     "golang.go"
   ];
+
 
   test = ''
     bf=${lib.escapeShellArg config.homebrew.brewfile}
@@ -125,9 +122,6 @@ in
 
     echo "checking cargo entries in Brewfile" >&2
     ${mkTest "ripgrep" ''cargo "ripgrep"''}
-
-    echo "checking whalebrew entries in Brewfile" >&2
-    ${mkTest "whalebrew/wget" ''whalebrew "whalebrew/wget"''}
 
     echo "checking vscode entries in Brewfile" >&2
     ${mkTest "golang.go" ''vscode "golang.go"''}
