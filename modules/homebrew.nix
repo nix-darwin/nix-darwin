@@ -437,12 +437,13 @@ let
         '';
       };
       restart_service = mkOption {
-        type = with types; nullOr (either bool (enum [ "changed" ]));
+        type = with types; nullOr (either bool (enum [ "changed" "always" ]));
         default = null;
         description = ''
           Whether to run {command}`brew services restart` for the formula and register it to
           launch at login (or boot). If set to `"changed"`, the service will only
-          be restarted on version changes.
+          be restarted on version changes. If set to `"always"`, the service will
+          be restarted on every {command}`brew bundle` run, even if nothing changed.
 
           Homebrew's default is `false`.
         '';
