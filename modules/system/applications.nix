@@ -59,7 +59,7 @@
     system.build.applications = pkgs.buildEnv {
       name = "system-applications";
       paths = config.environment.systemPackages;
-      pathsToLink = "/Applications";
+      pathsToLink = [ "/Applications" ];
     };
 
     system.activationScripts.applications.text = ''

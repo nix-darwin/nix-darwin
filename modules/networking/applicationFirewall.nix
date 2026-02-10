@@ -13,6 +13,7 @@ in
 {
   meta.maintainers = [
     (lib.maintainers.prince213 or "prince213")
+    (lib.maintainers.ryanccn or "ryanccn")
   ];
 
   options.networking.applicationFirewall = {
@@ -22,16 +23,34 @@ in
       example = true;
       description = "Whether to enable application firewall.";
     };
-    blockAllIncoming = lib.mkEnableOption "blocking all incoming connections";
-    allowSigned = lib.mkEnableOption "built-in software to receive incoming connections" // {
-      default = true;
+
+    blockAllIncoming = lib.mkOption {
+      type = lib.types.nullOr lib.types.bool;
+      default = null;
+      example = true;
+      description = "Whether to block all incoming connections.";
     };
-    allowSignedApp =
-      lib.mkEnableOption "downloaded signed software to receive incoming connections"
-      // {
-        default = true;
-      };
-    enableStealthMode = lib.mkEnableOption "stealth mode";
+
+    allowSigned = lib.mkOption {
+      type = lib.types.nullOr lib.types.bool;
+      default = null;
+      example = true;
+      description = "Whether to allow built-in software to receive incoming connections.";
+    };
+
+    allowSignedApp = lib.mkOption {
+      type = lib.types.nullOr lib.types.bool;
+      default = null;
+      example = true;
+      description = "Whether to allow downloaded signed software to receive incoming connections.";
+    };
+
+    enableStealthMode = lib.mkOption {
+      type = lib.types.nullOr lib.types.bool;
+      default = null;
+      example = true;
+      description = "Whether to enable stealth mode.";
+    };
   };
 
   config = {
@@ -39,10 +58,16 @@ in
       echo "configuring application firewall..." >&2
 
       ${lib.optionalString (cfg.enable != null) (socketfilterfw "setglobalstate" cfg.enable)}
-      ${lib.optionalString (cfg.enable == true) (socketfilterfw "setblockall" cfg.blockAllIncoming)}
-      ${socketfilterfw "setallowsigned" cfg.allowSigned}
-      ${socketfilterfw "setallowsignedapp" cfg.allowSignedApp}
-      ${socketfilterfw "setstealthmode" cfg.enableStealthMode}
+      ${lib.optionalString (cfg.blockAllIncoming != null) (
+        socketfilterfw "setblockall" cfg.blockAllIncoming
+      )}
+      ${lib.optionalString (cfg.allowSigned != null) (socketfilterfw "setallowsigned" cfg.allowSigned)}
+      ${lib.optionalString (cfg.allowSignedApp != null) (
+        socketfilterfw "setallowsignedapp" cfg.allowSignedApp
+      )}
+      ${lib.optionalString (cfg.enableStealthMode != null) (
+        socketfilterfw "setstealthmode" cfg.enableStealthMode
+      )}
     '';
   };
 }

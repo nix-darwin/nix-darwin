@@ -22,7 +22,7 @@ in {
   ];
 
   options.services.jankyborders = {
-    enable = mkEnableOption "Enable the jankyborders service.";
+    enable = mkEnableOption "the jankyborders service.";
 
     package = mkPackageOption pkgs "jankyborders" {};
 

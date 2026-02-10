@@ -331,13 +331,19 @@ launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user
 	<dict>
 		<key>tile-data</key>
 		<dict>
+			<key>arrangement</key>
+			<integer>1</integer>
+			<key>displayas</key>
+			<integer>0</integer>
 			<key>file-data</key>
 			<dict>
 				<key>_CFURLString</key>
-				<string>file://~/Documents</string>
+				<string>file:///file</string>
 				<key>_CFURLStringType</key>
 				<integer>15</integer>
 			</dict>
+			<key>showas</key>
+			<integer>0</integer>
 		</dict>
 		<key>tile-type</key>
 		<string>directory-tile</string>
@@ -348,13 +354,67 @@ launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user
 			<key>file-data</key>
 			<dict>
 				<key>_CFURLString</key>
-				<string>file://~/Downloads/file.txt</string>
+				<string>file:///file</string>
 				<key>_CFURLStringType</key>
 				<integer>15</integer>
 			</dict>
 		</dict>
 		<key>tile-type</key>
 		<string>file-tile</string>
+	</dict>
+	<dict>
+		<key>tile-data</key>
+		<dict>
+			<key>file-data</key>
+			<dict>
+				<key>_CFURLString</key>
+				<string>file:///folder.d</string>
+				<key>_CFURLStringType</key>
+				<integer>15</integer>
+			</dict>
+		</dict>
+		<key>tile-type</key>
+		<string>file-tile</string>
+	</dict>
+	<dict>
+		<key>tile-data</key>
+		<dict>
+			<key>arrangement</key>
+			<integer>5</integer>
+			<key>displayas</key>
+			<integer>1</integer>
+			<key>file-data</key>
+			<dict>
+				<key>_CFURLString</key>
+				<string>file:///folder.d</string>
+				<key>_CFURLStringType</key>
+				<integer>15</integer>
+			</dict>
+			<key>showas</key>
+			<integer>2</integer>
+		</dict>
+		<key>tile-type</key>
+		<string>directory-tile</string>
+	</dict>
+	<dict>
+		<key>tile-data</key>
+		<dict>
+			<key>arrangement</key>
+			<integer>1</integer>
+			<key>displayas</key>
+			<integer>0</integer>
+			<key>file-data</key>
+			<dict>
+				<key>_CFURLString</key>
+				<string>file:///folder</string>
+				<key>_CFURLStringType</key>
+				<integer>15</integer>
+			</dict>
+			<key>showas</key>
+			<integer>0</integer>
+		</dict>
+		<key>tile-type</key>
+		<string>directory-tile</string>
 	</dict>
 </array>
 </plist>'
@@ -489,6 +549,11 @@ launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <string>/tmp</string>
+</plist>'
+launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.screencapture save-selections '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<true/>
 </plist>'
 launchctl asuser "$(id -u -- test-defaults-user)" sudo --user=test-defaults-user -- defaults write com.apple.screencapture target '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

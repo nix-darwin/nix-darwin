@@ -69,13 +69,15 @@ in
     environment.systemPackages = [ cfg.package ];
 
     launchd.daemons.dnsmasq = {
-      serviceConfig.ProgramArguments = [
-        "${cfg.package}/bin/dnsmasq"
-        "--listen-address=${cfg.bind}"
-        "--port=${toString cfg.port}"
-        "--keep-in-foreground"
-      ] ++ (mapA (domain: addr: "--address=/${domain}/${addr}") cfg.addresses)
-        ++ (map (server: "--server=${server}") cfg.servers);
+      command = let
+        args = [
+          "--listen-address=${cfg.bind}"
+          "--port=${toString cfg.port}"
+          "--keep-in-foreground"
+        ] ++ (mapA (domain: addr: "--address=/${domain}/${addr}") cfg.addresses)
+          ++ (map (server: "--server=${server}") cfg.servers);
+      in
+        "${cfg.package}/bin/dnsmasq ${concatStringsSep " " args}";
 
       serviceConfig.KeepAlive = true;
       serviceConfig.RunAtLoad = true;

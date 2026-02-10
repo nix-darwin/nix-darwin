@@ -77,7 +77,7 @@ in
   config = mkIf cfg.enable {
 
     environment.systemPackages =
-      [ # Include vim_configurable package.
+      [ # Include vim-full package.
         cfg.package
       ];
 
@@ -92,7 +92,7 @@ in
       endif
     '';
 
-    programs.vim.package = pkgs.vim_configurable.customize {
+    programs.vim.package = pkgs.vim-full.customize {
       name = "vim";
       vimrcConfig.customRC = config.environment.etc."vimrc".text;
       vimrcConfig.vam = {

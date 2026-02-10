@@ -78,7 +78,7 @@ in
   config = mkIf (cfg.sessions != []) {
 
     launchd.daemons =
-      lib.fold ( s : acc : acc //
+      lib.foldr ( s : acc : acc //
         {
           "autossh-${s.name}" =
             let

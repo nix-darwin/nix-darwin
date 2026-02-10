@@ -33,7 +33,7 @@ in
     services.khd.i3Keybindings = mkOption {
       type = types.bool;
       default = false;
-      description = "Wether to configure i3 style keybindings for kwm.";
+      description = "Whether to configure i3 style keybindings for kwm.";
     };
   };
 
