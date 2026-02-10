@@ -164,14 +164,6 @@ let
           Whether to enable Homebrew to automatically use the Brewfile that this module generates in
           the Nix store, when you manually invoke {command}`brew bundle`.
 
-          Enabling this option will change the default value of
-          [](#opt-homebrew.global.lockfiles) to `false` since, with
-          this option enabled, {command}`brew bundle [install]` will default to using the
-          Brewfile that this module generates in the Nix store, unless you explicitly point it at
-          another Brewfile using the `--file` flag. As a result, it will try to
-          write the lockfile in the Nix store, and complain that it can't (though the command will
-          run successfully regardless).
-
           Implementation note: when enabled, this option sets the
           `HOMEBREW_BUNDLE_FILE` environment variable to the path of the Brewfile
           that this module generates in the Nix store, by adding it to
@@ -200,31 +192,13 @@ let
           [](#opt-environment.variables).
         '';
       };
-      lockfiles = mkOption {
-        type = types.bool;
-        default = !config.brewfile;
-        defaultText = literalExpression "!config.homebrew.global.brewfile";
-        description = ''
-          Whether to enable Homebrew to generate lockfiles when you manually invoke
-          {command}`brew bundle [install]`.
-
-          This option will default to `false` if
-          [](#opt-homebrew.global.brewfile) is enabled since, with that option enabled,
-          {command}`brew bundle [install]` will default to using the Brewfile that this
-          module generates in the Nix store, unless you explicitly point it at another Brewfile
-          using the `--file` flag. As a result, it will try to write the
-          lockfile in the Nix store, and complain that it can't (though the command will run
-          successfully regardless).
-
-          Implementation note: when disabled, this option sets the
-          `HOMEBREW_BUNDLE_NO_LOCK` environment variable, by adding it to
-          [](#opt-environment.variables).
-        '';
-      };
-
-      # The `noLock` option was replaced by `lockfiles`. Due to `homebrew.global` being a submodule,
-      # we can't use `mkRemovedOptionModule`, so we leave this option definition here, and trigger
-      # and error message with an assertion below if it's set by the user.
+      # `noLock` was the original option; `lockfiles` replaced it (with inverted semantics).
+      # Both are now dead: Homebrew Bundle removed lockfile support in Homebrew 4.4.0
+      # (Oct 2024), so the `HOMEBREW_BUNDLE_NO_LOCK` env var and `--no-lock` CLI flag are
+      # ignored. We keep both definitions with null defaults to detect explicit user
+      # configuration and emit a warning below. We can't use `mkRemovedOptionModule` because
+      # `homebrew.global` is a submodule.
+      lockfiles = mkOption { visible = false; default = null; };
       noLock = mkOption { visible = false; default = null; };
 
       homebrewEnvironmentVariables = mkInternalOption { type = types.attrs; };
@@ -234,7 +208,6 @@ let
       homebrewEnvironmentVariables = {
         HOMEBREW_BUNDLE_FILE = mkIf config.brewfile "${brewfileFile}";
         HOMEBREW_NO_AUTO_UPDATE = mkIf (!config.autoUpdate) "1";
-        HOMEBREW_BUNDLE_NO_LOCK = mkIf (!config.lockfiles) "1";
       };
     };
   };
@@ -840,13 +813,9 @@ in
 
   config = {
 
-    assertions = [
-      # See comment above `homebrew.global.noLock` option declaration for why this is required.
-      { assertion = cfg.global.noLock == null; message = "The option `homebrew.global.noLock' was removed, use `homebrew.global.lockfiles' in it's place."; }
-    ];
-
     warnings = [
       (mkIf (options.homebrew.autoUpdate.isDefined || options.homebrew.cleanup.isDefined) "The `homebrew' module no longer upgrades outdated formulae and apps by default during `nix-darwin' system activation. To enable upgrading, set `homebrew.onActivation.upgrade = true'.")
+      (mkIf (cfg.global.noLock != null || cfg.global.lockfiles != null) "The options `homebrew.global.noLock' and `homebrew.global.lockfiles' have been deprecated. Homebrew Bundle removed lockfile support in Homebrew 4.4.0 (Oct 2024), so these options no longer have any effect. Please remove them from your configuration.")
     ];
 
     system.requiresPrimaryUser = mkIf (cfg.enable && options.homebrew.user.highestPrio == (mkOptionDefault {}).priority) [
