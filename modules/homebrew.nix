@@ -28,6 +28,15 @@ let
   mkBrewfileLineOptionsListString = attrs:
     concatStringsSep ", " (mapAttrsToList (n: v: "${n}: ${v}") attrs);
 
+  # Renders a Brewfile option that can be either a bool or a Ruby symbol (e.g. `:overwrite`).
+  mkBrewfileLineBoolOrSymbolString = name: config: sCfg:
+    optionalString (hasAttr name sCfg) (
+      ", ${name}: " + (
+        if isBool config.${name} then sCfg.${name}
+        else ":${config.${name}}"
+      )
+    );
+
 
   # Option and submodule helper functions ----------------------------------------------------------
 
@@ -456,12 +465,15 @@ let
           Homebrew's default is `false`.
         '';
       };
-      link = mkNullOrBoolOption {
+      link = mkOption {
+        type = with types; nullOr (either bool (enum [ "overwrite" ]));
+        default = null;
         description = ''
-          Whether to link the formula to the Homebrew prefix. When this option is
-          `null`, Homebrew will use it's default behavior which is to link the
-          formula if it's currently unlinked and not keg-only, and to unlink the formula if it's
-          currently linked and keg-only.
+          Whether to link the formula to the Homebrew prefix. When set to `"overwrite"`,
+          existing symlinks will be overwritten ({command}`brew link --overwrite`). When this
+          option is `null`, Homebrew will use its default behavior which is to link the formula
+          if it's currently unlinked and not keg-only, and to unlink the formula if it's currently
+          linked and keg-only.
         '';
       };
 
@@ -471,20 +483,14 @@ let
     config =
       let
         sCfg = mkProcessedSubmodConfig config;
-        sCfgSubset = removeAttrs sCfg [ "name" "restart_service" ];
+        sCfgSubset = removeAttrs sCfg [ "name" "restart_service" "link" ];
       in
       {
         brewfileLine =
           "brew ${sCfg.name}"
           + optionalString (sCfgSubset != { }) ", ${mkBrewfileLineOptionsListString sCfgSubset}"
-          # We need to handle the `restart_service` option seperately since it can be either a bool
-          # or `:changed` in the Brewfile.
-          + optionalString (sCfg ? restart_service) (
-            ", restart_service: " + (
-              if isBool config.restart_service then sCfg.restart_service
-              else ":${config.restart_service}"
-            )
-          );
+          + mkBrewfileLineBoolOrSymbolString "link" config sCfg
+          + mkBrewfileLineBoolOrSymbolString "restart_service" config sCfg;
       };
   };
 

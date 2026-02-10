@@ -17,7 +17,7 @@ in
 
   homebrew.user = "test-homebrew-user";
 
-  # Examples taken from https://github.com/Homebrew/homebrew-bundle
+  # Examples adapted from https://docs.brew.sh/Brew-Bundle-and-Brewfile
   homebrew.taps = [
     "homebrew/cask"
     {
@@ -41,7 +41,8 @@ in
     {
       name = "denji/nginx/nginx-full";
       args = [ "with-rmtp" ];
-      restart_service = "changed";
+      link = "overwrite";
+      restart_service = "always";
     }
     {
       name = "mysql@5.6";
@@ -89,7 +90,7 @@ in
 
     echo "checking brew entries in Brewfile" >&2
     ${mkTest "imagemagick" ''brew "imagemagick"''}
-    ${mkTest "denji/nginx/nginx-full" ''brew "denji/nginx/nginx-full", args: ["with-rmtp"], restart_service: :changed''}
+    ${mkTest "denji/nginx/nginx-full" ''brew "denji/nginx/nginx-full", args: ["with-rmtp"], link: :overwrite, restart_service: :always''}
     ${mkTest "mysql@5.6" ''brew "mysql@5.6", conflicts_with: ["mysql"], link: true, restart_service: true''}
 
     echo "checking cask entries in Brewfile" >&2
