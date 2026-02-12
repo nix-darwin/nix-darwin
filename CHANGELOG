@@ -1,3 +1,32 @@
+2026-02-10
+- Major changes to `homebrew` module
+
+  `homebrew.brewPrefix` was renamed to `homebrew.prefix`, and its semantics
+  changed: the old option pointed to the bin directory (e.g.,
+  `/opt/homebrew/bin`), while the new option points to the Homebrew prefix
+  (e.g., `/opt/homebrew`), matching `brew --prefix`.
+
+  `homebrew.whalebrews` was removed. Whalebrew support was removed from
+  Homebrew Bundle in Homebrew 4.7.0 (Nov 2025), so `whalebrew` entries in a
+  Brewfile now cause `brew bundle` to fail.
+
+  `homebrew.global.lockfiles` and `homebrew.global.noLock` no longer have any
+  effect. Homebrew Bundle removed lockfile support in Homebrew 4.4.0 (Oct 2024).
+
+  `homebrew.onActivation.cleanup` now supports a `"check"` mode, which checks
+  for unlisted packages and aborts activation if any are found, without
+  removing them.
+
+  Shell integration options were added: `homebrew.enableBashIntegration`,
+  `homebrew.enableFishIntegration`, and `homebrew.enableZshIntegration`.
+
+  New Brewfile entry types were added: `homebrew.goPackages`,
+  `homebrew.cargoPackages`, and `homebrew.vscode`.
+
+  New options were added for brews: `postinstall`, `link = "overwrite"`, and
+  `restart_service = "always"`. The `postinstall` option was also added for
+  casks.
+
 2025-01-30
 - Previously, some nix-darwin options applied to the user running
   `darwin-rebuild`. As part of a long‐term migration to make

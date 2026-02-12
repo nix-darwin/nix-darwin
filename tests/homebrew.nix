@@ -17,7 +17,7 @@ in
 
   homebrew.user = "test-homebrew-user";
 
-  # Examples taken from https://github.com/Homebrew/homebrew-bundle
+  # Examples adapted from https://docs.brew.sh/Brew-Bundle-and-Brewfile
   homebrew.taps = [
     "homebrew/cask"
     {
@@ -41,13 +41,18 @@ in
     {
       name = "denji/nginx/nginx-full";
       args = [ "with-rmtp" ];
-      restart_service = "changed";
+      link = "overwrite";
+      restart_service = "always";
     }
     {
       name = "mysql@5.6";
       restart_service = true;
       link = true;
       conflicts_with = [ "mysql" ];
+    }
+    {
+      name = "postgresql@16";
+      postinstall = "\${HOMEBREW_PREFIX}/opt/postgresql@16/bin/postgres -D \${HOMEBREW_PREFIX}/var/postgresql@16";
     }
   ];
 
@@ -61,6 +66,10 @@ in
       name = "opera";
       greedy = true;
     }
+    {
+      name = "google-cloud-sdk";
+      postinstall = "\${HOMEBREW_PREFIX}/bin/gcloud components update";
+    }
   ];
 
   homebrew.masApps = {
@@ -68,13 +77,18 @@ in
     Xcode = 497799835;
   };
 
-  homebrew.whalebrews = [
-    "whalebrew/wget"
-  ];
-
   homebrew.vscode = [
     "golang.go"
   ];
+
+  homebrew.goPackages = [
+    "github.com/charmbracelet/crush"
+  ];
+
+  homebrew.cargoPackages = [
+    "ripgrep"
+  ];
+
 
   test = ''
     bf=${lib.escapeShellArg config.homebrew.brewfile}
@@ -89,22 +103,33 @@ in
 
     echo "checking brew entries in Brewfile" >&2
     ${mkTest "imagemagick" ''brew "imagemagick"''}
-    ${mkTest "denji/nginx/nginx-full" ''brew "denji/nginx/nginx-full", args: ["with-rmtp"], restart_service: :changed''}
+    ${mkTest "denji/nginx/nginx-full" ''brew "denji/nginx/nginx-full", args: ["with-rmtp"], link: :overwrite, restart_service: :always''}
     ${mkTest "mysql@5.6" ''brew "mysql@5.6", conflicts_with: ["mysql"], link: true, restart_service: true''}
+    ${mkTest "postgresql@16" ''brew "postgresql@16", postinstall: "''${HOMEBREW_PREFIX}/opt/postgresql@16/bin/postgres -D ''${HOMEBREW_PREFIX}/var/postgresql@16"''}
 
     echo "checking cask entries in Brewfile" >&2
     ${mkTest "google-chrome" ''cask "google-chrome"''}
     ${mkTest "firefox" ''cask "firefox", args: { appdir: "~/my-apps/Applications" }''}
     ${mkTest "opera" ''cask "opera", greedy: true''}
+    ${mkTest "google-cloud-sdk" ''cask "google-cloud-sdk", postinstall: "''${HOMEBREW_PREFIX}/bin/gcloud components update"''}
 
     echo "checking mas entries in Brewfile" >&2
     ${mkTest "1Password for Safari" ''mas "1Password for Safari", id: 1569813296''}
     ${mkTest "Xcode" ''mas "Xcode", id: 497799835''}
 
-    echo "checking whalebrew entries in Brewfile" >&2
-    ${mkTest "whalebrew/wget" ''whalebrew "whalebrew/wget"''}
-
     echo "checking vscode entries in Brewfile" >&2
     ${mkTest "golang.go" ''vscode "golang.go"''}
+
+    echo "checking go entries in Brewfile" >&2
+    ${mkTest "github.com/charmbracelet/crush" ''go "github.com/charmbracelet/crush"''}
+
+    echo "checking cargo entries in Brewfile" >&2
+    ${mkTest "ripgrep" ''cargo "ripgrep"''}
+
+    echo "checking that shell integration is absent by default" >&2
+    (! grep 'brew shellenv' ${config.out}/etc/zshrc)
+
+    echo "checking that cleanup check is absent by default" >&2
+    (! grep 'brew bundle cleanup --file=' ${config.out}/activate)
   '';
 }
