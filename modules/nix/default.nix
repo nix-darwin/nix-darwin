@@ -812,13 +812,6 @@ in
         { assertion = elem "nixbld" config.users.knownGroups -> elem "nixbld" createdGroups; message = "refusing to delete group nixbld in users.knownGroups, this would break nix"; }
         { assertion = elem "_nixbld1" config.users.knownUsers -> elem "_nixbld1" createdUsers; message = "refusing to delete user _nixbld1 in users.knownUsers, this would break nix"; }
         { assertion = config.users.groups ? "nixbld" -> config.users.groups.nixbld.members != []; message = "refusing to remove all members from nixbld group, this would break nix"; }
-
-        {
-          # Should be fixed in Lix by https://gerrit.lix.systems/c/lix/+/2100
-          # Lix 2.92.0 will set `VERSION_SUFFIX` to `""`; `lib.versionAtLeast "" "pre20241107"` will return `true`.
-          assertion = cfg.settings.auto-optimise-store -> (cfg.package.pname == "lix" && (isNixAtLeast "2.92.0" && versionAtLeast (strings.removePrefix "-" cfg.package.VERSION_SUFFIX) "pre20241107"));
-          message = "`nix.settings.auto-optimise-store` is known to corrupt the Nix Store, please use `nix.optimise.automatic` instead.";
-        }
       ];
 
     # Not in NixOS module
