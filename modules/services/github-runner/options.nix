@@ -128,7 +128,7 @@ in
         name = mkOption {
           type = types.nullOr types.str;
           description = ''
-            Name of the runner to configure. If null, defaults to the hostname.
+            Name of the runner to configure. If null, defaults to the attributes name.
 
             Changing this option triggers a new runner registration.
           '';
