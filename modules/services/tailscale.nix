@@ -33,7 +33,7 @@ in
           1. at least one DNS server is added
           2. `Override local DNS` is enabled
 
-        As this option sets 100.100.100.100 as your sole DNS server, if the requirements above are not met,
+        As this option sets 100.100.100.100 and fd7a:115c:a1e0::53 as your sole DNS servers, if the requirements above are not met,
         all non-MagicDNS queries WILL fail.
       '';
     };
@@ -41,7 +41,7 @@ in
 
   config = mkIf cfg.enable {
     assertions = [{
-      assertion = !cfg.overrideLocalDns || config.networking.dns == [ "100.100.100.100" ];
+      assertion = cfg.overrideLocalDns -> (builtins.any (x: x != "100.100.100.100" || x != "fd7a:115c:a1e0::53") config.networking.dns);
       message = ''
         DNS servers should be configured on the Tailscale control panel when `services.tailscale.overrideLocalDns` is enabled.
 
@@ -61,10 +61,13 @@ in
       };
     };
 
-    networking.dns = mkIf cfg.overrideLocalDns [ "100.100.100.100" ];
+    networking.dns = mkIf cfg.overrideLocalDns [ "100.100.100.100" "fd7a:115c:a1e0::53" ];
 
     # Ensures Tailscale MagicDNS always works even without adding 100.100.100.100 to DNS servers
-    environment.etc."resolver/ts.net".text = "nameserver 100.100.100.100";
+    environment.etc."resolver/ts.net".text = ''
+      nameserver 100.100.100.100
+      nameserver fd7a:115c:a1e0::53
+    '';
 
     # This file gets created by tailscaled when `Override local DNS` is turned off
     environment.etc."resolver/ts.net".knownSha256Hashes = [
