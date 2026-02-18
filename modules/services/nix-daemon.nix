@@ -21,6 +21,19 @@ in
       description = "Whether to make the nix-daemon service socket activated.";
     };
 
+    services.nix-daemon.environmentVariables = mkOption {
+      type = types.attrsOf types.str;
+      default =
+        # See https://github.com/LnL7/nix-darwin/commit/a9e0f71c50fc9a72e22e991e323a6a7e50bfc0d7.
+        config.nix.envVars;
+      example = {
+        AWS_CONFIG_FILE = "/etc/nix/aws/config";
+        AWS_SHARED_CREDENTIALS_FILE  = "/etc/nix/aws/credentials";
+        NIX_SSL_CERT_FILE = "/etc/nix/my-cert-file.crt";
+      };
+      description = "Extra environment variables provided to nix-daemon";
+    };
+
     services.nix-daemon.logFile = mkOption {
       type = types.nullOr types.path;
       default = null;
@@ -58,7 +71,7 @@ in
         };
 
       serviceConfig.EnvironmentVariables = mkMerge [
-        config.nix.envVars
+        cfg.environmentVariables
         {
           NIX_SSL_CERT_FILE = mkIf
             (config.environment.variables ? NIX_SSL_CERT_FILE)
