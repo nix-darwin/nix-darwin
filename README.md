@@ -166,9 +166,11 @@ sudo nix-channel --update
 
 ## Documentation
 
-`darwin-help` will open up a local copy of the reference documentation, it can also be found online [here](https://nix-darwin.github.io/nix-darwin/manual/index.html).
+The reference documentation is available:
 
-The documentation is also available as manpages by running `man 5 configuration.nix`.
+* Online: [nix-darwin reference](https://nix-darwin.github.io/nix-darwin/manual/index.html)
+* Locally in your browser via the `darwin-help` command
+* As a manual page via `man 5 configuration.nix`
 
 ## Uninstalling
 
