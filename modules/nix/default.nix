@@ -10,7 +10,9 @@ let
 
   nixPackage = cfg.package.out;
 
-  isNixAtLeast = versionAtLeast (getVersion nixPackage);
+  nixVersion = getVersion nixPackage;
+
+  isNixAtLeast = versionAtLeast nixVersion;
 
   configureBuildUsers = !(config.nix.settings.auto-allocate-uids or false);
 
@@ -598,7 +600,11 @@ in
 
             sandbox = mkOption {
               type = types.either types.bool (types.enum [ "relaxed" ]);
-              default = false;
+              default = {
+                "nix" = isNixAtLeast "2.27" || (isNixAtLeast "2.24.13" && versionOlder nixVersion "2.25");
+                "lix" = isNixAtLeast "2.93.0";
+              }.${cfg.package.pname};
+              defaultText = "enabled if running Nix >= 2.14.13 <2.15.0 or Nix 2.27+ or Lix 2.93+";
               description = ''
                 If set, Nix will perform builds in a sandboxed environment that it
                 will set up automatically for each build. This prevents impurities
@@ -958,7 +964,6 @@ in
       (mkIf (!cfg.distributedBuilds) { builders = null; })
 
       (mkIf (isNixAtLeast "2.3pre") { sandbox-fallback = false; })
-
     ];
 
   };
