@@ -209,24 +209,43 @@ in
         default = { };
         example = lib.literalExpression ''
           {
+            # Nested attributes produce valid TOML sections like [gaps.outer]
             gaps = {
               outer.left = 8;
               outer.bottom = 8;
               outer.top = 8;
               outer.right = 8;
             };
+
+            # This produces [mode.main.binding] in TOML
             mode.main.binding = {
               alt-h = "focus left";
               alt-j = "focus down";
               alt-k = "focus up";
               alt-l = "focus right";
             };
+
+            # Additional mode example: [mode.service.binding]
+            mode.service.binding = {
+              esc = ["reload-config" "mode main"];
+            };
+
+            # Key mapping: [key-mapping]
+            key-mapping.preset = "qwerty";
           }
         '';
         description = ''
           AeroSpace configuration, see
           <link xlink:href="https://nikitabobko.github.io/AeroSpace/guide#configuring-aerospace"/>
           for supported values.
+
+          Note: For TOML sections with dots (e.g. [mode.main.binding]), use Nix's
+          nested attribute syntax:
+
+          mode.main.binding = { alt-h = "focus left"; }
+
+          Do NOT use quoted keys like "mode.main.binding" = { ... } as this
+          produces invalid TOML with quoted section headers.
         '';
       };
     };
@@ -242,6 +261,32 @@ in
         {
           assertion = cfg.settings.after-login-command == [ ];
           message = "AeroSpace will not run these commands as it does not start itself.";
+        }
+        {
+          assertion =
+            let
+              hasQuotedDotKey = val:
+                if lib.isAttrs val then
+                  lib.any (name:
+                    lib.hasInfix "." name || hasQuotedDotKey val.${name}
+                  ) (lib.attrNames val)
+                else if lib.isList val then
+                  lib.any hasQuotedDotKey val
+                else
+                  false;
+            in
+              !hasQuotedDotKey cfg.settings;
+          message = ''
+            AeroSpace settings contain quoted keys with dots (e.g., "mode.main.binding").
+            This produces invalid TOML with quoted section headers like ["mode.main.binding"].
+
+            Use nested attribute syntax instead:
+
+              mode.main.binding = { alt-h = "focus left"; }  # Correct
+              "mode.main.binding" = { alt-h = "focus left"; }  # Wrong
+
+            See https://github.com/nix-darwin/nix-darwin/issues/1592 for details.
+          '';
         }
       ];
       environment.systemPackages = [ cfg.package ];
