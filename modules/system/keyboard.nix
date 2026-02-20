@@ -53,6 +53,15 @@ in
         <https://developer.apple.com/library/content/technotes/tn2450/_index.html>.
       '';
     };
+
+    system.keyboard.appleKeyboardsOnly = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Restrict keyboard mappings to Apple keyboards only (vendor 0x0).
+        When enabled, mappings will only apply to keyboards made by Apple.
+      '';
+    };
   };
 
   config = {
@@ -85,7 +94,7 @@ in
     system.activationScripts.keyboard.text = optionalString cfg.enableKeyMapping ''
       # Configuring keyboard
       echo "configuring keyboard..." >&2
-      hidutil property --set '{"UserKeyMapping":${builtins.toJSON cfg.userKeyMapping}}' > /dev/null
+      hidutil property --set '{"UserKeyMapping":${builtins.toJSON cfg.userKeyMapping}}'${optionalString cfg.appleKeyboardsOnly " --matching '{\"VendorID\":0}'"} > /dev/null
     '';
 
   };
