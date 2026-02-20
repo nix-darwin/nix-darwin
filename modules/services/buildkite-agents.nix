@@ -46,7 +46,7 @@ let
       };
 
       dataDir = mkOption {
-        default = "/var/lib/buildkite-agent-${name}";
+        default = "/private/var/lib/buildkite-agent-${name}";
         description = "The workdir for the agent";
         type = types.str;
       };
