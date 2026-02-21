@@ -80,6 +80,30 @@ in
       '';
     };
 
+    host = mkOption {
+      type = types.str;
+      default = "localhost";
+      defaultText = literalExpression ''"localhost"'';
+      description = ''
+        The host used for communicating with the build machine via SSH.
+
+        This is localhost for the default linux-builder, but might be
+        an IP address for alternative implementations.
+      '';
+    };
+
+    port = mkOption {
+      type = types.int;
+      default = 31022;
+      description = ''
+        The port used for communicating with the build machine via SSH.
+
+        A high port is used for the default linux-builder, but alternative
+        implementations may use i.e. 22 together with
+        {option}`nix.linux-builder.host`.
+      '';
+    };
+
     protocol = mkOption {
       type = types.str;
       default = "ssh-ng";
@@ -212,9 +236,9 @@ in
       environment.etc."ssh/ssh_config.d/100-linux-builder.conf".text = ''
         Host linux-builder
           User builder
-          Hostname localhost
+          Hostname ${cfg.host}
           HostKeyAlias linux-builder
-          Port 31022
+          Port ${toString cfg.port}
           IdentityFile /etc/nix/builder_ed25519
       '';
 
