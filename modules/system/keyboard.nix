@@ -38,6 +38,18 @@ in
       description = "Whether to swap the left Command key and left Alt key.";
     };
 
+    system.keyboard.swapRightCommandAndRightOption = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Whether to swap the right Command key and right Option key.";
+    };
+
+    system.keyboard.swapCapsLockAndEscape = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Whether to swap the Caps Lock key and Escape key.";
+    };
+
     system.keyboard.swapLeftCtrlAndFn = mkOption {
       type = types.bool;
       default = false;
@@ -64,6 +76,14 @@ in
       (mkIf cfg.remapCapsLockToControl { HIDKeyboardModifierMappingSrc = 30064771129; HIDKeyboardModifierMappingDst = 30064771296; })
       (mkIf cfg.remapCapsLockToEscape { HIDKeyboardModifierMappingSrc = 30064771129; HIDKeyboardModifierMappingDst = 30064771113; })
       (mkIf cfg.nonUS.remapTilde { HIDKeyboardModifierMappingSrc = 30064771172; HIDKeyboardModifierMappingDst = 30064771125; })
+      (mkIf cfg.swapCapsLockAndEscape {
+        HIDKeyboardModifierMappingSrc = 30064771129;
+        HIDKeyboardModifierMappingDst = 30064771113;
+      })
+      (mkIf cfg.swapCapsLockAndEscape {
+        HIDKeyboardModifierMappingSrc = 30064771113;
+        HIDKeyboardModifierMappingDst = 30064771129;
+      })
       (mkIf cfg.swapLeftCommandAndLeftAlt {
         HIDKeyboardModifierMappingSrc = 30064771299;
         HIDKeyboardModifierMappingDst = 30064771298;
@@ -71,6 +91,14 @@ in
       (mkIf cfg.swapLeftCommandAndLeftAlt {
         HIDKeyboardModifierMappingSrc = 30064771298;
         HIDKeyboardModifierMappingDst = 30064771299;
+      })
+      (mkIf cfg.swapRightCommandAndRightOption {
+        HIDKeyboardModifierMappingSrc = 30064771303;
+        HIDKeyboardModifierMappingDst = 30064771302;
+      })
+      (mkIf cfg.swapRightCommandAndRightOption {
+        HIDKeyboardModifierMappingSrc = 30064771302;
+        HIDKeyboardModifierMappingDst = 30064771303;
       })
       (mkIf cfg.swapLeftCtrlAndFn {
         HIDKeyboardModifierMappingSrc = 30064771296;
