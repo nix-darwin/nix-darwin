@@ -7,6 +7,7 @@
   system.keyboard.nonUS.remapTilde = true;
   system.keyboard.swapCapsLockAndEscape = true;
   system.keyboard.swapLeftCommandAndLeftAlt = true;
+  system.keyboard.swapRightCommandAndRightOption = true;
   system.keyboard.swapLeftCtrlAndFn = true;
 
   test = ''
@@ -22,6 +23,10 @@
     grep "\"HIDKeyboardModifierMappingDst\":30064771298" ${config.out}/activate
     grep "\"HIDKeyboardModifierMappingDst\":30064771299" ${config.out}/activate
     grep "\"HIDKeyboardModifierMappingDst\":30064771296" ${config.out}/activate
+    grep "\"HIDKeyboardModifierMappingSrc\":30064771303" ${config.out}/activate
+    grep "\"HIDKeyboardModifierMappingSrc\":30064771302" ${config.out}/activate
+    grep "\"HIDKeyboardModifierMappingDst\":30064771302" ${config.out}/activate
+    grep "\"HIDKeyboardModifierMappingDst\":30064771303" ${config.out}/activate
     grep "\"HIDKeyboardModifierMappingDst\":1095216660483" ${config.out}/activate
   '';
 }

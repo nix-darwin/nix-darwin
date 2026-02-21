@@ -38,6 +38,12 @@ in
       description = "Whether to swap the left Command key and left Alt key.";
     };
 
+    system.keyboard.swapRightCommandAndRightOption = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Whether to swap the right Command key and right Option key.";
+    };
+
     system.keyboard.swapCapsLockAndEscape = mkOption {
       type = types.bool;
       default = false;
@@ -85,6 +91,14 @@ in
       (mkIf cfg.swapLeftCommandAndLeftAlt {
         HIDKeyboardModifierMappingSrc = 30064771298;
         HIDKeyboardModifierMappingDst = 30064771299;
+      })
+      (mkIf cfg.swapRightCommandAndRightOption {
+        HIDKeyboardModifierMappingSrc = 30064771303;
+        HIDKeyboardModifierMappingDst = 30064771302;
+      })
+      (mkIf cfg.swapRightCommandAndRightOption {
+        HIDKeyboardModifierMappingSrc = 30064771302;
+        HIDKeyboardModifierMappingDst = 30064771303;
       })
       (mkIf cfg.swapLeftCtrlAndFn {
         HIDKeyboardModifierMappingSrc = 30064771296;
