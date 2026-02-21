@@ -20,6 +20,8 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    system.requiresPrimaryUser = [ "programs._1password-gui.enable" ];
+
     # Based on https://github.com/reckenrode/nixos-configs/blob/22b8357fc6ffbd0df5ce50dc417c23a807a268a2/modules/by-name/1p/1password/darwin-module.nix
     system.activationScripts.applications.text = lib.mkAfter ''
       install -o root -g wheel -m0555 -d "/Applications/1Password.app"
@@ -41,7 +43,7 @@ in
         --no-owner
       )
 
-      ${lib.getExe pkgs.rsync} "''${rsyncFlags[@]}" \
+      launchctl asuser "$(id -- ${config.system.primaryUser})" ${lib.getExe pkgs.rsync} "''${rsyncFlags[@]}" \
         ${cfg.package}/Applications/1Password.app/ /Applications/1Password.app
     '';
   };
