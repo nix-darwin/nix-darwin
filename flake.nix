@@ -105,6 +105,8 @@
 
       checks = forDarwinSystems (system: jobs.${system}.tests // jobs.${system}.examples);
 
+      formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-tree);
+
       packages = forAllSystems (
         system:
         {
