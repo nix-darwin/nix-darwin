@@ -1,17 +1,23 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
   cfg = config.services.cachix-agent;
-in {
+in
+{
   options.services.cachix-agent = {
     enable = mkOption {
       type = types.bool;
       default = false;
       description = ''
         Enable to run Cachix Agent as a system service.
-        
+
         Read [Cachix Deploy](https://docs.cachix.org/deploy/) documentation for more information.
       '';
     };
@@ -38,7 +44,7 @@ in {
       default = "/etc/cachix-agent.token";
       description = ''
         Required file that needs to contain:
-       
+
           export CACHIX_AGENT_TOKEN=...
       '';
     };
@@ -55,7 +61,7 @@ in {
     assertions = [
       {
         assertion = config.nix.enable;
-        message = ''`services.cachix-agent.enable` requires `nix.enable`'';
+        message = "`services.cachix-agent.enable` requires `nix.enable`";
       }
     ];
 
@@ -66,7 +72,11 @@ in {
         exec ${cfg.package}/bin/cachix deploy agent ${cfg.name}
       '';
 
-      path = [ config.nix.package pkgs.coreutils config.environment.systemPath ];
+      path = [
+        config.nix.package
+        pkgs.coreutils
+        config.environment.systemPath
+      ];
 
       environment = {
         NIX_SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";

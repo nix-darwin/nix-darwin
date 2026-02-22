@@ -16,14 +16,33 @@ let
     mkPackageOption
     mkRemovedOptionModule
     types
-  ;
+    ;
 
   cfg = config.services.prometheus.exporters.node;
-in {
+in
+{
   imports = [
-    (mkRemovedOptionModule [ "services" "prometheus" "exporters" "node" "openFirewall" ] "No nix-darwin equivalent to this NixOS option.")
-    (mkRemovedOptionModule [ "services" "prometheus" "exporters" "node" "firewallFilter" ] "No nix-darwin equivalent to this NixOS option.")
-    (mkRemovedOptionModule [ "services" "prometheus" "exporters" "node" "firewallRules" ] "No nix-darwin equivalent to this NixOS option.")
+    (mkRemovedOptionModule [
+      "services"
+      "prometheus"
+      "exporters"
+      "node"
+      "openFirewall"
+    ] "No nix-darwin equivalent to this NixOS option.")
+    (mkRemovedOptionModule [
+      "services"
+      "prometheus"
+      "exporters"
+      "node"
+      "firewallFilter"
+    ] "No nix-darwin equivalent to this NixOS option.")
+    (mkRemovedOptionModule [
+      "services"
+      "prometheus"
+      "exporters"
+      "node"
+      "firewallRules"
+    ] "No nix-darwin equivalent to this NixOS option.")
   ];
 
   options = {
@@ -96,26 +115,29 @@ in {
     users.knownUsers = [ "_prometheus-node-exporter" ];
 
     launchd.daemons.prometheus-node-exporter = {
-      script = concatStringsSep " "
-        ([
-          (getExe cfg.package)
-          "--web.listen-address"
-          "${cfg.listenAddress}:${toString cfg.port}"
-        ]
-        ++ (map (collector: "--collector.${collector}") cfg.enabledCollectors)
-        ++ (map (collector: "--no-collector.${collector}") cfg.disabledCollectors)
-      ) + escapeShellArgs cfg.extraFlags;
-      serviceConfig = let
-        logPath = config.users.users._prometheus-node-exporter.home
-          + "/prometheus-node-exporter.log";
-      in {
-        KeepAlive = true;
-        RunAtLoad = true;
-        StandardErrorPath = logPath;
-        StandardOutPath = logPath;
-        GroupName = "_prometheus-node-exporter";
-        UserName = "_prometheus-node-exporter";
-      };
+      script =
+        concatStringsSep " " (
+          [
+            (getExe cfg.package)
+            "--web.listen-address"
+            "${cfg.listenAddress}:${toString cfg.port}"
+          ]
+          ++ (map (collector: "--collector.${collector}") cfg.enabledCollectors)
+          ++ (map (collector: "--no-collector.${collector}") cfg.disabledCollectors)
+        )
+        + escapeShellArgs cfg.extraFlags;
+      serviceConfig =
+        let
+          logPath = config.users.users._prometheus-node-exporter.home + "/prometheus-node-exporter.log";
+        in
+        {
+          KeepAlive = true;
+          RunAtLoad = true;
+          StandardErrorPath = logPath;
+          StandardOutPath = logPath;
+          GroupName = "_prometheus-node-exporter";
+          UserName = "_prometheus-node-exporter";
+        };
     };
   };
 }

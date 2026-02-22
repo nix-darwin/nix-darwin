@@ -54,7 +54,13 @@ with lib;
     };
 
     system.defaults.menuExtraClock.ShowDate = mkOption {
-      type = types.nullOr (types.enum [ 0 1 2 ]);
+      type = types.nullOr (
+        types.enum [
+          0
+          1
+          2
+        ]
+      );
       default = null;
       description = ''
         Show the full date. Default is null.

@@ -1,37 +1,43 @@
-{ lib
-, coreutils
-, jq
-, git
-, replaceVarsWith
-, stdenv
-, profile ? "/nix/var/nix/profiles/system"
-, # This should be kept in sync with the default
+{
+  lib,
+  coreutils,
+  jq,
+  git,
+  replaceVarsWith,
+  stdenv,
+  profile ? "/nix/var/nix/profiles/system",
+  # This should be kept in sync with the default
   # `environment.systemPath`. We err on side of including conditional
   # things like the profile directories, since they’re more likely to
   # help than hurt, and this default is mostly used for fresh
   # installations anyway.
   systemPath ? lib.concatStringsSep ":" [
-  "$HOME/.nix-profile/bin"
-  "/etc/profiles/per-user/$USER/bin"
-  "/run/current-system/sw/bin"
-  "/nix/var/nix/profiles/default/bin"
-  "/usr/local/bin"
-  "/usr/bin"
-  "/bin"
-  "/usr/sbin"
-  "/sbin"
-]
-, nixPackage ? null
-, # This should be kept in sync with the default `nix.nixPath`.
+    "$HOME/.nix-profile/bin"
+    "/etc/profiles/per-user/$USER/bin"
+    "/run/current-system/sw/bin"
+    "/nix/var/nix/profiles/default/bin"
+    "/usr/local/bin"
+    "/usr/bin"
+    "/bin"
+    "/usr/sbin"
+    "/sbin"
+  ],
+  nixPackage ? null,
+  # This should be kept in sync with the default `nix.nixPath`.
   nixPath ? lib.concatStringsSep ":" [
-  "darwin-config=/etc/nix-darwin/configuration.nix"
-  "/nix/var/nix/profiles/per-user/root/channels"
-]
+    "darwin-config=/etc/nix-darwin/configuration.nix"
+    "/nix/var/nix/profiles/per-user/root/channels"
+  ],
 }:
 
 let
-  extraPath = lib.makeBinPath [ coreutils jq git nixPackage ];
-  
+  extraPath = lib.makeBinPath [
+    coreutils
+    jq
+    git
+    nixPackage
+  ];
+
   writeProgram =
     attrs:
     replaceVarsWith (

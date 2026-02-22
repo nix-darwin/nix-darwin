@@ -1,9 +1,16 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
-let cfg = config.services.eternal-terminal;
-in {
+let
+  cfg = config.services.eternal-terminal;
+in
+{
   options = {
     services.eternal-terminal = {
 
@@ -13,8 +20,7 @@ in {
         type = types.path;
         default = pkgs.eternal-terminal;
         defaultText = "pkgs.eternal-terminal";
-        description =
-          "This option specifies the eternal-terminal package to use.";
+        description = "This option specifies the eternal-terminal package to use.";
       };
 
       port = mkOption {
@@ -65,20 +71,18 @@ in {
       serviceConfig = {
         ProgramArguments = [
           "${cfg.package}/bin/etserver"
-          "--cfgfile=${
-            pkgs.writeText "et.cfg" ''
-              ; et.cfg : Config file for Eternal Terminal
-              ;
+          "--cfgfile=${pkgs.writeText "et.cfg" ''
+            ; et.cfg : Config file for Eternal Terminal
+            ;
 
-              [Networking]
-              port = ${toString cfg.port}
+            [Networking]
+            port = ${toString cfg.port}
 
-              [Debug]
-              verbose = ${toString cfg.verbosity}
-              silent = ${if cfg.silent then "1" else "0"}
-              logsize = ${toString cfg.logSize}
-            ''
-          }"
+            [Debug]
+            verbose = ${toString cfg.verbosity}
+            silent = ${if cfg.silent then "1" else "0"}
+            logsize = ${toString cfg.logSize}
+          ''}"
         ];
         KeepAlive = true;
         RunAtLoad = true;

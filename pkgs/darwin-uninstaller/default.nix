@@ -1,4 +1,9 @@
-{ lib, path, stdenv, writeShellApplication }:
+{
+  lib,
+  path,
+  stdenv,
+  writeShellApplication,
+}:
 
 let
   uninstallSystem = import ../../eval-config.nix {
@@ -12,7 +17,8 @@ let
       }
     ];
   };
-in writeShellApplication {
+in
+writeShellApplication {
   name = "darwin-uninstaller";
   text = ''
     while [ "$#" -gt 0 ]; do

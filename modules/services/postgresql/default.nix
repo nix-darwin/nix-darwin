@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -7,20 +12,25 @@ let
   cfg = config.services.postgresql;
 
   postgresql =
-    if cfg.extraPlugins == []
-      then cfg.package
-      else cfg.package.withPackages (_: cfg.extraPlugins);
+    if cfg.extraPlugins == [ ] then cfg.package else cfg.package.withPackages (_: cfg.extraPlugins);
 
-  toStr = value:
-    if true == value then "yes"
-    else if false == value then "no"
-    else if isString value then "'${lib.replaceStrings ["'"] ["''"] value}'"
-    else toString value;
+  toStr =
+    value:
+    if true == value then
+      "yes"
+    else if false == value then
+      "no"
+    else if isString value then
+      "'${lib.replaceStrings [ "'" ] [ "''" ] value}'"
+    else
+      toString value;
 
   # The main PostgreSQL configuration file.
-  configFile = pkgs.writeTextDir "postgresql.conf" (concatStringsSep "\n" (mapAttrsToList (n: v: "${n} = ${toStr v}") cfg.settings));
+  configFile = pkgs.writeTextDir "postgresql.conf" (
+    concatStringsSep "\n" (mapAttrsToList (n: v: "${n} = ${toStr v}") cfg.settings)
+  );
 
-  configFileCheck = pkgs.runCommand "postgresql-configfile-check" {} ''
+  configFileCheck = pkgs.runCommand "postgresql-configfile-check" { } ''
     ${cfg.package}/bin/postgres -D${configFile} -C config_file >/dev/null
     touch $out
   '';
@@ -31,7 +41,11 @@ in
 
 {
   imports = [
-    (mkRemovedOptionModule [ "services" "postgresql" "extraConfig" ] "Use services.postgresql.settings instead.")
+    (mkRemovedOptionModule [
+      "services"
+      "postgresql"
+      "extraConfig"
+    ] "Use services.postgresql.settings instead.")
   ];
 
   ###### interface
@@ -107,8 +121,11 @@ in
 
       initdbArgs = mkOption {
         type = with types; listOf str;
-        default = [];
-        example = [ "--data-checksums" "--allow-group-access" ];
+        default = [ ];
+        example = [
+          "--data-checksums"
+          "--allow-group-access"
+        ];
         description = ''
           Additional arguments passed to `initdb` during data dir
           initialisation.
@@ -125,7 +142,7 @@ in
 
       ensureDatabases = mkOption {
         type = types.listOf types.str;
-        default = [];
+        default = [ ];
         description = ''
           Ensures that the specified databases exist.
           This option will never delete existing databases, especially not when the value of this
@@ -139,38 +156,40 @@ in
       };
 
       ensureUsers = mkOption {
-        type = types.listOf (types.submodule {
-          options = {
-            name = mkOption {
-              type = types.str;
-              description = ''
-                Name of the user to ensure.
-              '';
-            };
-            ensurePermissions = mkOption {
-              type = types.attrsOf types.str;
-              default = {};
-              description = ''
-                Permissions to ensure for the user, specified as an attribute set.
-                The attribute names specify the database and tables to grant the permissions for.
-                The attribute values specify the permissions to grant. You may specify one or
-                multiple comma-separated SQL privileges here.
+        type = types.listOf (
+          types.submodule {
+            options = {
+              name = mkOption {
+                type = types.str;
+                description = ''
+                  Name of the user to ensure.
+                '';
+              };
+              ensurePermissions = mkOption {
+                type = types.attrsOf types.str;
+                default = { };
+                description = ''
+                  Permissions to ensure for the user, specified as an attribute set.
+                  The attribute names specify the database and tables to grant the permissions for.
+                  The attribute values specify the permissions to grant. You may specify one or
+                  multiple comma-separated SQL privileges here.
 
-                For more information on how to specify the target
-                and on which privileges exist, see the
-                [GRANT syntax](https://www.postgresql.org/docs/current/sql-grant.html).
-                The attributes are used as `GRANT ''${attrValue} ON ''${attrName}`.
-              '';
-              example = literalExpression ''
-                {
-                  "DATABASE \"nextcloud\"" = "ALL PRIVILEGES";
-                  "ALL TABLES IN SCHEMA public" = "ALL PRIVILEGES";
-                }
-              '';
+                  For more information on how to specify the target
+                  and on which privileges exist, see the
+                  [GRANT syntax](https://www.postgresql.org/docs/current/sql-grant.html).
+                  The attributes are used as `GRANT ''${attrValue} ON ''${attrName}`.
+                '';
+                example = literalExpression ''
+                  {
+                    "DATABASE \"nextcloud\"" = "ALL PRIVILEGES";
+                    "ALL TABLES IN SCHEMA public" = "ALL PRIVILEGES";
+                  }
+                '';
+              };
             };
-          };
-        });
-        default = [];
+          }
+        );
+        default = [ ];
         description = ''
           Ensures that the specified users exist and have at least the ensured permissions.
           The PostgreSQL users will be identified using peer authentication. This authenticates the Unix user with the
@@ -220,7 +239,7 @@ in
 
       extraPlugins = mkOption {
         type = types.listOf types.path;
-        default = [];
+        default = [ ];
         example = literalExpression "with pkgs.postgresql_11.pkgs; [ postgis pg_repack ]";
         description = ''
           List of PostgreSQL plugins. PostgreSQL version for each plugin should
@@ -229,8 +248,15 @@ in
       };
 
       settings = mkOption {
-        type = with types; attrsOf (oneOf [ bool float int str ]);
-        default = {};
+        type =
+          with types;
+          attrsOf (oneOf [
+            bool
+            float
+            int
+            str
+          ]);
+        default = { };
         description = ''
           PostgreSQL configuration. Refer to
           <https://www.postgresql.org/docs/11/config-setting.html#CONFIG-SETTING-CONFIGURATION-FILE>
@@ -271,7 +297,7 @@ in
           PostgreSQL superuser account to use for various operations. Internal since changing
           this value would lead to breakage while setting up databases.
         '';
-        };
+      };
     };
 
   };
@@ -285,86 +311,86 @@ in
     #
     # one could perhaps trigger another agent by the existing agent, but
     # I couldn't find how to do that.
-    warnings = if cfg.initialScript != null
-      || cfg.ensureDatabases != []
-      || cfg.ensureUsers != []
-      then [''
-        Currently nix-darwin does not support postgresql initialScript,
-        ensureDatabases, or ensureUsers
-      '']
-      else [];
+    warnings =
+      if cfg.initialScript != null || cfg.ensureDatabases != [ ] || cfg.ensureUsers != [ ] then
+        [
+          ''
+            Currently nix-darwin does not support postgresql initialScript,
+            ensureDatabases, or ensureUsers
+          ''
+        ]
+      else
+        [ ];
 
-    services.postgresql.settings =
-      {
-        hba_file = "${pkgs.writeText "pg_hba.conf" cfg.authentication}";
-        ident_file = "${pkgs.writeText "pg_ident.conf" cfg.identMap}";
-        log_destination = "stderr";
-        log_line_prefix = cfg.logLinePrefix;
-        listen_addresses = if cfg.enableTCPIP then "*" else "localhost";
-        port = cfg.port;
-      };
+    services.postgresql.settings = {
+      hba_file = "${pkgs.writeText "pg_hba.conf" cfg.authentication}";
+      ident_file = "${pkgs.writeText "pg_ident.conf" cfg.identMap}";
+      log_destination = "stderr";
+      log_line_prefix = cfg.logLinePrefix;
+      listen_addresses = if cfg.enableTCPIP then "*" else "localhost";
+      port = cfg.port;
+    };
 
-    services.postgresql.package = let
+    services.postgresql.package =
+      let
         mkThrow = ver: throw "postgresql_${ver} was removed, please upgrade your postgresql version.";
-    in
+      in
       # Note: when changing the default, make it conditional on
       # ‘system.stateVersion’ to maintain compatibility with existing
       # systems!
-      mkDefault (if config.system.stateVersion >= 4 then pkgs.postgresql_14
-            else mkThrow "9_6");
+      mkDefault (if config.system.stateVersion >= 4 then pkgs.postgresql_14 else mkThrow "9_6");
 
     services.postgresql.dataDir = mkDefault "/var/lib/postgresql/${cfg.package.psqlSchema}";
 
-    services.postgresql.authentication = mkAfter
-      ''
-        # Generated file; do not edit!
-        local all all              peer
-        host  all all 127.0.0.1/32 md5
-        host  all all ::1/128      md5
-      '';
+    services.postgresql.authentication = mkAfter ''
+      # Generated file; do not edit!
+      local all all              peer
+      host  all all 127.0.0.1/32 md5
+      host  all all ::1/128      md5
+    '';
 
     environment.systemPackages = [ postgresql ];
 
     environment.pathsToLink = [
-     "/share/postgresql"
+      "/share/postgresql"
     ];
 
     # FIXME: implement system.extraDependencies to do this less sketchily
     # system.extraDependencies = lib.optional (cfg.checkConfig && pkgs.stdenv.hostPlatform == pkgs.stdenv.buildPlatform) configFileCheck;
 
-    launchd.user.agents.postgresql =
-      { path = [ postgresql ];
-        script = ''
-          # FIXME: ${if cfg.checkConfig then configFileCheck else ""}
+    launchd.user.agents.postgresql = {
+      path = [ postgresql ];
+      script = ''
+        # FIXME: ${if cfg.checkConfig then configFileCheck else ""}
 
-          if ! test -e ${cfg.dataDir}/PG_VERSION; then
-            # Cleanup the data directory.
-            ${pkgs.coreutils}/bin/rm -f ${cfg.dataDir}/*.conf
+        if ! test -e ${cfg.dataDir}/PG_VERSION; then
+          # Cleanup the data directory.
+          ${pkgs.coreutils}/bin/rm -f ${cfg.dataDir}/*.conf
 
-            # Initialise the database.
-            ${postgresql}/bin/initdb -U ${cfg.superUser} ${concatStringsSep " " cfg.initdbArgs}
+          # Initialise the database.
+          ${postgresql}/bin/initdb -U ${cfg.superUser} ${concatStringsSep " " cfg.initdbArgs}
 
-            # See postStart!
-            # FIXME: implement postStart
-            # touch "${cfg.dataDir}/.first_startup"
-          fi
+          # See postStart!
+          # FIXME: implement postStart
+          # touch "${cfg.dataDir}/.first_startup"
+        fi
 
-          ${pkgs.coreutils}/bin/ln -sfn ${configFile}/postgresql.conf ${cfg.dataDir}/postgresql.conf
-          ${optionalString (cfg.recoveryConfig != null) ''
-            ${pkgs.coreutils}/bin/ln -sfn "${pkgs.writeText "recovery.conf" cfg.recoveryConfig}" \
-              "${cfg.dataDir}/recovery.conf"
-          ''}
+        ${pkgs.coreutils}/bin/ln -sfn ${configFile}/postgresql.conf ${cfg.dataDir}/postgresql.conf
+        ${optionalString (cfg.recoveryConfig != null) ''
+          ${pkgs.coreutils}/bin/ln -sfn "${pkgs.writeText "recovery.conf" cfg.recoveryConfig}" \
+            "${cfg.dataDir}/recovery.conf"
+        ''}
 
-          exec ${postgresql}/bin/postgres
-        '';
+        exec ${postgresql}/bin/postgres
+      '';
 
-        serviceConfig.KeepAlive = true;
-        serviceConfig.RunAtLoad = true;
-        serviceConfig.EnvironmentVariables = {
-          PGDATA = cfg.dataDir;
-        };
-        managedBy = "services.postgresql.enable";
+      serviceConfig.KeepAlive = true;
+      serviceConfig.RunAtLoad = true;
+      serviceConfig.EnvironmentVariables = {
+        PGDATA = cfg.dataDir;
       };
+      managedBy = "services.postgresql.enable";
+    };
 
   };
 }

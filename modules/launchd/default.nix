@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -24,18 +29,22 @@ let
 
     in
 
-    { options = {
+    {
+      options = {
         environment = mkOption {
           type = types.attrsOf (types.either types.str (types.listOf types.str));
-          default = {};
-          example = { PATH = "/foo/bar/bin"; LANG = "nl_NL.UTF-8"; };
+          default = { };
+          example = {
+            PATH = "/foo/bar/bin";
+            LANG = "nl_NL.UTF-8";
+          };
           description = "Environment variables passed to the service's processes.";
           apply = mapAttrs (n: v: if isList v then concatStringsSep ":" v else v);
         };
 
         path = mkOption {
           type = types.listOf (types.either types.path types.str);
-          default = [];
+          default = [ ];
           description = ''
             Packages added to the service's {env}`PATH`
             environment variable.  Only the {file}`bin`
@@ -67,11 +76,11 @@ let
 
         serviceConfig = mkOption {
           type = types.submodule launchdConfig;
-          example =
-            { Program = "/run/current-system/sw/bin/nix-daemon";
-              KeepAlive = true;
-            };
-          default = {};
+          example = {
+            Program = "/run/current-system/sw/bin/nix-daemon";
+            KeepAlive = true;
+          };
+          default = { };
           description = ''
             Each attribute in this set specifies an option for a key in the plist.
             <https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man5/launchd.plist.5.html>
@@ -80,11 +89,13 @@ let
       };
 
       config = {
-        command = mkIf (config.script != "") (pkgs.writeScript "${name}-start" ''
-          #! ${stdenv.shell}
+        command = mkIf (config.script != "") (
+          pkgs.writeScript "${name}-start" ''
+            #! ${stdenv.shell}
 
-          ${config.script}
-        '');
+            ${config.script}
+          ''
+        );
 
         serviceConfig.Label = mkDefault "${cfg.labelPrefix}.${name}";
         serviceConfig.ProgramArguments = mkIf (config.command != "") [
@@ -92,7 +103,7 @@ let
           "-c"
           "/bin/wait4path /nix/store && exec ${config.command}"
         ];
-        serviceConfig.EnvironmentVariables = mkIf (env != {}) env;
+        serviceConfig.EnvironmentVariables = mkIf (env != { }) env;
       };
     };
 in
@@ -110,8 +121,10 @@ in
 
     launchd.envVariables = mkOption {
       type = types.attrsOf (types.either types.str (types.listOf types.str));
-      default = {};
-      example = { LANG = "nl_NL.UTF-8"; };
+      default = { };
+      example = {
+        LANG = "nl_NL.UTF-8";
+      };
       description = ''
         A set of environment variables to be set on all future
         processes launched by launchd in the caller's context.
@@ -124,8 +137,10 @@ in
 
     launchd.user.envVariables = mkOption {
       type = types.attrsOf (types.either types.str (types.listOf types.str));
-      default = {};
-      example = { LANG = "nl_NL.UTF-8"; };
+      default = { };
+      example = {
+        LANG = "nl_NL.UTF-8";
+      };
       description = ''
         A set of environment variables to be set on all future
         processes launched by launchd in the caller's context.
@@ -137,7 +152,7 @@ in
     };
 
     launchd.agents = mkOption {
-      default = {};
+      default = { };
       type = types.attrsOf (types.submodule serviceOptions);
       description = ''
         Definition of per-user launchd agents.
@@ -153,7 +168,7 @@ in
     };
 
     launchd.daemons = mkOption {
-      default = {};
+      default = { };
       type = types.attrsOf (types.submodule serviceOptions);
       description = ''
         Definition of launchd daemons.
@@ -169,17 +184,27 @@ in
     };
 
     launchd.user.agents = mkOption {
-      default = {};
-      type = types.attrsOf (types.submodule [
-        serviceOptions
-        ({ name, ... }: {
-          options.managedBy = lib.mkOption {
-            type = lib.types.str;
-            internal = true;
-            default = lib.showOption [ "launchd" "user" "agents" name ];
-          };
-        })
-      ]);
+      default = { };
+      type = types.attrsOf (
+        types.submodule [
+          serviceOptions
+          (
+            { name, ... }:
+            {
+              options.managedBy = lib.mkOption {
+                type = lib.types.str;
+                internal = true;
+                default = lib.showOption [
+                  "launchd"
+                  "user"
+                  "agents"
+                  name
+                ];
+              };
+            }
+          )
+        ]
+      );
       description = ''
         Definition of per-user launchd agents.
 

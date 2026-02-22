@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 let
-  ofborg = pkgs.runCommand "ofborg-0.0.0" {} "mkdir $out";
+  ofborg = pkgs.runCommand "ofborg-0.0.0" { } "mkdir $out";
 in
 
 {

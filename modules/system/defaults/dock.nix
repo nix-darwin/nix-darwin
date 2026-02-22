@@ -5,9 +5,13 @@ with lib;
 let
   # Should only be used with options that previously used floats defined as strings.
   inherit (config.lib.defaults.types) floatWithDeprecationError;
-in {
+in
+{
   imports = [
-    (mkRenamedOptionModule [ "system" "defaults" "dock" "expose-group-by-app" ] [ "system" "defaults" "dock" "expose-group-apps" ])
+    (mkRenamedOptionModule
+      [ "system" "defaults" "dock" "expose-group-by-app" ]
+      [ "system" "defaults" "dock" "expose-group-apps" ]
+    )
   ];
 
   options = {
@@ -88,7 +92,13 @@ in {
     };
 
     system.defaults.dock.mineffect = mkOption {
-      type = types.nullOr (types.enum [ "genie" "suck" "scale" ]);
+      type = types.nullOr (
+        types.enum [
+          "genie"
+          "suck"
+          "scale"
+        ]
+      );
       default = null;
       description = ''
         Set the minimize/maximize window effect. The default is genie.
@@ -120,7 +130,13 @@ in {
     };
 
     system.defaults.dock.orientation = mkOption {
-      type = types.nullOr (types.enum [ "bottom" "left" "right" ]);
+      type = types.nullOr (
+        types.enum [
+          "bottom"
+          "left"
+          "right"
+        ]
+      );
       default = null;
       description = ''
         Position of the dock on screen.  The default is "bottom".
@@ -128,41 +144,50 @@ in {
     };
 
     system.defaults.dock.persistent-apps = mkOption {
-      type = let
-        taggedType = types.attrTag {
-              app = mkOption {
-                description = "An application to be added to the dock.";
-                type = types.str;
-              };
-              file = mkOption {
-                description = "A file to be added to the dock.";
-                type = types.str;
-              };
-              folder = mkOption {
-                description = "A folder to be added to the dock.";
-                type = types.str;
-              };
-              spacer = mkOption {
-                description = "A spacer to be added to the dock. Can be small or regular size.";
-                type = types.submodule {
-                  options.small = mkOption {
-                    description = "Whether the spacer is small.";
-                    type = types.bool;
-                    default = false;
-                  };
+      type =
+        let
+          taggedType = types.attrTag {
+            app = mkOption {
+              description = "An application to be added to the dock.";
+              type = types.str;
+            };
+            file = mkOption {
+              description = "A file to be added to the dock.";
+              type = types.str;
+            };
+            folder = mkOption {
+              description = "A folder to be added to the dock.";
+              type = types.str;
+            };
+            spacer = mkOption {
+              description = "A spacer to be added to the dock. Can be small or regular size.";
+              type = types.submodule {
+                options.small = mkOption {
+                  description = "Whether the spacer is small.";
+                  type = types.bool;
+                  default = false;
                 };
               };
             };
+          };
 
-        simpleType = types.either types.str types.path;
-        toTagged = path: { app = path; };
+          simpleType = types.either types.str types.path;
+          toTagged = path: { app = path; };
         in
-      types.nullOr (types.listOf (types.coercedTo simpleType toTagged taggedType));
+        types.nullOr (types.listOf (types.coercedTo simpleType toTagged taggedType));
       default = null;
       example = [
         { app = "/Applications/Safari.app"; }
-        { spacer = { small = false; }; }
-        { spacer = { small = true; }; }
+        {
+          spacer = {
+            small = false;
+          };
+        }
+        {
+          spacer = {
+            small = true;
+          };
+        }
         { folder = "/System/Applications/Utilities"; }
         { file = "/User/example/Downloads/test.csv"; }
       ];
@@ -170,119 +195,160 @@ in {
         Persistent applications, spacers, files, and folders in the dock.
       '';
       apply =
-      let
-        toTile = item: if item ? app then {
-        tile-data.file-data = {
-          _CFURLString = item.app;
-          _CFURLStringType = 0;
-        };
-        } else if item ? spacer then {
-          tile-data = { };
-          tile-type = if item.spacer.small then "small-spacer-tile" else "spacer-tile";
-        } else if item ? folder then {
-          tile-data.file-data = {
-            _CFURLString = "file://" + item.folder;
-            _CFURLStringType = 15;
-          };
-          tile-type = "directory-tile";
-        } else if item ? file then {
-          tile-data.file-data = {
-            _CFURLString = "file://" + item.file;
-            _CFURLStringType = 15;
-          };
-          tile-type = "file-tile";
-        } else item;
-      in
-      value: if value == null then null else map toTile value;
+        let
+          toTile =
+            item:
+            if item ? app then
+              {
+                tile-data.file-data = {
+                  _CFURLString = item.app;
+                  _CFURLStringType = 0;
+                };
+              }
+            else if item ? spacer then
+              {
+                tile-data = { };
+                tile-type = if item.spacer.small then "small-spacer-tile" else "spacer-tile";
+              }
+            else if item ? folder then
+              {
+                tile-data.file-data = {
+                  _CFURLString = "file://" + item.folder;
+                  _CFURLStringType = 15;
+                };
+                tile-type = "directory-tile";
+              }
+            else if item ? file then
+              {
+                tile-data.file-data = {
+                  _CFURLString = "file://" + item.file;
+                  _CFURLStringType = 15;
+                };
+                tile-type = "file-tile";
+              }
+            else
+              item;
+        in
+        value: if value == null then null else map toTile value;
     };
 
     system.defaults.dock.persistent-others = mkOption {
-      type = let
-        folderType = types.submodule {
-          options.path = mkOption {
-            description = "Path to a folder to be added to the dock.";
-            type = types.str;
+      type =
+        let
+          folderType = types.submodule {
+            options.path = mkOption {
+              description = "Path to a folder to be added to the dock.";
+              type = types.str;
+            };
+            options.arrangement = mkOption {
+              description = "Sort order for files in folder when clicked.";
+              type = types.enum [
+                "name"
+                "date-added"
+                "date-modified"
+                "date-created"
+                "kind"
+              ];
+              default = "name";
+            };
+            options.displayas = mkOption {
+              description = "How to display the folder before clicked.  stack: Stack of file previews.  folder: A folder icon";
+              type = types.enum [
+                "stack"
+                "folder"
+              ];
+              default = "stack";
+            };
+            options.showas = mkOption {
+              description = "Effect to show files when clicked.  fan: fan-out effect, grid: box, list: list";
+              type = types.enum [
+                "automatic"
+                "fan"
+                "grid"
+                "list"
+              ];
+              default = "automatic";
+            };
           };
-          options.arrangement = mkOption {
-            description = "Sort order for files in folder when clicked.";
-            type = types.enum ["name" "date-added" "date-modified" "date-created" "kind"];
-            default = "name";
+          taggedType = types.attrTag {
+            file = mkOption {
+              description = "A file to be added to the dock.";
+              type = types.str;
+            };
+            folder = mkOption {
+              description = "A folder to be added to the dock.";
+              type = types.coercedTo types.str (str: { path = str; }) folderType;
+            };
           };
-          options.displayas = mkOption {
-            description = "How to display the folder before clicked.  stack: Stack of file previews.  folder: A folder icon";
-            type = types.enum ["stack" "folder"];
-            default = "stack";
-          };
-          options.showas = mkOption {
-            description = "Effect to show files when clicked.  fan: fan-out effect, grid: box, list: list";
-            type = types.enum ["automatic" "fan" "grid" "list"];
-            default = "automatic";
-          };
-        };
-        taggedType = types.attrTag {
-          file = mkOption {
-            description = "A file to be added to the dock.";
-            type = types.str;
-          };
-          folder = mkOption {
-            description = "A folder to be added to the dock.";
-            type = types.coercedTo types.str (str: { path = str; }) folderType;
-          };
-        };
-        simpleType = types.either types.str types.path;
-        # Below to NOT break exisiting config
-        toTagged = _path: let path = builtins.toString _path; in if strings.hasInfix "." (last (splitString "/" path)) then { file = path; } else { folder = path; };
-        # toTagged = path: { folder = path; }; # or this to be consistent with persistent-apps
-      in
+          simpleType = types.either types.str types.path;
+          # Below to NOT break exisiting config
+          toTagged =
+            _path:
+            let
+              path = builtins.toString _path;
+            in
+            if strings.hasInfix "." (last (splitString "/" path)) then { file = path; } else { folder = path; };
+          # toTagged = path: { folder = path; }; # or this to be consistent with persistent-apps
+        in
         types.nullOr (types.listOf (types.coercedTo simpleType toTagged taggedType));
       default = null;
       example = lib.literalExpression ''
-      [
-        ./flake.nix
-        "/Volumes"
-        { folder = "/Users/@username@/Downloads"; }
-        { folder = { path = "/Users/@username@/.emacs.d"; showas = "grid"; }; }
-        { file = "/Users/@username@/Desktop/this_is_a_file"; }      
-      ]'';
+        [
+          ./flake.nix
+          "/Volumes"
+          { folder = "/Users/@username@/Downloads"; }
+          { folder = { path = "/Users/@username@/.emacs.d"; showas = "grid"; }; }
+          { file = "/Users/@username@/Desktop/this_is_a_file"; }      
+        ]'';
       description = ''
         Persistent files, and folders in the dock.
       '';
-      apply = let
-        arrangementMap = {
-          name          = 1;
-          date-added    = 2;
-          date-modified = 3;
-          date-created  = 4;
-          kind          = 5;
-        };
-        displayasMap = {
-          stack  = 0;
-          folder = 1;
-        };
-        showasMap = {
-          automatic = 0;
-          fan       = 1;
-          grid      = 2;
-          list      = 3;
-        };
-        parseFolder = (folder:
-          builtins.mapAttrs (name: val:
-            if name == "arrangement" then arrangementMap.${val}
-            else if name == "displayas" then displayasMap.${val}
-            else if name == "showas" then showasMap.${val}
-            else val
-          ) folder
-        );
-        toTile = item: {
-          tile-data = {
-            file-data = {
-              _CFURLString = "file://" + (if item ? folder then item.folder.path else item.file);
-              _CFURLStringType = 15;
-            };
-          } // (if item ? folder then {inherit (parseFolder item.folder) arrangement displayas showas;} else {});
-          tile-type = if item ? folder then "directory-tile" else "file-tile";
-        };
-      in
+      apply =
+        let
+          arrangementMap = {
+            name = 1;
+            date-added = 2;
+            date-modified = 3;
+            date-created = 4;
+            kind = 5;
+          };
+          displayasMap = {
+            stack = 0;
+            folder = 1;
+          };
+          showasMap = {
+            automatic = 0;
+            fan = 1;
+            grid = 2;
+            list = 3;
+          };
+          parseFolder = (
+            folder:
+            builtins.mapAttrs (
+              name: val:
+              if name == "arrangement" then
+                arrangementMap.${val}
+              else if name == "displayas" then
+                displayasMap.${val}
+              else if name == "showas" then
+                showasMap.${val}
+              else
+                val
+            ) folder
+          );
+          toTile = item: {
+            tile-data = {
+              file-data = {
+                _CFURLString = "file://" + (if item ? folder then item.folder.path else item.file);
+                _CFURLStringType = 15;
+              };
+            }
+            // (
+              if item ? folder then { inherit (parseFolder item.folder) arrangement displayas showas; } else { }
+            );
+            tile-type = if item ? folder then "directory-tile" else "file-tile";
+          };
+        in
         value: if value == null then null else map toTile value;
     };
 
@@ -474,6 +540,5 @@ in {
       '';
     };
 
-    };
+  };
 }
-

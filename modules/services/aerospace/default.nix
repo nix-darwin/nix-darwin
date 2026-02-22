@@ -9,27 +9,27 @@ let
   cfg = config.services.aerospace;
 
   format = pkgs.formats.toml { };
-  filterAttrsRecursive = pred: set:
+  filterAttrsRecursive =
+    pred: set:
     lib.listToAttrs (
       lib.concatMap (
-        name: let
+        name:
+        let
           v = set.${name};
         in
-          if pred v
-          then [
+        if pred v then
+          [
             (lib.nameValuePair name (
-              if lib.isAttrs v
-              then filterAttrsRecursive pred v
-              else if lib.isList v
-              then
-                (map (i:
-                  if lib.isAttrs i
-                  then filterAttrsRecursive pred i
-                  else i) (lib.filter pred v))
-              else v
+              if lib.isAttrs v then
+                filterAttrsRecursive pred v
+              else if lib.isList v then
+                (map (i: if lib.isAttrs i then filterAttrsRecursive pred i else i) (lib.filter pred v))
+              else
+                v
             ))
           ]
-          else []
+        else
+          [ ]
       ) (lib.attrNames set)
     );
   filterNulls = filterAttrsRecursive (v: v != null);
@@ -137,8 +137,14 @@ in
                     description = "Whether to check further callbacks after this rule (optional).";
                   };
                   run = lib.mkOption {
-                    type = oneOf [str (listOf str)];
-                    example = ["move-node-to-workspace m" "resize-node"];
+                    type = oneOf [
+                      str
+                      (listOf str)
+                    ];
+                    example = [
+                      "move-node-to-workspace m"
+                      "resize-node"
+                    ];
                     description = "Commands to execute when the conditions match (required).";
                   };
                 };
@@ -154,13 +160,20 @@ in
                     during-aerospace-startup = false;
                   };
                   check-further-callbacks = false;
-                  run = ["move-node-to-workspace m" "resize-node"];
+                  run = [
+                    "move-node-to-workspace m"
+                    "resize-node"
+                  ];
                 }
               ];
               description = "Commands to run every time a new window is detected with optional conditions.";
             };
             workspace-to-monitor-force-assignment = lib.mkOption {
-              type = attrsOf (oneOf [int str (listOf str)]);
+              type = attrsOf (oneOf [
+                int
+                str
+                (listOf str)
+              ]);
               default = { };
               description = ''
                 Map workspaces to specific monitors.
@@ -172,7 +185,10 @@ in
                 "3" = "secondary"; # Secondary monitor (non-main).
                 "4" = "built-in"; # Built-in display.
                 "5" = "^built-in retina display$"; # Regex for the built-in retina display.
-                "6" = ["secondary" "dell"]; # Match first pattern in the list.
+                "6" = [
+                  "secondary"
+                  "dell"
+                ]; # Match first pattern in the list.
               };
             };
             on-focus-changed = lib.mkOption {

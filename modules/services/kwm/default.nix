@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -38,15 +43,20 @@ in
     environment.etc."kwmrc".text = cfg.kwmConfig;
 
     launchd.user.agents.kwm = {
-      serviceConfig.ProgramArguments = [ "${cfg.package}/kwm" ]
-        ++ optionals (cfg.kwmConfig != "") [ "-c" "/etc/kwmrc" ];
+      serviceConfig.ProgramArguments = [
+        "${cfg.package}/kwm"
+      ]
+      ++ optionals (cfg.kwmConfig != "") [
+        "-c"
+        "/etc/kwmrc"
+      ];
       serviceConfig.KeepAlive = true;
       serviceConfig.ProcessType = "Interactive";
-      serviceConfig.Sockets.Listeners =
-        { SockServiceName = "3020";
-          SockType = "dgram";
-          SockFamily = "IPv4";
-        };
+      serviceConfig.Sockets.Listeners = {
+        SockServiceName = "3020";
+        SockType = "dgram";
+        SockFamily = "IPv4";
+      };
       managedBy = "services.kwm.enable";
     };
 

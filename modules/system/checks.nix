@@ -1,10 +1,15 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
   # Similar to lib.escapeShellArg but escapes "s instead of 's, to allow for parameter expansion in shells
-  escapeDoubleQuote = arg: ''"${replaceStrings ["\""] ["\"\\\"\""] (toString arg)}"'';
+  escapeDoubleQuote = arg: ''"${replaceStrings [ "\"" ] [ "\"\\\"\"" ] (toString arg)}"'';
 
   cfg = config.system.checks;
 
@@ -287,8 +292,7 @@ in
 
     system.checks.verifyBuildUsers = mkOption {
       type = types.bool;
-      default =
-        config.nix.enable && !(config.nix.settings.auto-allocate-uids or false);
+      default = config.nix.enable && !(config.nix.settings.auto-allocate-uids or false);
       description = "Whether to run the Nix build users validation checks.";
     };
 

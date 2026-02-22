@@ -24,7 +24,7 @@ in
 
 {
   imports = [
-    (lib.mkRenamedOptionModule ["environment" "postBuild"] ["environment" "extraSetup"])
+    (lib.mkRenamedOptionModule [ "environment" "postBuild" ] [ "environment" "extraSetup" ])
   ];
 
   options = {
