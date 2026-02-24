@@ -155,7 +155,7 @@ in {
             };
 
         simpleType = types.either types.str types.path;
-        toTagged = path: { app = path; };
+        toTagged = path: { app = builtins.toString path; };
         in
       types.nullOr (types.listOf (types.coercedTo simpleType toTagged taggedType));
       default = null;
