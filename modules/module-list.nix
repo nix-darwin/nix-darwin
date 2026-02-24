@@ -83,6 +83,7 @@
   ./services/monitoring/telegraf.nix
   ./services/monitoring/netdata.nix
   ./services/monitoring/prometheus-node-exporter.nix
+  ./services/nebula.nix
   ./services/netbird.nix
   ./services/nix-daemon.nix
   ./services/nix-gc
