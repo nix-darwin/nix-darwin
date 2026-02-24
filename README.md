@@ -39,8 +39,8 @@ cd /etc/nix-darwin
 
 # To use Nixpkgs unstable:
 nix flake init -t nix-darwin/master
-# To use Nixpkgs 25.05:
-nix flake init -t nix-darwin/nix-darwin-25.05
+# To use Nixpkgs 25.11:
+nix flake init -t nix-darwin/nix-darwin-25.11
 
 sed -i '' "s/simple/$(scutil --get LocalHostName)/" flake.nix
 ```
@@ -60,9 +60,9 @@ Add the following to `flake.nix` in the same folder as `configuration.nix`:
   description = "John's darwin system";
 
   inputs = {
-    # Use `github:NixOS/nixpkgs/nixpkgs-25.05-darwin` to use Nixpkgs 25.05.
+    # Use `github:NixOS/nixpkgs/nixpkgs-25.11-darwin` to use Nixpkgs 25.11.
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    # Use `github:nix-darwin/nix-darwin/nix-darwin-25.05` to use Nixpkgs 25.05.
+    # Use `github:nix-darwin/nix-darwin/nix-darwin-25.11` to use Nixpkgs 25.11.
     nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
@@ -88,8 +88,8 @@ Unlike NixOS, `nix-darwin` does not have an installer, you can just run `darwin-
 ```bash
 # To use Nixpkgs unstable:
 sudo nix run nix-darwin/master#darwin-rebuild -- switch
-# To use Nixpkgs 25.05:
-sudo nix run nix-darwin/nix-darwin-25.05#darwin-rebuild -- switch
+# To use Nixpkgs 25.11:
+sudo nix run nix-darwin/nix-darwin-25.11#darwin-rebuild -- switch
 ```
 
 ### Step 3. Using `nix-darwin`
@@ -132,8 +132,8 @@ Copy the [simple](./modules/examples/simple.nix) example to `/etc/nix-darwin/con
 ```bash
 # If you use Nixpkgs unstable (the default):
 sudo nix-channel --add https://github.com/nix-darwin/nix-darwin/archive/master.tar.gz darwin
-# If you use Nixpkgs 25.05:
-sudo nix-channel --add https://github.com/nix-darwin/nix-darwin/archive/nix-darwin-25.05.tar.gz darwin
+# If you use Nixpkgs 25.11:
+sudo nix-channel --add https://github.com/nix-darwin/nix-darwin/archive/nix-darwin-25.11.tar.gz darwin
 
 sudo nix-channel --update
 ```
