@@ -126,6 +126,7 @@ in {
   tests.services-synergy = makeTest ./tests/services-synergy.nix;
   tests.services-yabai = makeTest ./tests/services-yabai.nix;
   tests.services-jankyborders = makeTest ./tests/services-jankyborders.nix;
+  tests.system-auto-upgrade = makeTest ./tests/system-auto-upgrade.nix;
   tests.system-defaults-write = makeTest ./tests/system-defaults-write.nix;
   tests.system-environment = makeTest ./tests/system-environment.nix;
   tests.system-keyboard-mapping = makeTest ./tests/system-keyboard-mapping.nix;
