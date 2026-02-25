@@ -28,7 +28,7 @@ showSyntax() {
   echo "                             [--no-update-lock-file] [--no-write-lock-file]" >&2
   echo "                             [--override-input input flake] [--update-input input]" >&2
   echo "                             [--no-registries] [--offline] [--refresh]]" >&2
-  echo "               [--substituters substituters-list] ..." >&2
+  echo "               [--substituters substituters-list] [--target-host addr] ..." >&2
   exit 1
 }
 
@@ -42,6 +42,14 @@ profile=@profile@
 action=
 flake=
 noFlake=
+targetHost=
+tmpDir=$(mktemp -t -d darwin-rebuild.XXXXXX)
+SSHOPTS="$NIX_SSHOPTS -o ControlMaster=auto -o ControlPath=$tmpDir/ssh-%n -o ControlPersist=60"
+
+cleanup() {
+  rm -rf "$tmpDir"
+}
+trap cleanup EXIT
 
 while [ $# -gt 0 ]; do
   i=$1; shift 1
@@ -124,7 +132,6 @@ while [ $# -gt 0 ]; do
       fi
       if [ "$1" != system ]; then
         profile="/nix/var/nix/profiles/system-profiles/$1"
-        mkdir -p -m 0755 "$(dirname "$profile")"
       fi
       shift 1
       ;;
@@ -137,6 +144,10 @@ while [ $# -gt 0 ]; do
       extraMetadataFlags+=("$i" "$j")
       extraBuildFlags+=("$i" "$j")
       ;;
+    --target-host)
+      targetHost=$1
+      shift 1
+      ;;
     *)
       echo "$0: unknown option '$i'"
       exit 1
@@ -146,12 +157,29 @@ done
 
 if [ -z "$action" ]; then showSyntax; fi
 
-if [[ $action =~ ^switch|activate|rollback|check$ && $(id -u) -ne 0 ]]; then
+if [[ $action =~ ^switch|activate|rollback|check$ && -z $targetHost && $(id -u) -ne 0 ]]; then
   printf >&2 '%s: system activation must now be run as root\n' "$0"
   exit 1
 fi
 
 flakeFlags=(--extra-experimental-features 'nix-command flakes')
+
+targetHostCmd() {
+  if [ -z "$targetHost" ]; then
+    "$@"
+  else
+    ssh $SSHOPTS "$targetHost" 'PATH=/run/current-system/sw/bin:$PATH' "$@"
+  fi
+}
+
+if [[ -n $targetHost ]] && targetHostCmd '[ $(id -u) -ne 0 ]'; then
+  printf >&2 '%s: must connect as root for --target-host\n' "$0"
+  exit 1
+fi
+
+if [[ $profile = /nix/var/nix/profiles/system-profiles/* ]]; then
+  targetHostCmd mkdir -p -m 0755 "$(dirname "$profile")"
+fi
 
 # Use /etc/nix-darwin/flake.nix if it exists. It can be a symlink to the
 # actual flake.
@@ -202,33 +230,49 @@ if [ "$action" = switch ] || [ "$action" = build ] || [ "$action" = check ] || [
 fi
 
 if [ "$action" = list ] || [ "$action" = rollback ]; then
-  nix-env -p "$profile" "${extraProfileFlags[@]}"
+  targetHostCmd nix-env -p "$profile" "${extraProfileFlags[@]}"
 fi
 
 if [ "$action" = rollback ]; then
-  systemConfig="$(cat $profile/systemConfig)"
+  systemConfig="$(targetHostCmd cat $profile/systemConfig)"
 fi
 
 if [ "$action" = activate ]; then
-  systemConfig=$(readlink -f "${0%*/sw/bin/darwin-rebuild}")
+  if [ -z "$targetHost" ]; then
+    systemConfig=$(readlink -f "${0%*/sw/bin/darwin-rebuild}")
+  else
+    systemConfig=$(targetHostCmd readlink -f /run/current-system)
+  fi
 fi
 
 if [ -z "$systemConfig" ]; then exit 0; fi
 
 # TODO: Remove this backwards‐compatibility hack in 25.11.
 
-if
-  [[ -x $systemConfig/activate-user ]] \
-  && ! grep -q '^# nix-darwin: deprecated$' "$systemConfig/activate-user"
-then
-  hasActivateUser=1
+if [ -z "$targetHost" ]; then
+  if
+    [[ -x $systemConfig/activate-user ]] &&
+      ! grep -q '^# nix-darwin: deprecated$' "$systemConfig/activate-user"
+  then
+    hasActivateUser=1
+  else
+    hasActivateUser=
+  fi
 else
-  hasActivateUser=
+  if
+    targetHostCmd [ -x $systemConfig/activate-user ] '&&' \
+      '!' grep -q "'^# nix-darwin: deprecated$'" "$systemConfig/activate-user"
+  then
+    printf >&2 '%s: %s uses legacy `activate-user` script, which is not supported by --target-host. Please upgrade its nix-darwin and try again.' "$0" "$targetHost"
+    exit 1
+  else
+    hasActivateUser=
+  fi
 fi
 
 runActivateUser() {
   if [[ -n $SUDO_USER ]]; then
-    sudo --user="$SUDO_USER" --set-home -- "$systemConfig/activate-user"
+    targetHostCmd sudo --user="$SUDO_USER" --set-home -- "$systemConfig/activate-user"
   else
     printf >&2 \
       '%s: $SUDO_USER not set, can’t run legacy `activate-user` script\n' \
@@ -238,18 +282,18 @@ runActivateUser() {
 }
 
 if [ "$action" = switch ]; then
-  nix-env -p "$profile" --set "$systemConfig"
+  targetHostCmd nix-env -p "$profile" --set "$systemConfig"
 fi
 
 if [ "$action" = switch ] || [ "$action" = activate ] || [ "$action" = rollback ]; then
   if [[ -n $hasActivateUser ]]; then
     runActivateUser
   fi
-  "$systemConfig/activate"
+  targetHostCmd "$systemConfig/activate"
 fi
 
 if [ "$action" = changelog ]; then
-  ${PAGER:-less} -- "$systemConfig/darwin-changes"
+  targetHostCmd "${PAGER:-less}" -- "$systemConfig/darwin-changes"
 fi
 
 if [ "$action" = check ]; then
@@ -257,6 +301,6 @@ if [ "$action" = check ]; then
   if [[ -n $hasActivateUser ]]; then
     runActivateUser
   else
-    "$systemConfig/activate"
+    targetHostCmd "$systemConfig/activate"
   fi
 fi
