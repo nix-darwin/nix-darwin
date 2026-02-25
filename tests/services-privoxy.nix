@@ -1,9 +1,14 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
-  privoxy = pkgs.runCommand "privoxy-0.0.0" {} "mkdir $out";
+  privoxy = pkgs.runCommand "privoxy-0.0.0" { } "mkdir $out";
 in
 
 {

@@ -1,9 +1,14 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
-  redis = pkgs.runCommand "redis-0.0.0" {} "mkdir $out";
+  redis = pkgs.runCommand "redis-0.0.0" { } "mkdir $out";
 in
 
 {

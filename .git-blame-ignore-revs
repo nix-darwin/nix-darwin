@@ -1,2 +1,5 @@
 # nixpkgs: format with `nixfmt`
 dc1c716ded39758062ed7e6bc410ad274119de9f
+
+# format codebase with `nixfmt`
+c6e781bcc05a9f3e058535bb55d89edf7d37bd11

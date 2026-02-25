@@ -1,4 +1,9 @@
-{ config, options, lib, ... }:
+{
+  config,
+  options,
+  lib,
+  ...
+}:
 
 with lib;
 
@@ -38,7 +43,7 @@ in
       type = types.bool;
 
       default = config.nix.enable && cfg.source != null;
-      defaultText = literalExpression ''config.nix.enable && nixpkgs.flake.source != null'';
+      defaultText = literalExpression "config.nix.enable && nixpkgs.flake.source != null";
 
       description = ''
         Whether to set {env}`NIX_PATH` to include `nixpkgs=flake:nixpkgs` such that `<nixpkgs>`
@@ -58,7 +63,7 @@ in
       type = types.bool;
 
       default = config.nix.enable && cfg.source != null;
-      defaultText = literalExpression ''config.nix.enable && config.nixpkgs.flake.source != null'';
+      defaultText = literalExpression "config.nix.enable && config.nixpkgs.flake.source != null";
 
       description = ''
         Whether to pin nixpkgs in the system-wide flake registry (`/etc/nix/registry.json`) to the
@@ -90,12 +95,12 @@ in
 
         {
           assertion = cfg.setNixPath -> config.nix.enable;
-          message = ''`nixpkgs.flake.setNixPath` requires `nix.enable`'';
+          message = "`nixpkgs.flake.setNixPath` requires `nix.enable`";
         }
 
         {
           assertion = cfg.setFlakeRegistry -> config.nix.enable;
-          message = ''`nixpkgs.flake.setFlakeRegistry` requires `nix.enable`'';
+          message = "`nixpkgs.flake.setFlakeRegistry` requires `nix.enable`";
         }
       ];
     }
@@ -110,8 +115,10 @@ in
       # because we would need some kind of evil shim taking the *calling* flake's self path,
       # perhaps, to ever make that work (in order to know where the Nix expr for the system came
       # from and how to call it).
-      nix.nixPath = mkDefault ([ "nixpkgs=flake:nixpkgs" ]
-        ++ optional config.nix.channel.enable "/nix/var/nix/profiles/per-user/root/channels");
+      nix.nixPath = mkDefault (
+        [ "nixpkgs=flake:nixpkgs" ]
+        ++ optional config.nix.channel.enable "/nix/var/nix/profiles/per-user/root/channels"
+      );
     })
   ]);
 }

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -30,9 +35,8 @@ in
 
     programs.vim.extraKnownPlugins = mkOption {
       type = types.attrsOf types.package;
-      default = {};
-      example = literalExpression
-        ''
+      default = { };
+      example = literalExpression ''
         {
           vim-jsx = pkgs.vimUtils.buildVimPluginFrom2Nix {
             name = "vim-javascript-2016-07-29";
@@ -45,14 +49,21 @@ in
 
           };
         }
-        '';
+      '';
       description = "Custom plugin declarations to add to VAM's knownPlugins.";
     };
 
     programs.vim.plugins = mkOption {
       type = types.listOf types.attrs;
-      default = [];
-      example = [ { names = [ "surround" "vim-nix" ]; } ];
+      default = [ ];
+      example = [
+        {
+          names = [
+            "surround"
+            "vim-nix"
+          ];
+        }
+      ];
       description = "VAM plugin dictionaries to use for vim_configurable.";
     };
 
@@ -64,7 +75,7 @@ in
     programs.vim.vimOptions = mkOption {
       internal = true;
       type = types.attrsOf (types.submodule text);
-      default = {};
+      default = { };
     };
 
     programs.vim.vimConfig = mkOption {
@@ -76,10 +87,10 @@ in
 
   config = mkIf cfg.enable {
 
-    environment.systemPackages =
-      [ # Include vim-full package.
-        cfg.package
-      ];
+    environment.systemPackages = [
+      # Include vim-full package.
+      cfg.package
+    ];
 
     environment.variables.EDITOR = "${cfg.package}/bin/vim";
 
@@ -102,7 +113,13 @@ in
     };
 
     programs.vim.plugins = mkIf cfg.enableSensible [
-      { names = [ "fugitive" "surround" "vim-nix" ]; }
+      {
+        names = [
+          "fugitive"
+          "surround"
+          "vim-nix"
+        ];
+      }
     ];
 
     programs.vim.vimOptions.sensible.text = mkIf cfg.enableSensible ''

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -12,15 +17,17 @@ let
         profile = mkOption {
           type = types.lines;
           internal = true;
-          apply = text: pkgs.runCommand "sandbox.sb" { } ''
-            for f in $(< ${config.closure}/store-paths); do
-                storePaths+="(subpath \"$f\")"
-            done
+          apply =
+            text:
+            pkgs.runCommand "sandbox.sb" { } ''
+              for f in $(< ${config.closure}/store-paths); do
+                  storePaths+="(subpath \"$f\")"
+              done
 
-            cat <<-EOF > $out
-            ${text}
-            EOF
-          '';
+              cat <<-EOF > $out
+              ${text}
+              EOF
+            '';
         };
 
         closure = mkOption {
@@ -91,36 +98,36 @@ let
           (allow file-read* process-exec
                  $storePaths)
 
-          ${optionalString (config.readablePaths != []) ''
-          (allow file-read*
-                 ${concatMapStrings (x: ''(subpath "${x}")'') config.readablePaths})
+          ${optionalString (config.readablePaths != [ ]) ''
+            (allow file-read*
+                   ${concatMapStrings (x: ''(subpath "${x}")'') config.readablePaths})
           ''}
-          ${optionalString (config.writablePaths != []) ''
-          (allow file*
-                 ${concatMapStrings (x: ''(subpath "${x}")'') config.writablePaths})
+          ${optionalString (config.writablePaths != [ ]) ''
+            (allow file*
+                   ${concatMapStrings (x: ''(subpath "${x}")'') config.writablePaths})
           ''}
           ${optionalString config.allowSystemPaths ''
-          (allow file-read-metadata
-                 (literal "/")
-                 (literal "/etc")
-                 (literal "/run")
-                 (literal "/tmp")
-                 (literal "/var"))
-          (allow file-read*
-                 (literal "/private/etc/group")
-                 (literal "/private/etc/hosts")
-                 (literal "/private/etc/passwd")
-                 (literal "/private/var/run/resolv.conf"))
+            (allow file-read-metadata
+                   (literal "/")
+                   (literal "/etc")
+                   (literal "/run")
+                   (literal "/tmp")
+                   (literal "/var"))
+            (allow file-read*
+                   (literal "/private/etc/group")
+                   (literal "/private/etc/hosts")
+                   (literal "/private/etc/passwd")
+                   (literal "/private/var/run/resolv.conf"))
           ''}
           ${optionalString config.allowLocalNetworking ''
-          (allow network* (local ip) (local tcp) (local udp))
+            (allow network* (local ip) (local tcp) (local udp))
           ''}
           ${optionalString config.allowNetworking ''
-          (allow network*
-                 (local ip)
-                 (remote ip))
-          (allow network-outbound
-                 (remote unix-socket (path-literal "/private/var/run/mDNSResponder")))
+            (allow network*
+                   (local ip)
+                   (remote ip))
+            (allow network-outbound
+                   (remote unix-socket (path-literal "/private/var/run/mDNSResponder")))
           ''}
         '';
 

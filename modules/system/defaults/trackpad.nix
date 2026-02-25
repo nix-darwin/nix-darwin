@@ -39,7 +39,12 @@ with lib;
     };
 
     system.defaults.trackpad.ActuationStrength = mkOption {
-      type = types.nullOr (types.enum [ 0 1 ]);
+      type = types.nullOr (
+        types.enum [
+          0
+          1
+        ]
+      );
       default = null;
       description = ''
         0 to enable Silent Clicking, 1 to disable. The default is 1.
@@ -47,7 +52,13 @@ with lib;
     };
 
     system.defaults.trackpad.FirstClickThreshold = mkOption {
-      type = types.nullOr (types.enum [ 0 1 2 ]);
+      type = types.nullOr (
+        types.enum [
+          0
+          1
+          2
+        ]
+      );
       default = null;
       description = ''
         For normal click: 0 for light clicking, 1 for medium, 2 for firm.
@@ -56,7 +67,13 @@ with lib;
     };
 
     system.defaults.trackpad.SecondClickThreshold = mkOption {
-      type = types.nullOr (types.enum [ 0 1 2 ]);
+      type = types.nullOr (
+        types.enum [
+          0
+          1
+          2
+        ]
+      );
       default = null;
       description = ''
         For force touch: 0 for light clicking, 1 for medium, 2 for firm.
@@ -65,7 +82,12 @@ with lib;
     };
 
     system.defaults.trackpad.TrackpadThreeFingerTapGesture = mkOption {
-      type = types.nullOr (types.enum [ 0 2 ]);
+      type = types.nullOr (
+        types.enum [
+          0
+          2
+        ]
+      );
       default = null;
       description = ''
         Whether to enable three-finger tap gesture: 0 to disable, 2 to trigger Look up & data detectors.
@@ -98,7 +120,13 @@ with lib;
     };
 
     system.defaults.trackpad.TrackpadCornerSecondaryClick = mkOption {
-      type = types.nullOr (types.enum [ 0 1 2 ]);
+      type = types.nullOr (
+        types.enum [
+          0
+          1
+          2
+        ]
+      );
       default = null;
       description = ''
         Whether to enable secondary click: 0 to disable, 1 to set bottom-left corner, 2 to set bottom-right corner.
@@ -107,7 +135,12 @@ with lib;
     };
 
     system.defaults.trackpad.TrackpadFourFingerHorizSwipeGesture = mkOption {
-      type = types.nullOr (types.enum [ 0 2 ]);
+      type = types.nullOr (
+        types.enum [
+          0
+          2
+        ]
+      );
       default = null;
       description = ''
         Whether to enable four-finger horizontal swipe gesture: 0 to disable, 2 to swipe between full-screen applications.
@@ -116,7 +149,12 @@ with lib;
     };
 
     system.defaults.trackpad.TrackpadFourFingerPinchGesture = mkOption {
-      type = types.nullOr (types.enum [ 0 2 ]);
+      type = types.nullOr (
+        types.enum [
+          0
+          2
+        ]
+      );
       default = null;
       description = ''
         Whether to enable four-finger pinch gesture (spread shows the Desktop, pinch shows the Launchpad): 0 to disable, 2 to enable.
@@ -126,7 +164,12 @@ with lib;
     };
 
     system.defaults.trackpad.TrackpadFourFingerVertSwipeGesture = mkOption {
-      type = types.nullOr (types.enum [ 0 2 ]);
+      type = types.nullOr (
+        types.enum [
+          0
+          2
+        ]
+      );
       default = null;
       description = ''
         0 to disable four finger vertical swipe gestures, 2 to enable (down for Mission Control, up for App Exposé).
@@ -161,7 +204,13 @@ with lib;
     };
 
     system.defaults.trackpad.TrackpadThreeFingerHorizSwipeGesture = mkOption {
-      type = types.nullOr (types.enum [ 0 1 2 ]);
+      type = types.nullOr (
+        types.enum [
+          0
+          1
+          2
+        ]
+      );
       default = null;
       description = ''
         Whether to enable three-finger horizontal swipe gesture: 0 to disable, 1 to swipe between pages, 2 to swipe between full-screen applications.
@@ -170,7 +219,12 @@ with lib;
     };
 
     system.defaults.trackpad.TrackpadThreeFingerVertSwipeGesture = mkOption {
-      type = types.nullOr (types.enum [ 0 2 ]);
+      type = types.nullOr (
+        types.enum [
+          0
+          2
+        ]
+      );
       default = null;
       description = ''
         Whether to enable three-finger vertical swipe gesture (down for Mission Control, up for App Exposé): 0 to disable, 2 to enable.
@@ -189,7 +243,12 @@ with lib;
     };
 
     system.defaults.trackpad.TrackpadTwoFingerFromRightEdgeSwipeGesture = mkOption {
-      type = types.nullOr (types.enum [ 0 3 ]);
+      type = types.nullOr (
+        types.enum [
+          0
+          3
+        ]
+      );
       default = null;
       description = ''
         Whether to enable two-finger swipe-from-right-edge gesture: 0 to disable, 3 to open Notification Center.
