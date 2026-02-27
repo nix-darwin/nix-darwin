@@ -50,6 +50,7 @@
   ./time
   ./networking
   ./networking/applicationFirewall.nix
+  ./networking/wifi.nix
   ./nix
   ./nix/linux-builder.nix
   ./nix/nix-darwin.nix
