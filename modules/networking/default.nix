@@ -1,25 +1,28 @@
 { config, lib, ... }:
 
-with lib;
-
 let
   cfg = config.networking;
 
   hostnameRegEx = ''^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'';
 
-  emptyList = lst: if lst != [] then lst else ["empty"];
+  emptyList = lst: if lst != [ ] then lst else [ "empty" ];
 
   onOff = cond: if cond then "on" else "off";
 
-  setNetworkServices = optionalString (cfg.knownNetworkServices != []) ''
+  setNetworkServices = lib.optionalString (cfg.knownNetworkServices != [ ]) ''
     networkservices=$(networksetup -listallnetworkservices)
-    ${concatMapStringsSep "\n" (srv: ''
+    ${lib.concatMapStringsSep "\n" (srv: ''
       case "$networkservices" in
         *${lib.escapeShellArg srv}*)
           networksetup -setdnsservers ${lib.escapeShellArgs ([ srv ] ++ (emptyList cfg.dns))}
           networksetup -setsearchdomains ${lib.escapeShellArgs ([ srv ] ++ (emptyList cfg.search))}
-          ${optionalString (cfg.dhcpClientId != null) ''
-            networksetup -setdhcp ${lib.escapeShellArgs [ srv cfg.dhcpClientId ]}
+          ${lib.optionalString (cfg.dhcpClientId != null) ''
+            networksetup -setdhcp ${
+              lib.escapeShellArgs [
+                srv
+                cfg.dhcpClientId
+              ]
+            }
           ''}
           ;;
       esac
@@ -29,8 +32,8 @@ in
 
 {
   options = {
-    networking.computerName = mkOption {
-      type = types.nullOr types.str;
+    networking.computerName = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
       default = null;
       example = "John’s MacBook Pro";
       description = ''
@@ -42,8 +45,8 @@ in
       '';
     };
 
-    networking.hostName = mkOption {
-      type = types.nullOr (types.strMatching hostnameRegEx);
+    networking.hostName = lib.mkOption {
+      type = lib.types.nullOr (lib.types.strMatching hostnameRegEx);
       default = null;
       example = "Johns-MacBook-Pro";
       description = ''
@@ -56,8 +59,8 @@ in
       '';
     };
 
-    networking.localHostName = mkOption {
-      type = types.nullOr (types.strMatching hostnameRegEx);
+    networking.localHostName = lib.mkOption {
+      type = lib.types.nullOr (lib.types.strMatching hostnameRegEx);
       default = cfg.hostName;
       example = "Johns-MacBook-Pro";
       description = ''
@@ -74,17 +77,17 @@ in
       '';
     };
 
-    networking.domain = mkOption {
+    networking.domain = lib.mkOption {
       default = null;
       example = "home.arpa";
-      type = types.nullOr types.str;
+      type = lib.types.nullOr lib.types.str;
       description = ''
         The domain.  It can be left empty if it is auto-detected through DHCP.
       '';
     };
 
-    networking.fqdn = mkOption {
-      type = types.str;
+    networking.fqdn = lib.mkOption {
+      type = lib.types.str;
       default =
         if (cfg.hostName != "" && cfg.domain != null) then
           "${cfg.hostName}.${cfg.domain}"
@@ -94,7 +97,7 @@ in
             and `networking.domain`. Please ensure these options are set properly or
             set `networking.fqdn` directly.
           '';
-      defaultText = literalExpression ''"''${networking.hostName}.''${networking.domain}"'';
+      defaultText = lib.literalExpression ''"''${networking.hostName}.''${networking.domain}"'';
       description = ''
         The fully qualified domain name (FQDN) of this host. By default, it is
         the result of combining `networking.hostName` and `networking.domain.`
@@ -107,11 +110,11 @@ in
       '';
     };
 
-    networking.fqdnOrHostName = mkOption {
+    networking.fqdnOrHostName = lib.mkOption {
       readOnly = true;
-      type = types.str;
+      type = lib.types.str;
       default = if cfg.domain == null then cfg.hostName else cfg.fqdn;
-      defaultText = literalExpression ''
+      defaultText = lib.literalExpression ''
         if cfg.domain == null then cfg.hostName else cfg.fqdn
       '';
       description = ''
@@ -124,10 +127,14 @@ in
       '';
     };
 
-    networking.knownNetworkServices = mkOption {
-      type = types.listOf types.str;
-      default = [];
-      example = [ "Wi-Fi" "Ethernet Adaptor" "Thunderbolt Ethernet" ];
+    networking.knownNetworkServices = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      example = [
+        "Wi-Fi"
+        "Ethernet Adaptor"
+        "Thunderbolt Ethernet"
+      ];
       description = ''
         List of networkservices that should be configured.
 
@@ -136,8 +143,8 @@ in
       '';
     };
 
-    networking.dhcpClientId = mkOption {
-      type = types.nullOr types.str;
+    networking.dhcpClientId = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
       default = null;
       example = "my-client-id";
       description = ''
@@ -151,21 +158,26 @@ in
       '';
     };
 
-    networking.dns = mkOption {
-      type = types.listOf types.str;
-      default = [];
-      example = [ "8.8.8.8" "8.8.4.4" "2001:4860:4860::8888" "2001:4860:4860::8844" ];
+    networking.dns = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      example = [
+        "8.8.8.8"
+        "8.8.4.4"
+        "2001:4860:4860::8888"
+        "2001:4860:4860::8844"
+      ];
       description = "The list of dns servers used when resolving domain names.";
     };
 
-    networking.search = mkOption {
-      type = types.listOf types.str;
-      default = [];
+    networking.search = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
       description = "The list of search paths used when resolving domain names.";
     };
 
-    networking.wakeOnLan.enable = mkOption {
-      type = types.nullOr types.bool;
+    networking.wakeOnLan.enable = lib.mkOption {
+      type = lib.types.nullOr lib.types.bool;
       default = null;
       description = ''
         Enable Wake-on-LAN for the device.
@@ -178,27 +190,33 @@ in
   config = {
 
     warnings = [
-      (mkIf (cfg.knownNetworkServices == [] && cfg.dns != []) "networking.knownNetworkServices is empty, dns servers will not be configured.")
-      (mkIf (cfg.knownNetworkServices == [] && cfg.search != []) "networking.knownNetworkServices is empty, dns searchdomains will not be configured.")
-      (mkIf (cfg.knownNetworkServices == [] && cfg.dhcpClientId != null) "networking.knownNetworkServices is empty, dhcp client ID will not be configured.")
+      (lib.mkIf (
+        cfg.knownNetworkServices == [ ] && cfg.dns != [ ]
+      ) "networking.knownNetworkServices is empty, dns servers will not be configured.")
+      (lib.mkIf (
+        cfg.knownNetworkServices == [ ] && cfg.search != [ ]
+      ) "networking.knownNetworkServices is empty, dns searchdomains will not be configured.")
+      (lib.mkIf (
+        cfg.knownNetworkServices == [ ] && cfg.dhcpClientId != null
+      ) "networking.knownNetworkServices is empty, dhcp client ID will not be configured.")
     ];
 
     system.activationScripts.networking.text = ''
       echo "configuring networking..." >&2
 
-      ${optionalString (cfg.computerName != null) ''
-        scutil --set ComputerName ${escapeShellArg cfg.computerName}
+      ${lib.optionalString (cfg.computerName != null) ''
+        scutil --set ComputerName ${lib.escapeShellArg cfg.computerName}
       ''}
-      ${optionalString (cfg.hostName != null) ''
-        scutil --set HostName ${escapeShellArg cfg.hostName}
+      ${lib.optionalString (cfg.hostName != null) ''
+        scutil --set HostName ${lib.escapeShellArg cfg.hostName}
       ''}
-      ${optionalString (cfg.localHostName != null) ''
-        scutil --set LocalHostName ${escapeShellArg cfg.localHostName}
+      ${lib.optionalString (cfg.localHostName != null) ''
+        scutil --set LocalHostName ${lib.escapeShellArg cfg.localHostName}
       ''}
 
       ${setNetworkServices}
 
-      ${optionalString (cfg.wakeOnLan.enable != null) ''
+      ${lib.optionalString (cfg.wakeOnLan.enable != null) ''
         systemsetup -setWakeOnNetworkAccess '${onOff cfg.wakeOnLan.enable}' &> /dev/null
       ''}
 
