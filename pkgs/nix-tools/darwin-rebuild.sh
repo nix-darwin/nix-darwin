@@ -21,9 +21,9 @@ showSyntax() {
   echo "               [{--switch-generation | -G} generation] [--verbose...] [-v...]" >&2
   echo "               [-Q] [{--max-jobs | -j} number] [--cores number] [--dry-run]" >&2
   echo "               [--keep-going | -k] [--keep-failed | -K] [--fallback] [--show-trace]" >&2
-  echo "               [--print-build-logs | -L] [--impure] [-I path]" >&2
+  echo "               [--print-build-logs | -L] [--impure] [-I path] [--file | -f file]" >&2
   echo "               [--option name value] [--arg name value] [--argstr name value]" >&2
-  echo "               [--no-flake | [--flake flake]" >&2
+  echo "               [--attr | -A attr] [--no-flake | [--flake flake]" >&2
   echo "                             [--commit-lock-file] [--recreate-lock-file]" >&2
   echo "                             [--no-update-lock-file] [--no-write-lock-file]" >&2
   echo "                             [--override-input input flake] [--update-input input]" >&2
@@ -42,6 +42,9 @@ profile=@profile@
 action=
 flake=
 noFlake=
+attr=
+buildFile=default.nix
+buildingAttribute=1
 
 while [ $# -gt 0 ]; do
   i=$1; shift 1
@@ -137,6 +140,24 @@ while [ $# -gt 0 ]; do
       extraMetadataFlags+=("$i" "$j")
       extraBuildFlags+=("$i" "$j")
       ;;
+    --file | -f)
+      if [ -z "$1" ]; then
+        echo "$0: '$i' requires an argument"
+        exit 1
+      fi
+      buildFile="$1"
+      buildingAttribute=
+      shift 1
+      ;;
+    --attr | -A)
+      if [ -z "$1" ]; then
+        echo "$0: '$i' requires an argument"
+        exit 1
+      fi
+      attr="$1"
+      buildingAttribute=
+      shift 1
+      ;;
     *)
       echo "$0: unknown option '$i'"
       exit 1
@@ -191,7 +212,9 @@ fi
 
 if [ "$action" = switch ] || [ "$action" = build ] || [ "$action" = check ] || [ "$action" = changelog ]; then
   echo "building the system configuration..." >&2
-  if [ -z "$flake" ]; then
+  if [ -z "$buildingAttribute" ]; then
+    systemConfig="$(nix-build $buildFile -A "${attr:+$attr.}config.system.build.toplevel" "${extraBuildFlags[@]}")"
+  elif [ -z "$flake" ]; then
     systemConfig="$(nix-build '<darwin>' "${extraBuildFlags[@]}" -A system)"
   else
     systemConfig=$(nix "${flakeFlags[@]}" build --json \
