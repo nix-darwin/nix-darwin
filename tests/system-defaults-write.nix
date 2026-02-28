@@ -142,13 +142,24 @@
   system.defaults.WindowManager.EnableTiledWindowMargins = true;
   system.defaults.WindowManager.StandardHideWidgets = true;
   system.defaults.WindowManager.StageManagerHideWidgets = true;
+  system.defaults.controlcenter.AccessibilityShortcuts = "both";
+  system.defaults.controlcenter.AirDrop = "show";
+  system.defaults.controlcenter.Battery = "both";
+  system.defaults.controlcenter.BatteryShowEnergyMode = "always";
   system.defaults.controlcenter.BatteryShowPercentage = true;
-  system.defaults.controlcenter.Sound = false;
-  system.defaults.controlcenter.Bluetooth = true;
-  system.defaults.controlcenter.AirDrop = true;
-  system.defaults.controlcenter.Display = false;
-  system.defaults.controlcenter.FocusModes = false;
-  system.defaults.controlcenter.NowPlaying = true;
+  system.defaults.controlcenter.Bluetooth = "show";
+  system.defaults.controlcenter.Display = "always";
+  system.defaults.controlcenter.FocusModes = "always";
+  system.defaults.controlcenter.Hearing = "both";
+  system.defaults.controlcenter.KeyboardBrightness = "both";
+  system.defaults.controlcenter.MusicRecognition = "both";
+  system.defaults.controlcenter.NowPlaying = "always";
+  system.defaults.controlcenter.ScreenMirroring = "always";
+  system.defaults.controlcenter.Sound = "always";
+  system.defaults.controlcenter.StageManager = "whenActive";
+  system.defaults.controlcenter.UserSwitcher = "both";
+  system.defaults.controlcenter.WiFi = "show";
+  system.defaults.Spotlight.MenuItemHidden = true;
   test = lib.strings.concatMapStringsSep "\n"
     (x: ''
       echo >&2 "checking ${x} defaults write in /activate"
