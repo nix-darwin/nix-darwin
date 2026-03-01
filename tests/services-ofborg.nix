@@ -24,7 +24,7 @@ in
     grep "chown .* '/var/log/ofborg.log'" ${config.out}/activate
 
     echo >&2 "checking config.json permissions in /activate"
-    grep "chmod 600 '/var/lib/ofborg/config.json'" ${config.out}/activate
-    grep "chown .* '/var/lib/ofborg/config.json'" ${config.out}/activate
+    grep "chmod 600 '/private/var/lib/ofborg/config.json'" ${config.out}/activate
+    grep "chown .* '/private/var/lib/ofborg/config.json'" ${config.out}/activate
   '';
 }
