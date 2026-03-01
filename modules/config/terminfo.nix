@@ -63,9 +63,12 @@
       source = "${config.system.path}/share/terminfo";
     };
 
-    # TODO: use `environment.profileRelativeSessionVariables`
+    environment.profileRelativeSessionVariables = {
+      TERMINFO_DIRS = [ "/share/terminfo" ];
+    };
+
     environment.variables = {
-      TERMINFO_DIRS = map (path: path + "/share/terminfo") config.environment.profiles ++ [ "/usr/share/terminfo" ];
+      TERMINFO_DIRS = [ "/usr/share/terminfo" ];
     };
 
     environment.extraInit = ''
