@@ -121,6 +121,7 @@ in
       ${cfg.activationScripts.applications.text}
       ${cfg.activationScripts.pam.text}
       ${cfg.activationScripts.patches.text}
+      ${cfg.activationScripts.openssh.text}
       ${cfg.activationScripts.etc.text}
       ${cfg.activationScripts.defaults.text}
       ${cfg.activationScripts.userDefaults.text}
