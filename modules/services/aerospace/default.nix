@@ -52,6 +52,17 @@ in
               default = false;
               description = "Do not start AeroSpace at login. (Managed by launchd instead)";
             };
+            config-version = lib.mkOption {
+              type = int;
+              default = 1;
+              description = "Config version for compatibility and deprecations";
+            };
+            persistent-workspaces = lib.mkOption {
+              type = listOf str;
+              default = [ ];
+              description = "List of workspaces that should stay alive even when empty. Only available when config-version >= 2.";
+              example = [ "1" "2" "A" "B" ];
+            };
             after-login-command = lib.mkOption {
               type = listOf str;
               default = [ ];
@@ -242,6 +253,10 @@ in
         {
           assertion = cfg.settings.after-login-command == [ ];
           message = "AeroSpace will not run these commands as it does not start itself.";
+        }
+        {
+          assertion = (cfg.settings.persistent-workspaces == [ ]) || (cfg.settings.config-version >= 2);
+          message = "persistent-workspaces requires config-version >= 2";
         }
       ];
       environment.systemPackages = [ cfg.package ];
