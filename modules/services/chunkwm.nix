@@ -121,8 +121,7 @@ in
 
     launchd.user.agents.chunkwm = {
       path = [ cfg.package config.environment.systemPath ];
-      serviceConfig.ProgramArguments = [ "${getOutput "out" cfg.package}/bin/chunkwm" ]
-        ++ [ "-c" "/etc/chunkwmrc" ];
+      command = "${getOutput "out" cfg.package}/bin/chunkwm -c /etc/chunkwmrc";
       serviceConfig.RunAtLoad = true;
       serviceConfig.KeepAlive = true;
       serviceConfig.ProcessType = "Interactive";
