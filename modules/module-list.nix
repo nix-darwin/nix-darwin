@@ -108,6 +108,7 @@
   ./programs/_1password-gui.nix
   ./programs/arqbackup.nix
   ./programs/bash
+  ./programs/cloudflare-warp.nix
   ./programs/direnv.nix
   ./programs/fish.nix
   ./programs/gnupg.nix
