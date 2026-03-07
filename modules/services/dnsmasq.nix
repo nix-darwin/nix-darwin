@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -36,16 +41,16 @@ in
 
     services.dnsmasq.addresses = mkOption {
       type = types.attrs;
-      default = {};
+      default = { };
       description = "List of domains that will be redirected by the DNSmasq.";
       example = literalExpression ''
         { localhost = "127.0.0.1"; }
-        '';
+      '';
     };
 
     services.dnsmasq.servers = mkOption {
       type = types.listOf types.str;
-      default = [];
+      default = [ ];
       description = ''
         List of upstream DNS servers to forward queries to.
         If empty, dnsmasq will use the servers from /etc/resolv.conf.
@@ -69,29 +74,33 @@ in
     environment.systemPackages = [ cfg.package ];
 
     launchd.daemons.dnsmasq = {
-      command = let
-        args = [
-          "--listen-address=${cfg.bind}"
-          "--port=${toString cfg.port}"
-          "--keep-in-foreground"
-        ] ++ (mapA (domain: addr: "--address=/${domain}/${addr}") cfg.addresses)
+      command =
+        let
+          args = [
+            "--listen-address=${cfg.bind}"
+            "--port=${toString cfg.port}"
+            "--keep-in-foreground"
+          ]
+          ++ (mapA (domain: addr: "--address=/${domain}/${addr}") cfg.addresses)
           ++ (map (server: "--server=${server}") cfg.servers);
-      in
+        in
         "${cfg.package}/bin/dnsmasq ${concatStringsSep " " args}";
 
       serviceConfig.KeepAlive = true;
       serviceConfig.RunAtLoad = true;
     };
 
-    environment.etc = builtins.listToAttrs (builtins.map (domain: {
-      name = "resolver/${domain}";
-      value = {
-        enable = true;
-        text = ''
-          port ${toString cfg.port}
-          nameserver ${cfg.bind}
+    environment.etc = builtins.listToAttrs (
+      builtins.map (domain: {
+        name = "resolver/${domain}";
+        value = {
+          enable = true;
+          text = ''
+            port ${toString cfg.port}
+            nameserver ${cfg.bind}
           '';
-      };
-    }) (builtins.attrNames cfg.addresses));
+        };
+      }) (builtins.attrNames cfg.addresses)
+    );
   };
 }

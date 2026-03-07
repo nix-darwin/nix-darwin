@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -8,7 +13,9 @@ in
 
 {
   imports = [
-    (mkRemovedOptionModule [ "nix" "linux-builder" "modules" ] "This option has been replaced with `nix.linux-builder.config` which allows setting options directly like `nix.linux-builder.config.networking.hostName = \"banana\";.")
+    (mkRemovedOptionModule [ "nix" "linux-builder" "modules" ]
+      "This option has been replaced with `nix.linux-builder.config` which allows setting options directly like `nix.linux-builder.config.networking.hostName = \"banana\";."
+    )
   ];
 
   options.nix.linux-builder = {
@@ -18,11 +25,13 @@ in
       type = types.package;
       default = pkgs.darwin.linux-builder;
       defaultText = "pkgs.darwin.linux-builder";
-      apply = pkg: pkg.override (old: {
-        # the linux-builder package requires `modules` as an argument, so it's
-        # always non-null.
-        modules = old.modules ++ [ cfg.config ];
-      });
+      apply =
+        pkg:
+        pkg.override (old: {
+          # the linux-builder package requires `modules` as an argument, so it's
+          # always non-null.
+          modules = old.modules ++ [ cfg.config ];
+        });
       description = ''
         This option specifies the Linux builder to use.
       '';
@@ -46,8 +55,8 @@ in
 
     mandatoryFeatures = mkOption {
       type = types.listOf types.str;
-      default = [];
-      defaultText = literalExpression ''[]'';
+      default = [ ];
+      defaultText = literalExpression "[]";
       example = literalExpression ''[ "big-parallel" ]'';
       description = ''
         A list of features mandatory for the Linux builder. The builder will
@@ -98,7 +107,7 @@ in
     speedFactor = mkOption {
       type = types.ints.positive;
       default = 1;
-      defaultText = literalExpression ''1'';
+      defaultText = literalExpression "1";
       description = ''
         The relative speed of the Linux builder. This is an arbitrary integer
         that indicates the speed of this builder, relative to other
@@ -110,7 +119,11 @@ in
 
     supportedFeatures = mkOption {
       type = types.listOf types.str;
-      default = [ "kvm" "benchmark" "big-parallel" ];
+      default = [
+        "kvm"
+        "benchmark"
+        "big-parallel"
+      ];
       defaultText = literalExpression ''[ "kvm" "benchmark" "big-parallel" ]'';
       example = literalExpression ''[ "kvm" "big-parallel" ]'';
       description = ''
@@ -141,7 +154,6 @@ in
       '';
     };
 
-
     workingDirectory = mkOption {
       type = types.str;
       default = "/var/lib/linux-builder";
@@ -169,7 +181,7 @@ in
       assertions = [
         {
           assertion = config.nix.enable;
-          message = ''`nix.linux-builder.enable` requires `nix.enable`'';
+          message = "`nix.linux-builder.enable` requires `nix.enable`";
         }
       ];
 
@@ -220,13 +232,22 @@ in
 
       nix.distributedBuilds = true;
 
-      nix.buildMachines = [{
-        hostName = "linux-builder";
-        sshUser = "builder";
-        sshKey = "/etc/nix/builder_ed25519";
-        publicHostKey = "c3NoLWVkMjU1MTkgQUFBQUMzTnphQzFsWkRJMU5URTVBQUFBSUpCV2N4Yi9CbGFxdDFhdU90RStGOFFVV3JVb3RpQzVxQkorVXVFV2RWQ2Igcm9vdEBuaXhvcwo=";
-        inherit (cfg) mandatoryFeatures maxJobs protocol speedFactor supportedFeatures systems;
-      }];
+      nix.buildMachines = [
+        {
+          hostName = "linux-builder";
+          sshUser = "builder";
+          sshKey = "/etc/nix/builder_ed25519";
+          publicHostKey = "c3NoLWVkMjU1MTkgQUFBQUMzTnphQzFsWkRJMU5URTVBQUFBSUpCV2N4Yi9CbGFxdDFhdU90RStGOFFVV3JVb3RpQzVxQkorVXVFV2RWQ2Igcm9vdEBuaXhvcwo=";
+          inherit (cfg)
+            mandatoryFeatures
+            maxJobs
+            protocol
+            speedFactor
+            supportedFeatures
+            systems
+            ;
+        }
+      ];
 
       nix.settings.builders-use-substitutes = true;
     })

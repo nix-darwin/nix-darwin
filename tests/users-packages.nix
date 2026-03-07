@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 let
-  hello = pkgs.runCommand "hello-0.0.0" {} ''
+  hello = pkgs.runCommand "hello-0.0.0" { } ''
     mkdir -p $out/bin $out/lib
     touch $out/bin/hello $out/lib/libhello.dylib
   '';

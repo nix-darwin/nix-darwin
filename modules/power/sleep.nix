@@ -11,7 +11,7 @@ in
 {
   options = {
     power.sleep.computer = lib.mkOption {
-      type = types.nullOr (types.either types.ints.positive (types.enum ["never"]));
+      type = types.nullOr (types.either types.ints.positive (types.enum [ "never" ]));
       default = null;
       example = "never";
       description = ''
@@ -25,7 +25,7 @@ in
     };
 
     power.sleep.display = lib.mkOption {
-      type = types.nullOr (types.either types.ints.positive (types.enum ["never"]));
+      type = types.nullOr (types.either types.ints.positive (types.enum [ "never" ]));
       default = null;
       example = "never";
       description = ''
@@ -36,7 +36,7 @@ in
     };
 
     power.sleep.harddisk = lib.mkOption {
-      type = types.nullOr (types.either types.ints.positive (types.enum ["never"]));
+      type = types.nullOr (types.either types.ints.positive (types.enum [ "never" ]));
       default = null;
       example = "never";
       description = ''

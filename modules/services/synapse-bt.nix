@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -11,13 +16,16 @@ let
     };
   } cfg.extraConfig;
 
-  configFile = pkgs.runCommand "config.toml" {
-    buildInputs = [ pkgs.remarshal ];
-  } ''
-    remarshal -if json -of toml \
-      < ${pkgs.writeText "config.json" (builtins.toJSON configOptions)} \
-      > $out
-  '';
+  configFile =
+    pkgs.runCommand "config.toml"
+      {
+        buildInputs = [ pkgs.remarshal ];
+      }
+      ''
+        remarshal -if json -of toml \
+          < ${pkgs.writeText "config.json" (builtins.toJSON configOptions)} \
+          > $out
+      '';
 in
 
 {
@@ -50,7 +58,7 @@ in
       };
 
       extraConfig = mkOption {
-        default = {};
+        default = { };
         description = "Extra configuration options for Synapse BitTorrent.";
         type = types.attrs;
       };
@@ -61,13 +69,13 @@ in
 
     environment.systemPackages = [ cfg.package ];
 
-    launchd.user.agents.synapse-bt =
-      { path = [ cfg.package ];
-        command = "${cfg.package}/bin/synapse --config ${configFile}";
-        serviceConfig.KeepAlive = true;
-        serviceConfig.RunAtLoad = true;
-        managedBy = "services.synapse-bt.enable";
-      };
+    launchd.user.agents.synapse-bt = {
+      path = [ cfg.package ];
+      command = "${cfg.package}/bin/synapse --config ${configFile}";
+      serviceConfig.KeepAlive = true;
+      serviceConfig.RunAtLoad = true;
+      managedBy = "services.synapse-bt.enable";
+    };
 
   };
 }

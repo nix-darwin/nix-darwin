@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -28,24 +33,26 @@ in
 
   config = {
 
-    system.build.etc = pkgs.runCommand "etc"
-      { preferLocalBuild = true; }
-      ''
-        mkdir -p $out/etc
-        cd $out/etc
-        ${concatMapStringsSep "\n" (attr: ''
-          mkdir -p "$(dirname ${escapeShellArg attr.target})"
-          ln -s ${escapeShellArgs [ attr.source attr.target ]}
-        '') etc}
-      '';
+    system.build.etc = pkgs.runCommand "etc" { preferLocalBuild = true; } ''
+      mkdir -p $out/etc
+      cd $out/etc
+      ${concatMapStringsSep "\n" (attr: ''
+        mkdir -p "$(dirname ${escapeShellArg attr.target})"
+        ln -s ${
+          escapeShellArgs [
+            attr.source
+            attr.target
+          ]
+        }
+      '') etc}
+    '';
 
     system.activationScripts.checks.text = mkAfter ''
       declare -A etcSha256Hashes=(
-        ${concatMapStringsSep "\n  "
-          (attr:
-            "[${escapeShellArg attr.target}]=" +
-            escapeShellArg (concatStringsSep " " attr.knownSha256Hashes))
-          etc}
+        ${concatMapStringsSep "\n  " (
+          attr:
+          "[${escapeShellArg attr.target}]=" + escapeShellArg (concatStringsSep " " attr.knownSha256Hashes)
+        ) etc}
       )
 
       declare -a etcProblems=()

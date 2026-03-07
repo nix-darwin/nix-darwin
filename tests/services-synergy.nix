@@ -1,9 +1,14 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
-  synergy = pkgs.runCommand "synergy-0.0.0" {} "mkdir $out";
+  synergy = pkgs.runCommand "synergy-0.0.0" { } "mkdir $out";
 in
 
 {

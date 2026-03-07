@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   activationPath =
@@ -6,7 +11,8 @@ let
       [
         pkgs.gnugrep
         pkgs.coreutils
-      ] ++ lib.optionals config.nix.enable [ config.nix.package ]
+      ]
+      ++ lib.optionals config.nix.enable [ config.nix.package ]
     )
     + lib.optionalString (!config.nix.enable) ''
       $(
@@ -32,7 +38,9 @@ in
 
 {
   imports = [
-    (lib.mkRemovedOptionModule [ "services" "activate-system" "enable" ] "The `activate-system` service is now always enabled as it is necessary for a working `nix-darwin` setup.")
+    (lib.mkRemovedOptionModule [ "services" "activate-system" "enable" ]
+      "The `activate-system` service is now always enabled as it is necessary for a working `nix-darwin` setup."
+    )
   ];
 
   config = {

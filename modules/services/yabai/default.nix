@@ -1,21 +1,24 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
   cfg = config.services.yabai;
 
-  toYabaiConfig = opts:
-    concatStringsSep "\n" (mapAttrsToList
-      (p: v: "yabai -m config ${p} ${toString v}")
-      opts);
+  toYabaiConfig =
+    opts: concatStringsSep "\n" (mapAttrsToList (p: v: "yabai -m config ${p} ${toString v}") opts);
 
-  configFile = mkIf (cfg.config != { } || cfg.extraConfig != "")
-    "${pkgs.writeScript "yabairc" (
-      (if (cfg.config != {})
-       then "${toYabaiConfig cfg.config}"
-       else "")
-      + optionalString (cfg.extraConfig != "") ("\n" + cfg.extraConfig + "\n"))}";
+  configFile =
+    mkIf (cfg.config != { } || cfg.extraConfig != "")
+      "${pkgs.writeScript "yabairc" (
+        (if (cfg.config != { }) then "${toYabaiConfig cfg.config}" else "")
+        + optionalString (cfg.extraConfig != "") ("\n" + cfg.extraConfig + "\n")
+      )}";
 in
 
 {
@@ -77,8 +80,13 @@ in
       environment.systemPackages = [ cfg.package ];
 
       launchd.user.agents.yabai = {
-        serviceConfig.ProgramArguments = [ "${cfg.package}/bin/yabai" ]
-          ++ optionals (cfg.config != { } || cfg.extraConfig != "") [ "-c" configFile ];
+        serviceConfig.ProgramArguments = [
+          "${cfg.package}/bin/yabai"
+        ]
+        ++ optionals (cfg.config != { } || cfg.extraConfig != "") [
+          "-c"
+          configFile
+        ];
 
         serviceConfig.KeepAlive = true;
         serviceConfig.RunAtLoad = true;
@@ -98,7 +106,7 @@ in
         serviceConfig.KeepAlive.SuccessfulExit = false;
       };
 
-      environment.etc."sudoers.d/yabai".source = pkgs.runCommand "sudoers-yabai" {} ''
+      environment.etc."sudoers.d/yabai".source = pkgs.runCommand "sudoers-yabai" { } ''
         YABAI_BIN="${cfg.package}/bin/yabai"
         SHASUM=$(sha256sum "$YABAI_BIN" | cut -d' ' -f1)
         cat <<EOF >"$out"

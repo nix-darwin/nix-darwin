@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.security.pam.services.sudo_local;
@@ -72,35 +77,40 @@ in
     };
 
     system.activationScripts.pam.text =
-    let
-      file = "/etc/pam.d/sudo";
-      marker = "security.pam.services.sudo_local";
-      deprecatedOption = "security.pam.enableSudoTouchIdAuth";
-      sed = lib.getExe pkgs.gnused;
-    in
-    ''
-      # PAM settings
-      echo >&2 "setting up pam..."
+      let
+        file = "/etc/pam.d/sudo";
+        marker = "security.pam.services.sudo_local";
+        deprecatedOption = "security.pam.enableSudoTouchIdAuth";
+        sed = lib.getExe pkgs.gnused;
+      in
+      ''
+        # PAM settings
+        echo >&2 "setting up pam..."
 
-      # REMOVEME when macOS 13 no longer supported as macOS automatically
-      # nukes this file on system upgrade
-      # Always clear out older implementation if it is present
-      if grep '${deprecatedOption}' ${file} > /dev/null; then
-        ${sed} -i '/${deprecatedOption}/d' ${file}
-      fi
+        # REMOVEME when macOS 13 no longer supported as macOS automatically
+        # nukes this file on system upgrade
+        # Always clear out older implementation if it is present
+        if grep '${deprecatedOption}' ${file} > /dev/null; then
+          ${sed} -i '/${deprecatedOption}/d' ${file}
+        fi
 
-      ${if cfg.enable then ''
-        # REMOVEME when macOS 13 no longer supported
-        # `sudo_local` is automatically included after macOS 14
-        if ! grep 'sudo_local' ${file} > /dev/null; then
-          ${sed} -i '2iauth       include        sudo_local # nix-darwin: ${marker}' ${file}
-        fi
-      '' else ''
-        # Remove include line if we added it
-        if grep '${marker}' ${file} > /dev/null; then
-          ${sed} -i '/${marker}/d' ${file}
-        fi
-      ''}
-    '';
+        ${
+          if cfg.enable then
+            ''
+              # REMOVEME when macOS 13 no longer supported
+              # `sudo_local` is automatically included after macOS 14
+              if ! grep 'sudo_local' ${file} > /dev/null; then
+                ${sed} -i '2iauth       include        sudo_local # nix-darwin: ${marker}' ${file}
+              fi
+            ''
+          else
+            ''
+              # Remove include line if we added it
+              if grep '${marker}' ${file} > /dev/null; then
+                ${sed} -i '/${marker}/d' ${file}
+              fi
+            ''
+        }
+      '';
   };
 }

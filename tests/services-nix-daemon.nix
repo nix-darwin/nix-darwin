@@ -1,8 +1,8 @@
 { config, pkgs, ... }:
 
 let
-  cacert = pkgs.runCommand "cacert-0.0.0" {} "mkdir -p $out";
-  nix = pkgs.runCommand "nix-2.2" {} "mkdir -p $out";
+  cacert = pkgs.runCommand "cacert-0.0.0" { } "mkdir -p $out";
+  nix = pkgs.runCommand "nix-2.2" { } "mkdir -p $out";
 in
 
 {

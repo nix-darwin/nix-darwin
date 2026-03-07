@@ -1,9 +1,14 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
-  skhd = pkgs.runCommand "skhd-0.0.0" {} "mkdir $out";
+  skhd = pkgs.runCommand "skhd-0.0.0" { } "mkdir $out";
 in
 
 {
