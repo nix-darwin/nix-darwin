@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -13,8 +18,9 @@ let
   );
 
   fishAliases = concatStringsSep "\n" (
-    mapAttrsToList (k: v: "alias ${k} ${escapeShellArg v}")
-      (filterAttrs (k: v: v != null) cfg.shellAliases)
+    mapAttrsToList (k: v: "alias ${k} ${escapeShellArg v}") (
+      filterAttrs (k: v: v != null) cfg.shellAliases
+    )
   );
 
   envShellInit = pkgs.writeText "shellInit" cfge.shellInit;
@@ -26,22 +32,26 @@ let
   fenv = pkgs.fishPlugins.foreign-env or pkgs.fish-foreign-env;
 
   # fishPlugins.foreign-env and fish-foreign-env have different function paths
-  fenvFunctionsDir = if (pkgs ? fishPlugins.foreign-env)
-    then "${fenv}/share/fish/vendor_functions.d"
-    else "${fenv}/share/fish-foreign-env/functions";
+  fenvFunctionsDir =
+    if (pkgs ? fishPlugins.foreign-env) then
+      "${fenv}/share/fish/vendor_functions.d"
+    else
+      "${fenv}/share/fish-foreign-env/functions";
 
-  sourceEnv = file:
-  if cfg.useBabelfish then
-    "source /etc/fish/${file}.fish"
-  else
-    ''
-      set fish_function_path ${fenvFunctionsDir} $fish_function_path
-      fenv source /etc/fish/foreign-env/${file} > /dev/null
-      set -e fish_function_path[1]
-    '';
+  sourceEnv =
+    file:
+    if cfg.useBabelfish then
+      "source /etc/fish/${file}.fish"
+    else
+      ''
+        set fish_function_path ${fenvFunctionsDir} $fish_function_path
+        fenv source /etc/fish/foreign-env/${file} > /dev/null
+        set -e fish_function_path[1]
+      '';
 
-  babelfishTranslate = path: name:
-    pkgs.runCommand "${name}.fish" {} ''
+  babelfishTranslate =
+    path: name:
+    pkgs.runCommand "${name}.fish" { } ''
       ${cfg.babelfishPackage}/bin/babelfish < ${path} > $out
     '';
 
@@ -106,7 +116,7 @@ in
       };
 
       shellAbbrs = mkOption {
-        default = {};
+        default = { };
         example = {
           gco = "git checkout";
           npu = "nix-prefetch-url";
@@ -165,16 +175,16 @@ in
   config = mkIf cfg.enable {
 
     environment = mkMerge [
-      (mkIf cfg.useBabelfish
-      {
-        etc."fish/setEnvironment.fish".source = babelfishTranslate config.system.build.setEnvironment "setEnvironment";
+      (mkIf cfg.useBabelfish {
+        etc."fish/setEnvironment.fish".source =
+          babelfishTranslate config.system.build.setEnvironment "setEnvironment";
         etc."fish/shellInit.fish".source = babelfishTranslate envShellInit "shellInit";
         etc."fish/loginShellInit.fish".source = babelfishTranslate envLoginShellInit "loginShellInit";
-        etc."fish/interactiveShellInit.fish".source = babelfishTranslate envInteractiveShellInit "interactiveShellInit";
-     })
+        etc."fish/interactiveShellInit.fish".source =
+          babelfishTranslate envInteractiveShellInit "interactiveShellInit";
+      })
 
-      (mkIf (!cfg.useBabelfish)
-      {
+      (mkIf (!cfg.useBabelfish) {
         etc."fish/foreign-env/shellInit".source = envShellInit;
         etc."fish/foreign-env/loginShellInit".source = envLoginShellInit;
         etc."fish/foreign-env/interactiveShellInit".source = envInteractiveShellInit;
@@ -182,76 +192,78 @@ in
 
       {
         etc."fish/nixos-env-preinit.fish".text =
-        if cfg.useBabelfish
-        then ''
-          # source the NixOS environment config
-          if [ -z "$__NIX_DARWIN_SET_ENVIRONMENT_DONE" ]
-            source /etc/fish/setEnvironment.fish
-          end
-        ''
-        else ''
-          # This happens before $__fish_datadir/config.fish sets fish_function_path, so it is currently
-          # unset. We set it and then completely erase it, leaving its configuration to $__fish_datadir/config.fish
-          set fish_function_path ${fenvFunctionsDir} $__fish_datadir/functions
+          if cfg.useBabelfish then
+            ''
+              # source the NixOS environment config
+              if [ -z "$__NIX_DARWIN_SET_ENVIRONMENT_DONE" ]
+                source /etc/fish/setEnvironment.fish
+              end
+            ''
+          else
+            ''
+              # This happens before $__fish_datadir/config.fish sets fish_function_path, so it is currently
+              # unset. We set it and then completely erase it, leaving its configuration to $__fish_datadir/config.fish
+              set fish_function_path ${fenvFunctionsDir} $__fish_datadir/functions
 
-          # source the NixOS environment config
-          if [ -z "$__NIX_DARWIN_SET_ENVIRONMENT_DONE" ]
-            fenv source ${config.system.build.setEnvironment}
-          end
+              # source the NixOS environment config
+              if [ -z "$__NIX_DARWIN_SET_ENVIRONMENT_DONE" ]
+                fenv source ${config.system.build.setEnvironment}
+              end
 
-          # clear fish_function_path so that it will be correctly set when we return to $__fish_datadir/config.fish
-          set -e fish_function_path
-        '';
+              # clear fish_function_path so that it will be correctly set when we return to $__fish_datadir/config.fish
+              set -e fish_function_path
+            '';
       }
       {
         etc."fish/config.fish".text = ''
-        # /etc/fish/config.fish: DO NOT EDIT -- this file has been generated automatically.
+          # /etc/fish/config.fish: DO NOT EDIT -- this file has been generated automatically.
 
-        # if we haven't sourced the general config, do it
-        if not set -q __fish_nix_darwin_general_config_sourced
-          ${sourceEnv "shellInit"}
+          # if we haven't sourced the general config, do it
+          if not set -q __fish_nix_darwin_general_config_sourced
+            ${sourceEnv "shellInit"}
 
-          ${cfg.shellInit}
+            ${cfg.shellInit}
 
-          # and leave a note so we don't source this config section again from
-          # this very shell (children will source the general config anew)
-          set -g __fish_nix_darwin_general_config_sourced 1
-        end
+            # and leave a note so we don't source this config section again from
+            # this very shell (children will source the general config anew)
+            set -g __fish_nix_darwin_general_config_sourced 1
+          end
 
-        # if we haven't sourced the login config, do it
-        status --is-login; and not set -q __fish_nix_darwin_login_config_sourced
-        and begin
-          ${sourceEnv "loginShellInit"}
+          # if we haven't sourced the login config, do it
+          status --is-login; and not set -q __fish_nix_darwin_login_config_sourced
+          and begin
+            ${sourceEnv "loginShellInit"}
 
-          ${cfg.loginShellInit}
+            ${cfg.loginShellInit}
 
-          # and leave a note so we don't source this config section again from
-          # this very shell (children will source the general config anew)
-          set -g __fish_nix_darwin_login_config_sourced 1
-        end
+            # and leave a note so we don't source this config section again from
+            # this very shell (children will source the general config anew)
+            set -g __fish_nix_darwin_login_config_sourced 1
+          end
 
-        # if we haven't sourced the interactive config, do it
-        status --is-interactive; and not set -q __fish_nix_darwin_interactive_config_sourced
-        and begin
-          ${fishAbbrs}
-          ${fishAliases}
+          # if we haven't sourced the interactive config, do it
+          status --is-interactive; and not set -q __fish_nix_darwin_interactive_config_sourced
+          and begin
+            ${fishAbbrs}
+            ${fishAliases}
 
-          ${sourceEnv "interactiveShellInit"}
+            ${sourceEnv "interactiveShellInit"}
 
-          ${cfg.promptInit}
-          ${cfg.interactiveShellInit}
+            ${cfg.promptInit}
+            ${cfg.interactiveShellInit}
 
-          # and leave a note so we don't source this config section again from
-          # this very shell (children will source the general config anew,
-          # allowing configuration changes in, e.g, aliases, to propagate)
-          set -g __fish_nix_darwin_interactive_config_sourced 1
-        end
-      '';
+            # and leave a note so we don't source this config section again from
+            # this very shell (children will source the general config anew,
+            # allowing configuration changes in, e.g, aliases, to propagate)
+            set -g __fish_nix_darwin_interactive_config_sourced 1
+          end
+        '';
       }
 
       # include programs that bring their own completions
       {
-        pathsToLink = []
+        pathsToLink =
+          [ ]
           ++ optional cfg.vendor.config.enable "/share/fish/vendor_conf.d"
           ++ optional cfg.vendor.completions.enable "/share/fish/vendor_completions.d"
           ++ optional cfg.vendor.functions.enable "/share/fish/vendor_functions.d";

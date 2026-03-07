@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -44,13 +49,11 @@ in
 
   config = {
 
-    system.build.patches = pkgs.runCommand "patches"
-      { preferLocalBuild = true; }
-      ''
-        mkdir -p $out/patches
-        cd $out/patches
-        ${concatMapStringsSep "\n" (f: "ln -s '${f}' $(basename '${f}')") cfg.patches}
-      '';
+    system.build.patches = pkgs.runCommand "patches" { preferLocalBuild = true; } ''
+      mkdir -p $out/patches
+      cd $out/patches
+      ${concatMapStringsSep "\n" (f: "ln -s '${f}' $(basename '${f}')") cfg.patches}
+    '';
 
     system.activationScripts.patches.text = ''
       # Applying patches to /.

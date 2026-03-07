@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 let
-  font = pkgs.runCommand "font-0.0.0" {} ''
+  font = pkgs.runCommand "font-0.0.0" { } ''
     mkdir -p $out
     touch $out/Font.ttf
   '';

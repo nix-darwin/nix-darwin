@@ -1,9 +1,14 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
-  spotifyd = pkgs.runCommand "spotifyd-0.0.0" {} "mkdir $out";
+  spotifyd = pkgs.runCommand "spotifyd-0.0.0" { } "mkdir $out";
 in
 
 {

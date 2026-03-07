@@ -1,13 +1,24 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
-  inherit (lib) mkEnableOption mkOption types mkIf;
+  inherit (lib)
+    mkEnableOption
+    mkOption
+    types
+    mkIf
+    ;
 
   cfg = config.services.telegraf;
 
   settingsFormat = pkgs.formats.toml { };
   configFile = settingsFormat.generate "config.toml" cfg.extraConfig;
-in {
+in
+{
   options = {
     services.telegraf = {
       enable = mkEnableOption "telegraf agent";
@@ -56,11 +67,8 @@ in {
   config = mkIf cfg.enable {
     launchd.daemons.telegraf = {
       script = ''
-        ${lib.concatStringsSep "\n"
-        (map (file: "source ${file}") cfg.environmentFiles)}
-        ${cfg.package}/bin/telegraf --config ${
-          if cfg.configUrl == null then configFile else cfg.configUrl
-        }
+        ${lib.concatStringsSep "\n" (map (file: "source ${file}") cfg.environmentFiles)}
+        ${cfg.package}/bin/telegraf --config ${if cfg.configUrl == null then configFile else cfg.configUrl}
       '';
       serviceConfig = {
         KeepAlive = true;

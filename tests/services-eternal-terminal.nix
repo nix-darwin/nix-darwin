@@ -1,11 +1,17 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
   eternal-terminal = pkgs.runCommand "eternal-terminal-0.0.0" { } "mkdir $out";
 
-in {
+in
+{
   services.eternal-terminal.enable = true;
   services.eternal-terminal.package = eternal-terminal;
   services.eternal-terminal.port = 2222;

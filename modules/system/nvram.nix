@@ -1,12 +1,16 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.system;
 
-  mkNvramVariables =
-    lib.attrsets.mapAttrsToList
-      (name: value: "nvram ${lib.escapeShellArg name}=${lib.escapeShellArg value}")
-      cfg.nvram.variables;
+  mkNvramVariables = lib.attrsets.mapAttrsToList (
+    name: value: "nvram ${lib.escapeShellArg name}=${lib.escapeShellArg value}"
+  ) cfg.nvram.variables;
 in
 
 {
@@ -17,7 +21,7 @@ in
   options = {
     system.nvram.variables = lib.mkOption {
       type = with lib.types; attrsOf str;
-      default = {};
+      default = { };
       internal = true;
       example = {
         "StartupMute" = "%01";

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -15,7 +20,6 @@ with lib;
     };
 
   };
-
 
   config = mkIf config.programs.man.enable {
 

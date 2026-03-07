@@ -1,16 +1,22 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 let
   cfg = config.services.netdata;
 
-in {
+in
+{
   meta.maintainers = [ lib.maintainers.rsrohitsingh682 or "rsrohitsingh682" ];
 
   options = {
     services.netdata = {
       enable = mkEnableOption "Netdata daemon";
 
-      package = lib.mkPackageOption pkgs "netdata" {};
+      package = lib.mkPackageOption pkgs "netdata" { };
 
       config = mkOption {
         type = types.lines;

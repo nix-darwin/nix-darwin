@@ -1,10 +1,16 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
   cfg = config.services.offlineimap;
-in {
+in
+{
 
   options.services.offlineimap = {
     enable = mkEnableOption "Offlineimap, a software to dispose your mailbox(es) as a local Maildir(s)";
@@ -18,7 +24,7 @@ in {
 
     path = mkOption {
       type = types.listOf types.path;
-      default = [];
+      default = [ ];
       example = literalExpression "[ pkgs.pass pkgs.bash pkgs.notmuch ]";
       description = "List of derivations to put in Offlineimap's path.";
     };
@@ -49,13 +55,14 @@ in {
     environment.systemPackages = [ cfg.package ];
     environment.etc."offlineimaprc".text = cfg.extraConfig;
     launchd.user.agents.offlineimap = {
-      path                            = [ cfg.package ];
-      command                         = "${cfg.package}/bin/offlineimap -c /etc/offlineimaprc" + optionalString (cfg.runQuick) " -q";
-      serviceConfig.KeepAlive         = false;
-      serviceConfig.RunAtLoad         = true;
-      serviceConfig.StartInterval     = cfg.startInterval;
+      path = [ cfg.package ];
+      command =
+        "${cfg.package}/bin/offlineimap -c /etc/offlineimaprc" + optionalString (cfg.runQuick) " -q";
+      serviceConfig.KeepAlive = false;
+      serviceConfig.RunAtLoad = true;
+      serviceConfig.StartInterval = cfg.startInterval;
       serviceConfig.StandardErrorPath = "/var/log/offlineimap.log";
-      serviceConfig.StandardOutPath   = "/var/log/offlineimap.log";
+      serviceConfig.StandardOutPath = "/var/log/offlineimap.log";
       managedBy = "services.offlineimap.enable";
     };
   };

@@ -42,12 +42,15 @@ in
       }
     ];
     workspace-to-monitor-force-assignment = {
-        "1" = 1;
-        "2" = "main";
-        "3" = "secondary";
-        "4" = "built-in";
-        "5" = "^built-in retina display$";
-        "6" = [ "secondary" "dell" ];
+      "1" = 1;
+      "2" = "main";
+      "3" = "secondary";
+      "4" = "built-in";
+      "5" = "^built-in retina display$";
+      "6" = [
+        "secondary"
+        "dell"
+      ];
     };
   };
 
@@ -80,7 +83,7 @@ in
     grep 'run = "layout floating"' $conf
     grep 'app-name-regex-substring = "finder|calendar"' $conf
     (! grep 'window-title-regex-substring' $conf)
-    
+
     grep 'workspace = "1"' $conf
     grep 'run = "layout h_accordion"' $conf
 

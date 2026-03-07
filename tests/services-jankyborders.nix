@@ -1,9 +1,14 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
-  jankyborders = pkgs.runCommand "borders-0.0.0" {} "mkdir $out";
+  jankyborders = pkgs.runCommand "borders-0.0.0" { } "mkdir $out";
 in
 
 {

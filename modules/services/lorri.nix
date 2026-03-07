@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -6,18 +11,18 @@ let
   cfg = config.services.lorri;
 in
 {
-  options =  {
+  options = {
     services.lorri = {
       enable = mkOption {
         type = types.bool;
         default = false;
         description = "Whether to enable the lorri service.";
       };
-      
+
       logFile = mkOption {
         type = types.nullOr types.path;
         default = null;
-        example =  "/var/tmp/lorri.log";
+        example = "/var/tmp/lorri.log";
         description = ''
           The logfile to use for the lorri service. Alternatively
           {command}`sudo launchctl debug system/org.nixos.lorri --stderr`
@@ -33,7 +38,7 @@ in
     assertions = [
       {
         assertion = config.nix.enable;
-        message = ''`services.lorri.enable` requires `nix.enable`'';
+        message = "`services.lorri.enable` requires `nix.enable`";
       }
     ];
 
@@ -41,14 +46,21 @@ in
 
     launchd.user.agents.lorri = {
       command = with pkgs; "${lorri}/bin/lorri daemon";
-      path = with pkgs; [ config.nix.package git gnutar gzip ];
+      path = with pkgs; [
+        config.nix.package
+        git
+        gnutar
+        gzip
+      ];
       serviceConfig = {
         KeepAlive = true;
         RunAtLoad = true;
         ProcessType = "Background";
         StandardOutPath = cfg.logFile;
         StandardErrorPath = cfg.logFile;
-        EnvironmentVariables = { NIX_PATH = "nixpkgs=" + toString pkgs.path; };
+        EnvironmentVariables = {
+          NIX_PATH = "nixpkgs=" + toString pkgs.path;
+        };
       };
       managedBy = "services.lorri.enable";
     };

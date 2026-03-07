@@ -1,16 +1,21 @@
-{ lib, config, pkgs, ... }:
+{
+  lib,
+  config,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 {
   # We are uninstalling, disable sanity checks.
-  assertions = mkForce [];
+  assertions = mkForce [ ];
   system.activationScripts.checks.text = mkForce "";
 
-  environment.etc = mkForce {};
-  launchd.agents = mkForce {};
-  launchd.daemons = mkForce {};
-  launchd.user.agents = mkForce {};
+  environment.etc = mkForce { };
+  launchd.agents = mkForce { };
+  launchd.daemons = mkForce { };
+  launchd.user.agents = mkForce { };
 
   # Restore any unmanaged `nix-daemon`.
   nix.enable = false;

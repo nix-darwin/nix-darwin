@@ -1,8 +1,23 @@
 { lib, ... }:
 
 let
-  inherit (lib) imap1 types mkOption showOption optionDescriptionPhrase mergeDefinitions;
-  inherit (builtins) map filter length deepSeq throw toString concatLists;
+  inherit (lib)
+    imap1
+    types
+    mkOption
+    showOption
+    optionDescriptionPhrase
+    mergeDefinitions
+    ;
+  inherit (builtins)
+    map
+    filter
+    length
+    deepSeq
+    throw
+    toString
+    concatLists
+    ;
   inherit (lib.options) showDefs;
   wildcardText = lib.literalMD "`*`";
 
@@ -21,90 +36,109 @@ let
     The implementation of this function is similar to that of
     `types.nonEmptyListOf`.
   */
-  types'.uniqueList = listType: listType // {
+  types'.uniqueList =
+    listType:
+    listType
+    // {
       description = "unique ${types.optionDescriptionPhrase (class: class == "noun") listType}";
       substSubModules = m: types'.uniqueList (listType.substSubModules m);
       # This has been taken from the implementation of `types.listOf`, but has
       # been modified to throw on duplicates. This check cannot be done in the
       # `check` fn as this check is deep/strict, and because `check` runs
       # prior to merging.
-      merge = loc: defs:
+      merge =
+        loc: defs:
         let
           # Each element of `dupes` is a list. When there are duplicates,
           # later lists will be duplicates of earlier lists, so just throw on
           # the first set of duplicates found so that we don't have duplicate
           # error msgs.
-          checked = filter (li:
-            if length li > 1
-            then throw "The option `${showOption loc}' contains duplicate entries after merging:\n${showDefs li}"
-            else false) dupes;
+          checked = filter (
+            li:
+            if length li > 1 then
+              throw "The option `${showOption loc}' contains duplicate entries after merging:\n${showDefs li}"
+            else
+              false
+          ) dupes;
           dupes = map (def: filter (def': def'.value == def.value) merged) merged;
-          merged = filter (x: x ? value) (concatLists (imap1 (n: def:
-            imap1 (m: el:
-              let
-                inherit (def) file;
-                loc' = loc ++ ["[definition ${toString n}-entry ${toString m}]"];
-              in
-                (mergeDefinitions
-                  loc'
-                  listType.nestedTypes.elemType
-                  [{ inherit file; value = el; }]
-                ).optionalValue // {inherit loc' file;}
-            ) def.value
-          ) defs));
-      in
+          merged = filter (x: x ? value) (
+            concatLists (
+              imap1 (
+                n: def:
+                imap1 (
+                  m: el:
+                  let
+                    inherit (def) file;
+                    loc' = loc ++ [ "[definition ${toString n}-entry ${toString m}]" ];
+                  in
+                  (mergeDefinitions loc' listType.nestedTypes.elemType [
+                    {
+                      inherit file;
+                      value = el;
+                    }
+                  ]).optionalValue
+                  // {
+                    inherit loc' file;
+                  }
+                ) def.value
+              ) defs
+            )
+          );
+        in
         deepSeq checked (map (x: x.value) merged);
     };
-in {
-  StartCalendarInterval = let
-    CalendarIntervalEntry = types.submodule {
-      options = {
-        Minute = mkOption {
-          type = types.nullOr (types.ints.between 0 59);
-          default = null;
-          defaultText = wildcardText;
-          description = ''
-            The minute on which this job will be run.
-          '';
-        };
+in
+{
+  StartCalendarInterval =
+    let
+      CalendarIntervalEntry = types.submodule {
+        options = {
+          Minute = mkOption {
+            type = types.nullOr (types.ints.between 0 59);
+            default = null;
+            defaultText = wildcardText;
+            description = ''
+              The minute on which this job will be run.
+            '';
+          };
 
-        Hour = mkOption {
-          type = types.nullOr (types.ints.between 0 23);
-          default = null;
-          defaultText = wildcardText;
-          description = ''
-            The hour on which this job will be run.
-          '';
-        };
+          Hour = mkOption {
+            type = types.nullOr (types.ints.between 0 23);
+            default = null;
+            defaultText = wildcardText;
+            description = ''
+              The hour on which this job will be run.
+            '';
+          };
 
-        Day = mkOption {
-          type = types.nullOr (types.ints.between 1 31);
-          default = null;
-          defaultText = wildcardText;
-          description = ''
-            The day on which this job will be run.
-          '';
-        };
+          Day = mkOption {
+            type = types.nullOr (types.ints.between 1 31);
+            default = null;
+            defaultText = wildcardText;
+            description = ''
+              The day on which this job will be run.
+            '';
+          };
 
-        Weekday = mkOption {
-          type = types.nullOr (types.ints.between 0 7);
-          default = null;
-          defaultText = wildcardText;
-          description = ''
-            The weekday on which this job will be run (0 and 7 are Sunday).
-          '';
-        };
+          Weekday = mkOption {
+            type = types.nullOr (types.ints.between 0 7);
+            default = null;
+            defaultText = wildcardText;
+            description = ''
+              The weekday on which this job will be run (0 and 7 are Sunday).
+            '';
+          };
 
-        Month = mkOption {
-          type = types.nullOr (types.ints.between 1 12);
-          default = null;
-          defaultText = wildcardText;
-          description = ''
-            The month on which this job will be run.
-          '';
+          Month = mkOption {
+            type = types.nullOr (types.ints.between 1 12);
+            default = null;
+            defaultText = wildcardText;
+            description = ''
+              The month on which this job will be run.
+            '';
+          };
         };
       };
-    };
-  in
+    in
     types.either CalendarIntervalEntry (types'.uniqueList (types.nonEmptyListOf CalendarIntervalEntry));
 }

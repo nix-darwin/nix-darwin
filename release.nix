@@ -1,25 +1,33 @@
-{ nixpkgs ? <nixpkgs>
-# Adapted from https://github.com/NixOS/nixpkgs/blob/e818264fe227ad8861e0598166cf1417297fdf54/pkgs/top-level/release.nix#L11
-, nix-darwin ? { }
-, system ? builtins.currentSystem
-, supportedSystems ? [ "x86_64-darwin" "aarch64-darwin" ]
-, scrubJobs ? true
+{
+  nixpkgs ? <nixpkgs>,
+  # Adapted from https://github.com/NixOS/nixpkgs/blob/e818264fe227ad8861e0598166cf1417297fdf54/pkgs/top-level/release.nix#L11
+  nix-darwin ? { },
+  system ? builtins.currentSystem,
+  supportedSystems ? [
+    "x86_64-darwin"
+    "aarch64-darwin"
+  ],
+  scrubJobs ? true,
 }:
 
 let
-  buildFromConfig = configuration: sel: sel
-    (import ./. { inherit nixpkgs configuration system; }).config;
+  buildFromConfig =
+    configuration: sel: sel (import ./. { inherit nixpkgs configuration system; }).config;
 
   makeSystem = configuration: buildFromConfig configuration (config: config.system.build.toplevel);
 
-  makeTest = test:
+  makeTest =
+    test:
     let
-      testName =
-        builtins.replaceStrings [ ".nix" ] [ "" ]
-          (builtins.baseNameOf test);
+      testName = builtins.replaceStrings [ ".nix" ] [ "" ] (builtins.baseNameOf test);
 
       configuration =
-        { config, lib, pkgs, ... }:
+        {
+          config,
+          lib,
+          pkgs,
+          ...
+        }:
         with lib;
         {
           imports = [ test ];
@@ -37,39 +45,49 @@ let
           config = {
             system.stateVersion = lib.mkDefault config.system.maxStateVersion;
 
-            system.build.run-test = pkgs.runCommand "darwin-test-${testName}"
-              { allowSubstitutes = false; preferLocalBuild = true; }
-              ''
-                #! ${pkgs.stdenv.shell}
-                set -e
+            system.build.run-test =
+              pkgs.runCommand "darwin-test-${testName}"
+                {
+                  allowSubstitutes = false;
+                  preferLocalBuild = true;
+                }
+                ''
+                  #! ${pkgs.stdenv.shell}
+                  set -e
 
-                echo >&2 "running tests for system ${config.out}"
-                echo >&2
-                ${config.test}
-                echo >&2 ok
-                touch $out
-              '';
+                  echo >&2 "running tests for system ${config.out}"
+                  echo >&2
+                  ${config.test}
+                  echo >&2 ok
+                  touch $out
+                '';
 
             out = config.system.build.toplevel;
           };
         };
     in
-      buildFromConfig configuration (config: config.system.build.run-test);
+    buildFromConfig configuration (config: config.system.build.run-test);
 
-  manual = buildFromConfig ({ lib, config, ... }: {
-    system.stateVersion = lib.mkDefault config.system.maxStateVersion;
+  manual = buildFromConfig (
+    { lib, config, ... }:
+    {
+      system.stateVersion = lib.mkDefault config.system.maxStateVersion;
 
-    system.darwinVersionSuffix = let
-      shortRev = nix-darwin.shortRev or nix-darwin.dirtyShortRev or null;
-    in
-      lib.mkIf (shortRev != null) ".${shortRev}";
-    system.darwinRevision = let
-      rev = nix-darwin.rev or nix-darwin.dirtyRev or null;
-    in
-      lib.mkIf (rev != null) rev;
-  }) (config: config.system.build.manual);
+      system.darwinVersionSuffix =
+        let
+          shortRev = nix-darwin.shortRev or nix-darwin.dirtyShortRev or null;
+        in
+        lib.mkIf (shortRev != null) ".${shortRev}";
+      system.darwinRevision =
+        let
+          rev = nix-darwin.rev or nix-darwin.dirtyRev or null;
+        in
+        lib.mkIf (rev != null) rev;
+    }
+  ) (config: config.system.build.manual);
 
-in {
+in
+{
   docs = {
     inherit (manual) manualHTML manpages optionsJSON;
   };

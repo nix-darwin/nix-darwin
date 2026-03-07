@@ -1,9 +1,14 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
-  netdata = pkgs.runCommand "netdata-0.0.0" {} "mkdir $out";
+  netdata = pkgs.runCommand "netdata-0.0.0" { } "mkdir $out";
 in
 {
   services.netdata = {
