@@ -61,9 +61,9 @@ in
     environment.systemPackages = [ cfg.package ];
 
     launchd.user.agents.spacebar = {
-      serviceConfig.ProgramArguments = [ "${cfg.package}/bin/spacebar" ]
-                                       ++ optionals (cfg.config != {} || cfg.extraConfig != "") [ "-c" configFile ];
-
+      command = "${lib.getExe' cfg.package "spacebar"} ${
+        lib.optionalString (cfg.config != { } || cfg.extraConfig != "") "-c ${configFile}"
+      }";
       serviceConfig.KeepAlive = true;
       serviceConfig.RunAtLoad = true;
       serviceConfig.EnvironmentVariables = {

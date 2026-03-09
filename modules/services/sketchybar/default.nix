@@ -50,8 +50,9 @@ in
 
     launchd.user.agents.sketchybar = {
       path = [ cfg.package ] ++ cfg.extraPackages ++ [ config.environment.systemPath ];
-      serviceConfig.ProgramArguments = [ "${cfg.package}/bin/sketchybar" ]
-        ++ optionals (cfg.config != "") [ "--config" "${configFile}" ];
+      command = "${lib.getExe' cfg.package "sketchybar"} ${
+        lib.optionalString (cfg.config != "") "--config ${configFile}"
+      }";
       serviceConfig.KeepAlive = true;
       serviceConfig.RunAtLoad = true;
       managedBy = "services.sketchybar.enable";

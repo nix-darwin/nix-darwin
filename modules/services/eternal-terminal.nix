@@ -62,24 +62,24 @@ in {
 
     launchd.daemons.eternal-terminal = {
       path = [ cfg.package ];
+      command =
+        let
+          executable = lib.getExe' cfg.package "etserver";
+          configFile = pkgs.writeText "et.cfg" ''
+            ; et.cfg : Config file for Eternal Terminal
+            ;
+
+            [Networking]
+            port = ${toString cfg.port}
+
+            [Debug]
+            verbose = ${toString cfg.verbosity}
+            silent = ${if cfg.silent then "1" else "0"}
+            logsize = ${toString cfg.logSize}
+          '';
+        in
+        "${executable} --cfgfile=${configFile}";
       serviceConfig = {
-        ProgramArguments = [
-          "${cfg.package}/bin/etserver"
-          "--cfgfile=${
-            pkgs.writeText "et.cfg" ''
-              ; et.cfg : Config file for Eternal Terminal
-              ;
-
-              [Networking]
-              port = ${toString cfg.port}
-
-              [Debug]
-              verbose = ${toString cfg.verbosity}
-              silent = ${if cfg.silent then "1" else "0"}
-              logsize = ${toString cfg.logSize}
-            ''
-          }"
-        ];
         KeepAlive = true;
         RunAtLoad = true;
         HardResourceLimits.NumberOfFiles = 4096;

@@ -44,13 +44,12 @@ in
   config = mkIf cfg.agent.enable {
     environment.systemPackages = [ cfg.package ];
 
-    launchd.user.agents.gnupg-agent.serviceConfig = {
-      ProgramArguments = [
-        (getExe' cfg.package "gpg-connect-agent")
-        "/bye"
-      ];
-      RunAtLoad = cfg.agent.enableSSHSupport;
-      KeepAlive.SuccessfulExit = false;
+    launchd.user.agents.gnupg-agent = {
+      command = "${getExe' cfg.package "gpg-connect-agent"} /bye";
+      serviceConfig = {
+        RunAtLoad = cfg.agent.enableSSHSupport;
+        KeepAlive.SuccessfulExit = false;
+      };
     };
 
     environment.extraInit = ''
