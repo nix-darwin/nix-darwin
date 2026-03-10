@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -51,8 +56,11 @@ in
   config = mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
     launchd.user.agents.spotifyd = {
-      serviceConfig.ProgramArguments = [ "${cfg.package}/bin/spotifyd" "--no-daemon" ]
-        ++ optionals (cfg.settings != null) [ "--config-path=${configFile}" ];
+      serviceConfig.ProgramArguments = [
+        "${cfg.package}/bin/spotifyd"
+        "--no-daemon"
+      ]
+      ++ optionals (cfg.settings != null) [ "--config-path=${configFile}" ];
       serviceConfig = {
         KeepAlive = true;
         RunAtLoad = true;

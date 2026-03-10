@@ -1,12 +1,22 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
-let nextdns = pkgs.runCommand "nextdns-0.0.0" { } "mkdir $out";
+let
+  nextdns = pkgs.runCommand "nextdns-0.0.0" { } "mkdir $out";
 
-in {
+in
+{
   services.nextdns.enable = true;
-  services.nextdns.arguments = [ "-config" "10.0.3.0/24=abcdef" ];
+  services.nextdns.arguments = [
+    "-config"
+    "10.0.3.0/24=abcdef"
+  ];
 
   test = ''
     echo >&2 "checking nextdns service in ~/Library/LaunchDaemons"

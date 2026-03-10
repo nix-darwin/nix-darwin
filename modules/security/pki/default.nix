@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -9,14 +14,16 @@ let
     blacklist = cfg.caCertificateBlacklist;
   };
 
-  caCertificates = pkgs.runCommand "ca-certificates.crt"
-    { files =
-        cfg.certificateFiles ++
-        [ (builtins.toFile "extra.crt" (concatStringsSep "\n" cfg.certificates)) ];
-     }
-    ''
-      cat $files > $out
-    '';
+  caCertificates =
+    pkgs.runCommand "ca-certificates.crt"
+      {
+        files = cfg.certificateFiles ++ [
+          (builtins.toFile "extra.crt" (concatStringsSep "\n" cfg.certificates))
+        ];
+      }
+      ''
+        cat $files > $out
+      '';
 in
 
 {
@@ -31,7 +38,7 @@ in
 
     security.pki.certificateFiles = mkOption {
       type = types.listOf types.path;
-      default = [];
+      default = [ ];
       example = literalExpression "[ \"\${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt\" ]";
       description = ''
         A list of files containing trusted root certificates in PEM
@@ -44,7 +51,7 @@ in
 
     security.pki.certificates = mkOption {
       type = types.listOf types.str;
-      default = [];
+      default = [ ];
       example = literalExpression ''
         [ '''
             NixOS.org
@@ -64,9 +71,10 @@ in
 
     security.pki.caCertificateBlacklist = mkOption {
       type = types.listOf types.str;
-      default = [];
+      default = [ ];
       example = [
-        "WoSign" "WoSign China"
+        "WoSign"
+        "WoSign China"
         "CA WoSign ECC Root"
         "Certification Authority of WoSign G2"
       ];

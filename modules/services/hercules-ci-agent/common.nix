@@ -1,12 +1,16 @@
 /*
-
   This file is for options that NixOS and nix-darwin have in common.
 
   Platform-specific code is in the respective default.nix files.
-
 */
 
-{ config, lib, options, pkgs, ... }:
+{
+  config,
+  lib,
+  options,
+  pkgs,
+  ...
+}:
 let
   inherit (lib)
     filterAttrs
@@ -17,7 +21,11 @@ let
     mkRenamedOptionModule
     types
     ;
-  literalMD = lib.literalMD or (x: lib.literalDocBook "Documentation not rendered. Please upgrade to a newer NixOS with markdown support.");
+  literalMD =
+    lib.literalMD or (
+      x:
+      lib.literalDocBook "Documentation not rendered. Please upgrade to a newer NixOS with markdown support."
+    );
 
   cfg = config.services.hercules-ci-agent;
 
@@ -26,10 +34,21 @@ let
 in
 {
   imports = [
-    (mkRenamedOptionModule [ "services" "hercules-ci-agent" "extraOptions" ] [ "services" "hercules-ci-agent" "settings" ])
-    (mkRenamedOptionModule [ "services" "hercules-ci-agent" "baseDirectory" ] [ "services" "hercules-ci-agent" "settings" "baseDirectory" ])
-    (mkRenamedOptionModule [ "services" "hercules-ci-agent" "concurrentTasks" ] [ "services" "hercules-ci-agent" "settings" "concurrentTasks" ])
-    (mkRemovedOptionModule [ "services" "hercules-ci-agent" "patchNix" ] "Nix versions packaged in this version of Nixpkgs don't need a patched nix-daemon to work correctly in Hercules CI Agent clusters.")
+    (mkRenamedOptionModule
+      [ "services" "hercules-ci-agent" "extraOptions" ]
+      [ "services" "hercules-ci-agent" "settings" ]
+    )
+    (mkRenamedOptionModule
+      [ "services" "hercules-ci-agent" "baseDirectory" ]
+      [ "services" "hercules-ci-agent" "settings" "baseDirectory" ]
+    )
+    (mkRenamedOptionModule
+      [ "services" "hercules-ci-agent" "concurrentTasks" ]
+      [ "services" "hercules-ci-agent" "settings" "concurrentTasks" ]
+    )
+    (mkRemovedOptionModule [ "services" "hercules-ci-agent" "patchNix" ]
+      "Nix versions packaged in this version of Nixpkgs don't need a patched nix-daemon to work correctly in Hercules CI Agent clusters."
+    )
   ];
 
   options.services.hercules-ci-agent = {
@@ -87,8 +106,7 @@ in
       narinfo-cache-negative-ttl = 0
     '';
     services.hercules-ci-agent = {
-      tomlFile =
-        format.generate "hercules-ci-agent.toml" cfg.settings;
+      tomlFile = format.generate "hercules-ci-agent.toml" cfg.settings;
       settings.config._module.args = {
         packageOption = options.services.hercules-ci-agent.package;
         inherit pkgs;

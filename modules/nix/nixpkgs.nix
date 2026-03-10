@@ -198,7 +198,7 @@ in
           cfg.hostPlatform # make identical, so that `==` equality works; see https://github.com/NixOS/nixpkgs/issues/278001
         else
           elaborated;
-      defaultText = lib.literalExpression ''config.nixpkgs.hostPlatform'';
+      defaultText = lib.literalExpression "config.nixpkgs.hostPlatform";
       description = ''
         Specifies the platform on which nix-darwin should be built.
         By default, nix-darwin is built on the system where it runs, but you can

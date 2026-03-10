@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -8,8 +13,14 @@ let
 in
 {
   imports = [
-    (mkRemovedOptionModule [ "services" "tailscale" "domain" ] "Tailscale no longer requires setting the search domain manually.")
-    (mkRemovedOptionModule [ "services" "tailscale" "magicDNS" ] "MagicDNS no longer requires overriding the DNS servers, if this is necessary you can use `services.tailscale.overrideLocalDns`.")
+    (mkRemovedOptionModule [
+      "services"
+      "tailscale"
+      "domain"
+    ] "Tailscale no longer requires setting the search domain manually.")
+    (mkRemovedOptionModule [ "services" "tailscale" "magicDNS" ]
+      "MagicDNS no longer requires overriding the DNS servers, if this is necessary you can use `services.tailscale.overrideLocalDns`."
+    )
   ];
 
   options.services.tailscale = {
@@ -40,14 +51,16 @@ in
   };
 
   config = mkIf cfg.enable {
-    assertions = [{
-      assertion = !cfg.overrideLocalDns || config.networking.dns == [ "100.100.100.100" ];
-      message = ''
-        DNS servers should be configured on the Tailscale control panel when `services.tailscale.overrideLocalDns` is enabled.
+    assertions = [
+      {
+        assertion = !cfg.overrideLocalDns || config.networking.dns == [ "100.100.100.100" ];
+        message = ''
+          DNS servers should be configured on the Tailscale control panel when `services.tailscale.overrideLocalDns` is enabled.
 
-        A race condition can occur when DNS servers are set locally, leading to MagicDNS to not work.
-      '';
-    }];
+          A race condition can occur when DNS servers are set locally, leading to MagicDNS to not work.
+        '';
+      }
+    ];
 
     environment.systemPackages = [ cfg.package ];
 

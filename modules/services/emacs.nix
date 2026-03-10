@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -6,7 +11,8 @@ let
 
   cfg = config.services.emacs;
 
-in {
+in
+{
   options = {
     services.emacs = {
       enable = mkOption {
@@ -45,7 +51,10 @@ in {
     launchd.user.agents.emacs = {
       path = cfg.additionalPath ++ [ config.environment.systemPath ];
       serviceConfig = {
-        ProgramArguments = [ "${cfg.package}/bin/${cfg.exec}" "--fg-daemon" ];
+        ProgramArguments = [
+          "${cfg.package}/bin/${cfg.exec}"
+          "--fg-daemon"
+        ];
         RunAtLoad = true;
         KeepAlive = true;
       };

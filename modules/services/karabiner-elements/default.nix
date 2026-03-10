@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -40,9 +45,9 @@ in
     # which will block until the system extension is activated.
     launchd.daemons.start_karabiner_daemons = {
       script = ''
-          ${parentAppDir}/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager activate
-          launchctl kickstart system/org.pqrs.karabiner.karabiner_grabber
-          launchctl kickstart system/org.pqrs.karabiner.karabiner_observer
+        ${parentAppDir}/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager activate
+        launchctl kickstart system/org.pqrs.karabiner.karabiner_grabber
+        launchctl kickstart system/org.pqrs.karabiner.karabiner_observer
       '';
       serviceConfig.Label = "org.nixos.start_karabiner_daemons";
       serviceConfig.RunAtLoad = true;
@@ -81,7 +86,8 @@ in
     # because we use a custom location we need to call activate manually.
     launchd.user.agents.activate_karabiner_system_ext = {
       serviceConfig.ProgramArguments = [
-        "${parentAppDir}/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager" "activate"
+        "${parentAppDir}/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager"
+        "activate"
       ];
       serviceConfig.RunAtLoad = true;
       managedBy = "services.karabiner-elements.enable";
@@ -91,9 +97,9 @@ in
     # inside the preActivation script as it only gets run on darwin-rebuild switch.
     launchd.daemons.setsuid_karabiner_session_monitor = {
       script = ''
-          rm -rf /run/wrappers
-          mkdir -p /run/wrappers/bin
-          install -m4555 "${cfg.package}/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_session_monitor" /run/wrappers/bin
+        rm -rf /run/wrappers
+        mkdir -p /run/wrappers/bin
+        install -m4555 "${cfg.package}/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_session_monitor" /run/wrappers/bin
       '';
       serviceConfig.RunAtLoad = true;
       serviceConfig.KeepAlive.SuccessfulExit = false;
@@ -101,7 +107,8 @@ in
 
     launchd.user.agents.karabiner_session_monitor = {
       serviceConfig.ProgramArguments = [
-        "/bin/sh" "-c"
+        "/bin/sh"
+        "-c"
         "/bin/wait4path /run/wrappers/bin && /run/wrappers/bin/karabiner_session_monitor"
       ];
       serviceConfig.Label = "org.pqrs.karabiner.karabiner_session_monitor";
@@ -109,8 +116,11 @@ in
       managedBy = "services.karabiner-elements.enable";
     };
 
-    environment.userLaunchAgents."org.pqrs.karabiner.agent.karabiner_grabber.plist".source = "${cfg.package}/Library/LaunchAgents/org.pqrs.karabiner.agent.karabiner_grabber.plist";
-    environment.userLaunchAgents."org.pqrs.karabiner.agent.karabiner_observer.plist".source = "${cfg.package}/Library/LaunchAgents/org.pqrs.karabiner.agent.karabiner_observer.plist";
-    environment.userLaunchAgents."org.pqrs.karabiner.karabiner_console_user_server.plist".source = "${cfg.package}/Library/LaunchAgents/org.pqrs.karabiner.karabiner_console_user_server.plist";
+    environment.userLaunchAgents."org.pqrs.karabiner.agent.karabiner_grabber.plist".source =
+      "${cfg.package}/Library/LaunchAgents/org.pqrs.karabiner.agent.karabiner_grabber.plist";
+    environment.userLaunchAgents."org.pqrs.karabiner.agent.karabiner_observer.plist".source =
+      "${cfg.package}/Library/LaunchAgents/org.pqrs.karabiner.agent.karabiner_observer.plist";
+    environment.userLaunchAgents."org.pqrs.karabiner.karabiner_console_user_server.plist".source =
+      "${cfg.package}/Library/LaunchAgents/org.pqrs.karabiner.karabiner_console_user_server.plist";
   };
 }

@@ -51,7 +51,8 @@
           termite
           tmux
           wezterm
-        ] ++ lib.optional (pkgs ? ghostty-bin) ghostty-bin
+        ]
+        ++ lib.optional (pkgs ? ghostty-bin) ghostty-bin
       )
     );
 
@@ -65,7 +66,9 @@
 
     # TODO: use `environment.profileRelativeSessionVariables`
     environment.variables = {
-      TERMINFO_DIRS = map (path: path + "/share/terminfo") config.environment.profiles ++ [ "/usr/share/terminfo" ];
+      TERMINFO_DIRS = map (path: path + "/share/terminfo") config.environment.profiles ++ [
+        "/usr/share/terminfo"
+      ];
     };
 
     environment.extraInit = ''

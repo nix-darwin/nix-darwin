@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -36,8 +41,13 @@ in
     launchd.user.agents.skhd = {
       path = [ config.environment.systemPath ];
 
-      serviceConfig.ProgramArguments = [ "${cfg.package}/bin/skhd" ]
-        ++ optionals (cfg.skhdConfig != "") [ "-c" "/etc/skhdrc" ];
+      serviceConfig.ProgramArguments = [
+        "${cfg.package}/bin/skhd"
+      ]
+      ++ optionals (cfg.skhdConfig != "") [
+        "-c"
+        "/etc/skhdrc"
+      ];
       serviceConfig.KeepAlive = true;
       serviceConfig.ProcessType = "Interactive";
 

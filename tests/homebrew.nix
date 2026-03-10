@@ -60,7 +60,9 @@ in
     "google-chrome"
     {
       name = "firefox";
-      args = { appdir = "~/my-apps/Applications"; };
+      args = {
+        appdir = "~/my-apps/Applications";
+      };
     }
     {
       name = "opera";
@@ -88,7 +90,6 @@ in
   homebrew.cargoPackages = [
     "ripgrep"
   ];
-
 
   test = ''
     bf=${lib.escapeShellArg config.homebrew.brewfile}

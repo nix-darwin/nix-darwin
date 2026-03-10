@@ -1,9 +1,14 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
-  synapse-bt = pkgs.runCommand "synapse-bt-0.0.0" {} "mkdir $out";
+  synapse-bt = pkgs.runCommand "synapse-bt-0.0.0" { } "mkdir $out";
 in
 
 {

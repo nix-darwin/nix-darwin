@@ -3,9 +3,9 @@
 {
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
-  environment.systemPackages =
-    [ pkgs.vim
-    ];
+  environment.systemPackages = [
+    pkgs.vim
+  ];
 
   # Enable alternative shell support in nix-darwin.
   # programs.fish.enable = true;

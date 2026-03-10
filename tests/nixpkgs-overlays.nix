@@ -2,9 +2,8 @@
 
 {
   nixpkgs.overlays = [
-    (self: super:
-    {
-      hello = super.runCommand "hello" {} "mkdir $out";
+    (self: super: {
+      hello = super.runCommand "hello" { } "mkdir $out";
     })
   ];
 
@@ -13,4 +12,3 @@
     (! ${pkgs.hello}/bin/hello)
   '';
 }
-

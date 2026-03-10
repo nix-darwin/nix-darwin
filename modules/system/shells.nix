@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -10,7 +15,7 @@ in
   options = {
     environment.shells = mkOption {
       type = types.listOf (types.either types.shellPackage types.path);
-      default = [];
+      default = [ ];
       example = literalExpression "[ pkgs.bashInteractive pkgs.zsh ]";
       description = ''
         A list of permissible login shells for user accounts.
@@ -28,7 +33,7 @@ in
     };
   };
 
-  config = mkIf (cfg.shells != []) {
+  config = mkIf (cfg.shells != [ ]) {
 
     environment.etc."shells".text = ''
       # List of acceptable shells for chpass(1).
@@ -48,7 +53,7 @@ in
     '';
 
     environment.etc."shells".knownSha256Hashes = [
-      "9d5aa72f807091b481820d12e693093293ba33c73854909ad7b0fb192c2db193"  # macOS
+      "9d5aa72f807091b481820d12e693093293ba33c73854909ad7b0fb192c2db193" # macOS
     ];
 
   };
