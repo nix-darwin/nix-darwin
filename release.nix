@@ -112,6 +112,7 @@ in {
   tests.services-eternal-terminal = makeTest ./tests/services-eternal-terminal.nix;
   tests.services-nix-gc = makeTest ./tests/services-nix-gc.nix;
   tests.services-nix-optimise = makeTest ./tests/services-nix-optimise.nix;
+  tests.services-nebula = makeTest ./tests/services-nebula.nix;
   tests.services-nextdns = makeTest ./tests/services-nextdns.nix;
   tests.services-netdata = makeTest ./tests/services-netdata.nix;
   tests.services-ofborg = makeTest ./tests/services-ofborg.nix;
