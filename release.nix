@@ -114,6 +114,7 @@ in {
   tests.services-nix-optimise = makeTest ./tests/services-nix-optimise.nix;
   tests.services-nextdns = makeTest ./tests/services-nextdns.nix;
   tests.services-netdata = makeTest ./tests/services-netdata.nix;
+  tests.services-ntpd-rs = makeTest ./tests/services-ntpd-rs.nix;
   tests.services-ofborg = makeTest ./tests/services-ofborg.nix;
   tests.services-offlineimap = makeTest ./tests/services-offlineimap.nix;
   tests.services-openssh = makeTest ./tests/services-openssh.nix;
