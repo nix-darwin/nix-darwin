@@ -124,6 +124,7 @@ in {
   tests.services-spotifyd = makeTest ./tests/services-spotifyd.nix;
   tests.services-synapse-bt = makeTest ./tests/services-synapse-bt.nix;
   tests.services-synergy = makeTest ./tests/services-synergy.nix;
+  tests.services-timed = makeTest ./tests/services-timed.nix;
   tests.services-yabai = makeTest ./tests/services-yabai.nix;
   tests.services-jankyborders = makeTest ./tests/services-jankyborders.nix;
   tests.system-defaults-write = makeTest ./tests/system-defaults-write.nix;
