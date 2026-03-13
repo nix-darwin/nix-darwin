@@ -15,21 +15,40 @@ let
     ${prefix} launchctl setenv ${name} '${value}'
   '');
 
-  launchdActivation = basedir: target: ''
-    if ! diff '${cfg.build.launchd}/Library/${basedir}/${target}' '/Library/${basedir}/${target}' &> /dev/null; then
-      if test -f '/Library/${basedir}/${target}'; then
+  launchdDaemonActivation = target: ''
+    if ! diff '${cfg.build.launchd}/Library/LaunchDaemons/${target}' '/Library/LaunchDaemons/${target}' &> /dev/null; then
+      if test -f '/Library/LaunchDaemons/${target}'; then
         echo "reloading service $(basename ${target} .plist)" >&2
-        launchctl unload '/Library/${basedir}/${target}' || true
+        launchctl unload '/Library/LaunchDaemons/${target}' || true
       else
         echo "creating service $(basename ${target} .plist)" >&2
       fi
-      if test -L '/Library/${basedir}/${target}'; then
-        rm '/Library/${basedir}/${target}'
+      if test -L '/Library/LaunchDaemons/${target}'; then
+        rm '/Library/LaunchDaemons/${target}'
       fi
-      cp -f '${cfg.build.launchd}/Library/${basedir}/${target}' '/Library/${basedir}/${target}'
-      launchctl load -w '/Library/${basedir}/${target}'
+      cp -f '${cfg.build.launchd}/Library/LaunchDaemons/${target}' '/Library/LaunchDaemons/${target}'
+      launchctl load -w '/Library/LaunchDaemons/${target}'
     fi
   '';
+
+  launchdAgentActivation = target: let
+    user = lib.escapeShellArg config.system.primaryUser;
+  in  ''
+    if ! diff '${cfg.build.launchd}/Library/LaunchAgents/${target}' '/Library/LaunchAgents/${target}' &> /dev/null; then
+      if test -f '/Library/LaunchAgents/${target}'; then
+        echo "reloading service $(basename ${target} .plist)" >&2
+        launchctl asuser "$(id -u -- ${user})" sudo --user=${user} -- launchctl unload '/Library/LaunchAgents/${target}' || true
+      else
+        echo "creating service $(basename ${target} .plist)" >&2
+      fi
+      if test -L '/Library/LaunchAgents/${target}'; then
+        rm '/Library/LaunchAgents/${target}'
+      fi
+      cp -f '${cfg.build.launchd}/Library/LaunchAgents/${target}' '/Library/LaunchAgents/${target}'
+      launchctl asuser "$(id -u -- ${user})" sudo --user=${user} -- launchctl load -w '/Library/LaunchAgents/${target}'
+    fi
+  '';
+
 
   userLaunchdActivation = target: let
     user = lib.escapeShellArg config.system.primaryUser;
@@ -104,8 +123,8 @@ in
 
       ${concatStringsSep "\n" (launchdVariables "" config.launchd.envVariables)}
 
-      ${concatMapStringsSep "\n" (attr: launchdActivation "LaunchAgents" attr.target) launchAgents}
-      ${concatMapStringsSep "\n" (attr: launchdActivation "LaunchDaemons" attr.target) launchDaemons}
+      ${concatMapStringsSep "\n" (attr: launchdAgentActivation attr.target) launchAgents}
+      ${concatMapStringsSep "\n" (attr: launchdDaemonActivation attr.target) launchDaemons}
 
       for f in /run/current-system/Library/LaunchAgents/*; do
         [[ -e "$f" ]] || break  # handle when directory is empty
