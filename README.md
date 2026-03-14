@@ -13,7 +13,7 @@ nix-darwin is built up around [Nixpkgs](https://github.com/NixOS/nixpkgs), quite
 
 The only prerequisite is a Nix implementation; both Nix and Lix are supported.
 
-As the official Nix installer does not include an automated uninstaller, and manual uninstallation on macOS is a complex process, we recommend using the [Lix installer](https://lix.systems/install/#on-any-other-linuxmacos-system), which supports both flake-based and channel-based setups.
+The official Nix multi-user installer can be found [here](https://nixos.org/download/#nix-install-macos). You can also use the [Lix installer](https://lix.systems/install/#on-any-other-linuxmacos-system), which supports both flake-based and channel-based setups out of the box.
 
 The installer you use doesn't affect which Nix interpreter your system will use later on. nix-darwin manages the Nix installation by default and will default to upstream Nix. If you wish to use Lix instead of Nix, set `nix.package = pkgs.lix` in your configuration.
 
