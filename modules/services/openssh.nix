@@ -122,12 +122,12 @@ in
       fi
     '');
 
-    environment.etc."ssh/sshd_config.d/099-host-keys.conf" = lib.mkIf (cfg.hostKeys != []) {
+    environment.etc."ssh/sshd_config.d/099-host-keys.conf" = lib.mkIf (cfg.enable != null && cfg.hostKeys != []) {
       text = hostKeysConfig;
     };
 
     environment.etc."ssh/sshd_config.d/100-nix-darwin.conf".text = cfg.extraConfig;
 
-    system.activationScripts.openssh.text = lib.mkIf (cfg.hostKeys != []) keygenScript;
+    system.activationScripts.openssh.text = lib.mkIf (cfg.enable != null && cfg.hostKeys != []) keygenScript;
   };
 }
