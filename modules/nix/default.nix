@@ -758,6 +758,8 @@ in
       "24797ac05542ff8b52910efc77870faa5f9e3275097227ea4e50c430a5f72916"  # lix-installer 0.17.1 with flakes
       "b027b5cad320b5b8123d9d0db9f815c3f3921596c26dc3c471457098e4d3cc40"  # lix-installer 0.17.1 without flakes
       "74ee0ae5ad21a1b101617685fd3d001f74a9466d9d763d92eb75b99cc740db91"  # experimental official Nix installer 2.33.3
+      "daa9d824601c088f52de3da176e14328ba41e7be3eb450fdf8b93c86f236f722"  # lix-installer 3.95.0 (47bc300) with flakes
+      "7659f39ef9ab9cdf50f8e6ae3476cbf3f27be6485500d1f225d45574d943a9f7"  # lix-installer 3.95.0 (47bc300) without flakes
     ];
 
     environment.etc."nix/registry.json".text = builtins.toJSON {
