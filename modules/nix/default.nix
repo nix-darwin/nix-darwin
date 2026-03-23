@@ -891,6 +891,8 @@ in
         3bd68ef979a42070a44f8d82c205cfd8e8cca425d91253ec2c10a88179bb34aa
         # Nix 2.33.3
         71f7fdc9f6c9e55ca0f2e6f85137037d660b3224a34d59305e8530ca292bc734
+        # Lix 2.95.1
+        a6dee4985bf207d3bec6a3cee28aefb33e60f5d0a91d8c20bbd71b9dadb2e601
       )
       if [[ -e /etc/nix/nix.custom.conf ]]; then
         nixCustomConfSha256Output=$(shasum -a 256 /etc/nix/nix.custom.conf)
