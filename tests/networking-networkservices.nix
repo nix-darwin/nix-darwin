@@ -12,6 +12,7 @@
   networking.location."Home Lab" = {
     search = [ "home.lab" ];
   };
+  networking.dhcpClientId = "test-client-id";
 
   test = ''
     echo checking dns settings in /activate >&2
@@ -23,6 +24,9 @@
     grep "networksetup -switchtolocation ${lib.escapeShellArg "Home Lab"}" ${config.out}/activate
     grep "networksetup -setdnsservers ${lib.escapeShellArgs [ "Wi-Fi" "empty" ]}" ${config.out}/activate
     grep "networksetup -setdnsservers ${lib.escapeShellArgs [ "Thunderbolt Ethernet" "empty" ]}" ${config.out}/activate
+
+    grep "networksetup -setdhcp ${lib.escapeShellArgs [ "Wi-Fi" "test-client-id" ]}" ${config.out}/activate
+    grep "networksetup -setdhcp ${lib.escapeShellArgs [ "Thunderbolt Ethernet" "test-client-id" ]}" ${config.out}/activate
 
     echo checking searchdomain settings in /activate >&2
 

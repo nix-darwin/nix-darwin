@@ -260,6 +260,7 @@ in
 
     environment.etc."zshenv".knownSha256Hashes = [
       "d07015be6875f134976fce84c6c7a77b512079c1c5f9594dfa65c70b7968b65f"  # DeterminateSystems installer
+      "4e8f7cb9b699511f4ba5f9d5f8de1c9f5efb5c607de88faf5f58b8b9cb38edbf"  # experimental official Nix installer 2.33.3
     ];
 
   };

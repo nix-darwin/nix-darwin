@@ -54,6 +54,14 @@ let
             networksetup -setsearchdomains ${
               lib.escapeShellArgs ([ srv ] ++ (emptyList cfg.location.${location}.search))
             }
+            ${optionalString (cfg.dhcpClientId != null) ''
+              networksetup -setdhcp ${
+                lib.escapeShellArgs [
+                  srv
+                  cfg.dhcpClientId
+                ]
+              }
+            ''}
             ;;
         esac
       '') cfg.knownNetworkServices}
@@ -205,6 +213,21 @@ in
       '';
     };
 
+    networking.dhcpClientId = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      example = "my-client-id";
+      description = ''
+        The DHCP client identifier to use when requesting an IP address from a DHCP server.
+
+        If this option is set, it will be used by the system when requesting an IP address.
+        If not set, no changes will be made.
+
+        Set to the string "empty" to clear any previously configured client ID
+        and restore the system default behavior.
+      '';
+    };
+
     networking.location = mkOption {
       type = types.attrsOf (
         types.submodule {
@@ -263,6 +286,9 @@ in
         cfg.knownNetworkServices == [ ]
         && (builtins.any (l: l.search != [ ]) (builtins.attrValues cfg.location))
       ) "networking.knownNetworkServices is empty, DNS search domains will not be configured.")
+      (mkIf (
+        cfg.knownNetworkServices == [ ] && cfg.dhcpClientId != null
+      ) "networking.knownNetworkServices is empty, dhcp client ID will not be configured.")
     ];
 
     system.activationScripts.networking.text = ''

@@ -757,6 +757,7 @@ in
       "6bb8d6b0dd16b44ee793a9b8382dac76c926e4c16ffb8ddd2bb4884d1ca3f811"  # DeterminateSystems Nix installer 0.34.0
       "24797ac05542ff8b52910efc77870faa5f9e3275097227ea4e50c430a5f72916"  # lix-installer 0.17.1 with flakes
       "b027b5cad320b5b8123d9d0db9f815c3f3921596c26dc3c471457098e4d3cc40"  # lix-installer 0.17.1 without flakes
+      "74ee0ae5ad21a1b101617685fd3d001f74a9466d9d763d92eb75b99cc740db91"  # experimental official Nix installer 2.33.3
     ];
 
     environment.etc."nix/registry.json".text = builtins.toJSON {
@@ -814,9 +815,12 @@ in
         { assertion = config.users.groups ? "nixbld" -> config.users.groups.nixbld.members != []; message = "refusing to remove all members from nixbld group, this would break nix"; }
 
         {
-          # Should be fixed in Lix by https://gerrit.lix.systems/c/lix/+/2100
+          # Should be fixed in Lix by https://gerrit.lix.systems/c/lix/+/2100, Nix by https://github.com/NixOS/nix/commit/d888846b68dd5fad998b84c5cb6246b1b63398cd
           # Lix 2.92.0 will set `VERSION_SUFFIX` to `""`; `lib.versionAtLeast "" "pre20241107"` will return `true`.
-          assertion = cfg.settings.auto-optimise-store -> (cfg.package.pname == "lix" && (isNixAtLeast "2.92.0" && versionAtLeast (strings.removePrefix "-" cfg.package.VERSION_SUFFIX) "pre20241107"));
+          assertion = cfg.settings.auto-optimise-store -> (
+            (cfg.package.pname == "lix" && (isNixAtLeast "2.92.0" && versionAtLeast (strings.removePrefix "-" cfg.package.VERSION_SUFFIX) "pre20241107"))
+            || (cfg.package.pname == "nix" && ((isNixAtLeast "2.31.3" && !isNixAtLeast "2.32") || isNixAtLeast "2.32.5" || isNixAtLeast "2.33"))
+          );
           message = "`nix.settings.auto-optimise-store` is known to corrupt the Nix Store, please use `nix.optimise.automatic` instead.";
         }
       ];
@@ -881,10 +885,12 @@ in
     # to express that we want it deleted and know only one hash?
     system.activationScripts.checks.text = mkAfter ''
       nixCustomConfKnownSha256Hashes=(
-        # v0.33.0
+        # DetSys v0.33.0
         6787fade1cf934f82db554e78e1fc788705c2c5257fddf9b59bdd963ca6fec63
-        # v0.34.0
+        # DetSys v0.34.0
         3bd68ef979a42070a44f8d82c205cfd8e8cca425d91253ec2c10a88179bb34aa
+        # Nix 2.33.3
+        71f7fdc9f6c9e55ca0f2e6f85137037d660b3224a34d59305e8530ca292bc734
       )
       if [[ -e /etc/nix/nix.custom.conf ]]; then
         nixCustomConfSha256Output=$(shasum -a 256 /etc/nix/nix.custom.conf)
