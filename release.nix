@@ -98,6 +98,7 @@ in {
   tests.programs-gnupg = makeTest ./tests/programs-gnupg.nix;
   tests.programs-mas = makeTest ./tests/programs-mas.nix;
   tests.programs-mas-no-cleanup = makeTest ./tests/programs-mas-no-cleanup.nix;
+  tests.programs-nh = makeTest ./tests/programs-nh.nix;
   tests.programs-ssh = makeTest ./tests/programs-ssh.nix;
   tests.programs-tmux = makeTest ./tests/programs-tmux.nix;
   tests.programs-zsh = makeTest ./tests/programs-zsh.nix;
