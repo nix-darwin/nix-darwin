@@ -113,6 +113,7 @@
   ./programs/gnupg.nix
   ./programs/man.nix
   ./programs/info
+  ./programs/nh.nix
   ./programs/nix-index
   ./programs/ssh.nix
   ./programs/tmux.nix
