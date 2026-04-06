@@ -7,8 +7,8 @@
 
 let
   inherit (lib)
+    escapeShellArg
     concatStringsSep
-    escapeShellArgs
     getExe
     mkEnableOption
     mkIf
@@ -104,7 +104,8 @@ in {
         ]
         ++ (map (collector: "--collector.${collector}") cfg.enabledCollectors)
         ++ (map (collector: "--no-collector.${collector}") cfg.disabledCollectors)
-      ) + escapeShellArgs cfg.extraFlags;
+        ++ (map escapeShellArg cfg.extraFlags)
+      );
       serviceConfig = let
         logPath = config.users.users._prometheus-node-exporter.home
           + "/prometheus-node-exporter.log";
