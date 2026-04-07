@@ -142,6 +142,23 @@ let
           activation.
         '';
       };
+      noEnvHints = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Whether to suppress Homebrew's contextual hints and suggestions during
+          {command}`nix-darwin` system activation. Homebrew normally prints messages like
+          "Adjust how often this is run with `$HOMEBREW_AUTO_UPDATE_SECS`..." after
+          auto-updates. Enabling this option silences those hints.
+
+          To also suppress hints when you manually invoke Homebrew commands, see
+          [](#opt-homebrew.global.noEnvHints).
+
+          Implementation note: when enabled, this option sets the `HOMEBREW_NO_ENV_HINTS`
+          environment variable when {command}`nix-darwin` invokes {command}`brew bundle [install]`
+          during system activation.
+        '';
+      };
       extraFlags = mkOption {
         type = types.listOf types.str;
         default = [ ];
@@ -158,6 +175,7 @@ let
     config = {
       brewBundleCmd = concatStringsSep " " (
         optional (!config.autoUpdate) "HOMEBREW_NO_AUTO_UPDATE=1"
+        ++ optional config.noEnvHints "HOMEBREW_NO_ENV_HINTS=1"
         ++ [ "brew bundle --file='${brewfileFile}'" ]
         ++ optional (!config.upgrade) "--no-upgrade"
         ++ optional (config.cleanup == "uninstall") "--cleanup"
@@ -204,6 +222,22 @@ let
           [](#opt-environment.variables).
         '';
       };
+      noEnvHints = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Whether to suppress Homebrew's contextual hints and suggestions when you manually invoke
+          Homebrew commands. Homebrew normally prints messages suggesting environment variables or
+          alternative commands. Enabling this option silences those hints.
+
+          To also suppress hints during {command}`nix-darwin` system activation, see
+          [](#opt-homebrew.onActivation.noEnvHints).
+
+          Implementation note: when enabled, this option sets the
+          `HOMEBREW_NO_ENV_HINTS` environment variable, by adding it to
+          [](#opt-environment.variables).
+        '';
+      };
       # `noLock` was the original option; `lockfiles` replaced it (with inverted semantics).
       # Both are now dead: Homebrew Bundle removed lockfile support in Homebrew 4.4.0
       # (Oct 2024), so the `HOMEBREW_BUNDLE_NO_LOCK` env var and `--no-lock` CLI flag are
@@ -220,6 +254,7 @@ let
       homebrewEnvironmentVariables = {
         HOMEBREW_BUNDLE_FILE = mkIf config.brewfile "${brewfileFile}";
         HOMEBREW_NO_AUTO_UPDATE = mkIf (!config.autoUpdate) "1";
+        HOMEBREW_NO_ENV_HINTS = mkIf config.noEnvHints "1";
       };
     };
   };
