@@ -236,9 +236,13 @@ if [ "$action" = switch ] || [ "$action" = build ] || [ "$action" = check ] || [
   if [ -n "$targetHost" ]; then
     echo "copying system closure to $targetHost..." >&2
     if [ -n "$useRemoteSudo" ]; then
-      # Pipe export/import via sudo to bypass signature checking on the remote
+      # Write closure to a temp file on the remote (no sudo needed for /tmp),
+      # then import it as root via a TTY session so sudo can prompt for password.
+      closureFile="/tmp/.nix-darwin-closure-$$"
       nix-store --export $(nix-store -qR "$systemConfig") \
-        | ssh $SSHOPTS "$targetHost" sudo nix-store --import
+        | ssh $SSHOPTS "$targetHost" "cat > $closureFile"
+      ssh -t $SSHOPTS "$targetHost" \
+        "trap 'rm -f $closureFile' EXIT; sudo nix-store --import < $closureFile"
     else
       nix copy --no-require-sigs --to "ssh-ng://$targetHost" "$systemConfig"
     fi
