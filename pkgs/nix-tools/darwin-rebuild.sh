@@ -172,7 +172,7 @@ targetHostCmd() {
   if [ -z "$targetHost" ]; then
     "$@"
   elif [ -n "$useRemoteSudo" ]; then
-    ssh $SSHOPTS "$targetHost" 'sudo env PATH=/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/bin' "$@"
+    ssh -t $SSHOPTS "$targetHost" 'sudo env PATH=/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/bin' "$@"
   else
     ssh $SSHOPTS "$targetHost" 'PATH=/run/current-system/sw/bin:$PATH' "$@"
   fi
