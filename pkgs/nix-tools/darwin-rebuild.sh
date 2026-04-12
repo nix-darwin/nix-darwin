@@ -233,6 +233,10 @@ if [ "$action" = switch ] || [ "$action" = build ] || [ "$action" = check ] || [
       -- "$flake#$flakeAttr.system" \
       | jq -r '.[0].outputs.out')
   fi
+  if [ -n "$targetHost" ]; then
+    echo "copying system closure to $targetHost..." >&2
+    nix copy --to "ssh-ng://$targetHost" "$systemConfig"
+  fi
 fi
 
 if [ "$action" = list ] || [ "$action" = rollback ]; then
