@@ -235,7 +235,7 @@ if [ "$action" = switch ] || [ "$action" = build ] || [ "$action" = check ] || [
   fi
   if [ -n "$targetHost" ]; then
     echo "copying system closure to $targetHost..." >&2
-    nix copy --to "ssh-ng://$targetHost" "$systemConfig"
+    nix copy --no-require-sigs --to "ssh-ng://$targetHost" "$systemConfig"
   fi
 fi
 
