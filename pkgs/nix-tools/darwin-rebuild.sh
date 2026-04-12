@@ -235,7 +235,13 @@ if [ "$action" = switch ] || [ "$action" = build ] || [ "$action" = check ] || [
   fi
   if [ -n "$targetHost" ]; then
     echo "copying system closure to $targetHost..." >&2
-    nix copy --no-require-sigs --to "ssh-ng://$targetHost" "$systemConfig"
+    if [ -n "$useRemoteSudo" ]; then
+      # Pipe export/import via sudo to bypass signature checking on the remote
+      nix-store --export $(nix-store -qR "$systemConfig") \
+        | ssh $SSHOPTS "$targetHost" sudo nix-store --import
+    else
+      nix copy --no-require-sigs --to "ssh-ng://$targetHost" "$systemConfig"
+    fi
   fi
 fi
 
