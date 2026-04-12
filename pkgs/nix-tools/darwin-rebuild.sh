@@ -244,6 +244,7 @@ if [ "$action" = switch ] || [ "$action" = build ] || [ "$action" = check ] || [
       # then import it as root via a TTY session so sudo can prompt for password.
       closureFile="/tmp/.nix-darwin-closure-$$"
       nix-store --export "${closurePaths[@]}" \
+        | pv -s "$((closureMiB * 1048576))" \
         | ssh $SSHOPTS "$targetHost" "cat > $closureFile"
       ssh -t $SSHOPTS "$targetHost" \
         "trap 'rm -f $closureFile' EXIT; sudo nix-store --import < $closureFile"

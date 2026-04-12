@@ -3,6 +3,7 @@
 , jq
 , git
 , openssh
+, pv
 , replaceVarsWith
 , stdenv
 , profile ? "/nix/var/nix/profiles/system"
@@ -64,7 +65,7 @@ in
     replacements = {
       inherit nixPath profile;
       inherit (stdenv) shell;
-      path = "${lib.makeBinPath [ openssh ]}:${path}";
+      path = "${lib.makeBinPath [ openssh pv ]}:${path}";
     };
 
     postInstall = ''
