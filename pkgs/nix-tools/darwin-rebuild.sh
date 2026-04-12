@@ -28,7 +28,7 @@ showSyntax() {
   echo "                             [--no-update-lock-file] [--no-write-lock-file]" >&2
   echo "                             [--override-input input flake] [--update-input input]" >&2
   echo "                             [--no-registries] [--offline] [--refresh]]" >&2
-  echo "               [--substituters substituters-list] [--target-host addr] ..." >&2
+  echo "               [--substituters substituters-list] [--target-host addr] [--use-remote-sudo] ..." >&2
   exit 1
 }
 
@@ -43,6 +43,7 @@ action=
 flake=
 noFlake=
 targetHost=
+useRemoteSudo=
 tmpDir=$(mktemp -t -d darwin-rebuild.XXXXXX)
 SSHOPTS="$NIX_SSHOPTS -o ControlMaster=auto -o ControlPath=$tmpDir/ssh-%n -o ControlPersist=60"
 
@@ -148,6 +149,9 @@ while [ $# -gt 0 ]; do
       targetHost=$1
       shift 1
       ;;
+    --use-remote-sudo)
+      useRemoteSudo=1
+      ;;
     *)
       echo "$0: unknown option '$i'"
       exit 1
@@ -167,13 +171,15 @@ flakeFlags=(--extra-experimental-features 'nix-command flakes')
 targetHostCmd() {
   if [ -z "$targetHost" ]; then
     "$@"
+  elif [ -n "$useRemoteSudo" ]; then
+    ssh $SSHOPTS "$targetHost" 'sudo env PATH=/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/bin' "$@"
   else
     ssh $SSHOPTS "$targetHost" 'PATH=/run/current-system/sw/bin:$PATH' "$@"
   fi
 }
 
-if [[ -n $targetHost ]] && targetHostCmd '[ $(id -u) -ne 0 ]'; then
-  printf >&2 '%s: must connect as root for --target-host\n' "$0"
+if [[ -n $targetHost ]] && [ -z "$useRemoteSudo" ] && targetHostCmd '[ $(id -u) -ne 0 ]'; then
+  printf >&2 '%s: must connect as root for --target-host (or use --use-remote-sudo)\n' "$0"
   exit 1
 fi
 
