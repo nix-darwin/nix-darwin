@@ -234,18 +234,23 @@ if [ "$action" = switch ] || [ "$action" = build ] || [ "$action" = check ] || [
       | jq -r '.[0].outputs.out')
   fi
   if [ -n "$targetHost" ]; then
-    echo "copying system closure to $targetHost..." >&2
+    mapfile -t closurePaths < <(nix-store -qR "$systemConfig")
+    closureMiB=$(nix path-info -r --json "$systemConfig" \
+      | jq '[.[].narSize] | add / 1048576 | ceil')
+    printf 'copying %d paths (%.0f MiB) to %s...\n' \
+      "${#closurePaths[@]}" "$closureMiB" "$targetHost" >&2
     if [ -n "$useRemoteSudo" ]; then
       # Write closure to a temp file on the remote (no sudo needed for /tmp),
       # then import it as root via a TTY session so sudo can prompt for password.
       closureFile="/tmp/.nix-darwin-closure-$$"
-      nix-store --export $(nix-store -qR "$systemConfig") \
+      nix-store --export "${closurePaths[@]}" \
         | ssh $SSHOPTS "$targetHost" "cat > $closureFile"
       ssh -t $SSHOPTS "$targetHost" \
         "trap 'rm -f $closureFile' EXIT; sudo nix-store --import < $closureFile"
     else
       nix copy --no-require-sigs --to "ssh-ng://$targetHost" "$systemConfig"
     fi
+    echo "done copying to $targetHost" >&2
   fi
 fi
 
