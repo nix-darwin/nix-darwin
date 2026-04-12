@@ -239,7 +239,7 @@ if [ "$action" = switch ] || [ "$action" = build ] || [ "$action" = check ] || [
       | jq '[.[].narSize] | add / 1048576 | ceil')
     printf 'copying %d paths (%.0f MiB) to %s...\n' \
       "${#closurePaths[@]}" "$closureMiB" "$targetHost" >&2
-    nix copy -v --no-require-sigs --to "ssh-ng://$targetHost" "$systemConfig"
+    nix copy -v --no-require-sigs --to "ssh://$targetHost" "$systemConfig"
     echo "done copying to $targetHost" >&2
   fi
 fi
