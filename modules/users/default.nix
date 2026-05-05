@@ -1,10 +1,10 @@
 { config, lib, pkgs, ... }:
 
 let
-  inherit (lib) concatStringsSep concatMapStringsSep elem escapeShellArg
-    escapeShellArgs filter filterAttrs flatten flip mapAttrs' mapAttrsToList
-    mkAfter mkIf mkMerge mkOption mkOrder mkRemovedOptionModule optionals
-    optionalString types;
+  inherit (lib) any concatStringsSep concatMapStringsSep elem escapeShellArg
+    escapeShellArgs filter filterAttrs flatten flip hasSuffix mapAttrs'
+    mapAttrsToList mkAfter mkIf mkMerge mkOption mkOrder mkRemovedOptionModule
+    optionals optionalString types;
 
   cfg = config.users;
 
@@ -140,9 +140,15 @@ in
     ));
 
     warnings = flatten (flip mapAttrsToList cfg.users (name: user:
-      mkIf
-        (user.shell.pname or null == "bash")
-        "Set `users.users.${name}.shell = pkgs.bashInteractive;` instead of `pkgs.bash` as it does not include `readline`."
+      [
+        (mkIf
+          (user.shell.pname or null == "bash")
+          "Set `users.users.${name}.shell = pkgs.bashInteractive;` instead of `pkgs.bash` as it does not include `readline`.")
+        (mkIf
+            (user.picture or null != null
+              && !any (ext: hasSuffix ext user.picture) [ ".jpg" ".jpeg" ])
+          "Set `users.users.${name}.picture` to a JPEG, since other image types do not appear on the login screen.")
+      ]
     ));
 
     users.gids = mkMerge gids;
@@ -312,6 +318,11 @@ in
           dscl . -create ${dsclUser} PrimaryGroupID ${toString v.gid}
           ${optionalString (v.description != null) "dscl . -create ${dsclUser} RealName ${escapeShellArg v.description}"}
           ${optionalString (v.shell != null) "dscl . -create ${dsclUser} UserShell ${escapeShellArg (shellPath v.shell)}"}
+          ${optionalString (v.picture != null) ''
+            dscl . -delete ${dsclUser} Picture
+            dscl . -delete ${dsclUser} JPEGPhoto
+            dscl . -create ${dsclUser} Picture ${escapeShellArg v.picture}
+          ''}
         fi
       '') createdUsers}
 
