@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>org.nixos.ghostunnel</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/nix/store/00000000000000000000000000000000-ghostunnel/bin/ghostunnel</string>
+		<string>server</string>
+		<string>--listen</string>
+		<string>localhost:8443</string>
+		<string>--target</string>
+		<string>localhost:8080</string>
+		<string>--disable-authentication</string>
+	</array>
+</dict>
+</plist>
