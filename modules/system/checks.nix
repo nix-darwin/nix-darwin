@@ -263,14 +263,110 @@ let
     fi
   '';
 
-  # some mac devices, notably notebook do not support restartAfterPowerFailure option
+  # Some Mac devices, notably laptops, do not support automatic restart after power failure.
   restartAfterPowerFailureIsSupported = ''
-    if sudo /usr/sbin/systemsetup -getRestartPowerFailure | grep -q "Not supported"; then
-       printf >&2 "\e[1;31merror: restarting after power failure is not supported on your machine\e[0m\n" >&2
-       printf >&2 "Please ensure that \`power.restartAfterPowerFailure\` is not set.\n" >&2
+    if /usr/sbin/systemsetup -getrestartpowerfailure 2>&1 | grep -q "Not supported"; then
+       printf >&2 "\e[1;31merror: restart after power failure not supported on this Mac, aborting activation\e[0m\n"
+       printf >&2 "Please remove \`power.universal.autoRestart.afterPowerFailure\` and/or\n"
+       printf >&2 "\`power.universal.autoRestart.afterPowerFailureDelay\` from your configuration.\n"
        exit 2
     fi
   '';
+
+  # `power.universal.autoRestart.onPowerConnect` (pmset `autorestartatconnect`) is gated by Apple
+  # to macOS Tahoe 26.5+ AND specific desktop Mac models (Mac mini 2024+, Mac Studio 2025+, or iMac
+  # 2024+). We probe macOS version and battery presence as a conservative-but-imperfect signal; we
+  # can't easily validate the exact Mac model from a check script, so an older Apple Silicon desktop
+  # on Tahoe 26.5+ would pass this check and have the write silently no-op.
+  # See https://support.apple.com/en-us/125517.
+  restartOnPowerConnectIsSupported = ''
+    macosVersion=$(/usr/bin/sw_vers -productVersion)
+    IFS=. read -r macosMajor macosMinor _ <<< "$macosVersion"
+    if (( macosMajor < 26 || (macosMajor == 26 && macosMinor < 5) )); then
+       printf >&2 "\e[1;31merror: \`onPowerConnect\` requires macOS 26.5 or later, aborting activation\e[0m\n"
+       printf >&2 '(have %s)\n' "$macosVersion"
+       printf >&2 "See https://support.apple.com/en-us/125517 for the full hardware/OS matrix.\n"
+       printf >&2 "Please remove \`power.universal.autoRestart.onPowerConnect\` from your\n"
+       printf >&2 "configuration.\n"
+       exit 2
+    fi
+    if /usr/sbin/ioreg -rn AppleSmartBattery | grep -q AppleSmartBattery; then
+       printf >&2 "\e[1;31merror: \`onPowerConnect\` is desktop-only but a battery was detected, aborting activation\e[0m\n"
+       printf >&2 "Supported only on Mac mini 2024+, Mac Studio 2025+, or iMac 2024+.\n"
+       printf >&2 "Please remove \`power.universal.autoRestart.onPowerConnect\` from your\n"
+       printf >&2 "configuration.\n"
+       exit 2
+    fi
+  '';
+
+  # High Power Mode is only available on certain MacBook Pro models with M1 Max and later high-end
+  # chips, plus the Mac mini (2024) with M4 Pro. See https://support.apple.com/en-us/101613.
+  highPowerModeIsSupported = ''
+    if ! /usr/bin/pmset -g cap | grep -qw highpowermode; then
+       printf >&2 "\e[1;31merror: High Power Mode not supported on this Mac, aborting activation\e[0m\n"
+       printf >&2 "See Apple's supported models: https://support.apple.com/en-us/101613\n"
+       printf >&2 "Please change or remove \`power.<source>.powerMode = \"high\"\` in your\n"
+       printf >&2 "configuration.\n"
+       exit 2
+    fi
+  '';
+
+  # Low Power Mode is supported on most modern Apple Silicon Macs, but not all (notably absent on
+  # some older Intel Macs). See https://support.apple.com/en-us/101613.
+  lowPowerModeIsSupported = ''
+    if ! /usr/bin/pmset -g cap | grep -qw lowpowermode; then
+       printf >&2 "\e[1;31merror: Low Power Mode not supported on this Mac, aborting activation\e[0m\n"
+       printf >&2 "See Apple's supported models: https://support.apple.com/en-us/101613\n"
+       printf >&2 "Please change or remove \`power.<source>.powerMode = \"low\"\` in your\n"
+       printf >&2 "configuration.\n"
+       exit 2
+    fi
+  '';
+
+  # `powerMode = "automatic"` means "macOS chooses dynamically among available power modes."
+  # On hardware with neither Low Power Mode nor High Power Mode in `pmset -g cap`, there are no
+  # modes for macOS to choose from, so `automatic` is degenerate. See
+  # https://support.apple.com/en-us/101613.
+  automaticPowerModeIsMeaningful = ''
+    if ! /usr/bin/pmset -g cap | grep -qwE 'lowpowermode|highpowermode'; then
+       printf >&2 "\e[1;31merror: no Power Mode features available on this Mac, aborting activation\e[0m\n"
+       printf >&2 "Neither Low Power Mode nor High Power Mode is supported by this hardware,\n"
+       printf >&2 "so \`powerMode\` is a no-op. See Apple's supported models:\n"
+       printf >&2 "https://support.apple.com/en-us/101613\n"
+       printf >&2 "Please remove \`power.<source>.powerMode\` from your configuration.\n"
+       exit 2
+    fi
+  '';
+
+  # `power.battery.*` writes go to the "Battery Power" dict, which macOS only reads when a battery
+  # is present. On a desktop (or any Mac without a battery) those settings silently fail to apply.
+  # We probe for the AppleSmartBattery IOKit class as the hardware-presence signal.
+  batteryIsPresent = ''
+    if ! /usr/sbin/ioreg -rn AppleSmartBattery | grep -q AppleSmartBattery; then
+       printf >&2 "\e[1;31merror: \`power.battery.*\` options are set but no battery was detected, aborting activation\e[0m\n"
+       printf >&2 "Run \`ioreg -rn AppleSmartBattery\` to verify hardware detection. These settings\n"
+       printf >&2 "won't take effect on this Mac. Please remove these options from your\n"
+       printf >&2 "configuration, or move them to \`power.universal\` / \`power.ac\`.\n"
+       exit 2
+    fi
+  '';
+
+  # `power.ups.*` writes go to the "UPS Power" dict, which macOS only reads when a UPS is connected
+  # and recognized. Without one those settings silently fail to apply. We probe for the
+  # IOUPSDevice IOKit class as the hardware-presence signal.
+  upsIsPresent = ''
+    if ! /usr/sbin/ioreg -rn IOUPSDevice | grep -q IOUPSDevice; then
+       printf >&2 "\e[1;31merror: \`power.ups.*\` options are set but no UPS was detected, aborting activation\e[0m\n"
+       printf >&2 "Run \`ioreg -rn IOUPSDevice\` to verify hardware detection. These settings won't\n"
+       printf >&2 "take effect on this Mac. Please remove these options from your configuration,\n"
+       printf >&2 "or move them to \`power.universal\` / \`power.ac\`.\n"
+       exit 2
+    fi
+  '';
+
+  powerSources = with config.power; [ universal ac battery ups ];
+  anyPowerMode = mode: any (s: s.powerMode == mode) powerSources;
+
 in
 
 {
@@ -318,7 +414,16 @@ in
       (mkIf cfg.verifyNixPath nixPath)
       oldSshAuthorizedKeysDirectory
       (mkIf config.homebrew.enable homebrewInstalled)
-      (mkIf (config.power.restartAfterPowerFailure != null) restartAfterPowerFailureIsSupported)
+      (mkIf (config.power.universal.autoRestart.afterPowerFailure != null
+        || config.power.universal.autoRestart.afterPowerFailureDelay != null)
+        restartAfterPowerFailureIsSupported)
+      (mkIf (config.power.universal.autoRestart.onPowerConnect != null)
+        restartOnPowerConnectIsSupported)
+      (mkIf (anyPowerMode "high") highPowerModeIsSupported)
+      (mkIf (anyPowerMode "low") lowPowerModeIsSupported)
+      (mkIf (anyPowerMode "automatic") automaticPowerModeIsMeaningful)
+      (mkIf (config.power.battery.pmsetEntries != { }) batteryIsPresent)
+      (mkIf (config.power.ups.pmsetEntries != { }) upsIsPresent)
     ];
 
     system.activationScripts.checks.text = ''

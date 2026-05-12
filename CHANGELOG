@@ -1,3 +1,38 @@
+2026-05-12
+- Major changes to `power` module
+
+  The `power` module has been rewritten to expose more of macOS's
+  `pmset`/`systemsetup` surface, organized by power source. Settings are
+  grouped under four sources: `power.universal` applies across all sources;
+  `power.ac`, `power.battery`, and `power.ups` apply only when running on
+  that source and take precedence over the corresponding `universal` value.
+
+  Existing options have been migrated via `mkRenamedOptionModule` and will
+  continue to work with a deprecation warning:
+  - `power.sleep.{computer,display,harddisk}` →
+    `power.universal.sleep.{systemAfter,displayAfter,diskAfter}`
+  - `power.sleep.allowSleepByPowerButton` →
+    `power.universal.allowSleepByPowerButton`
+  - `power.restartAfterPowerFailure` →
+    `power.universal.autoRestart.afterPowerFailure`
+  - `power.restartAfterFreeze` →
+    `power.universal.autoRestart.afterSystemFreeze`
+  - `networking.wakeOnLan.enable` → `power.universal.wakeOnNetworkAccess`
+
+  New typed options cover most commonly-used `pmset` settings, including
+  `powerMode` (Low/High Power Mode), `standby`, `powerNap`, `tcpKeepAlive`,
+  `ttysKeepAwake`, and the `autoRestart` submodule (which adds
+  `afterPowerFailureDelay` and a new `onPowerConnect` option for the macOS
+  Tahoe 26.5+ "Start up when power is connected" feature). UPS and battery
+  sources expose `power.ups.halt.*` thresholds and
+  `power.battery.reduceBrightness` respectively. For raw `pmset` keys not
+  exposed as typed options, set `power.<source>.extraPmsetSettings.<key>`.
+
+  Activation-time checks produce errors at `darwin-rebuild switch` time
+  when options are set on hardware that won't honor them (e.g., `powerMode
+  = "high"` on a Mac without High Power Mode, or `power.battery.*` options
+  on a Mac without a battery).
+
 2026-02-10
 - Major changes to `homebrew` module
 
