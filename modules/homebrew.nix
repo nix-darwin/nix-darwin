@@ -100,10 +100,16 @@ let
           {command}`brew uninstall` is run for those packages.
 
           When set to `"zap"`, {command}`nix-darwin` invokes
-          {command}`brew bundle [install]` with the {command}`--cleanup --zap`
-          flags. This uninstalls all packages not listed in the generated Brewfile, and if the
-          package is a cask, removes all files associated with that cask. In other words,
+          {command}`brew bundle [install]`, followed by a separate
+          {command}`brew bundle cleanup --force --zap` invocation. This uninstalls all
+          packages not listed in the generated Brewfile, and if the package is a cask,
+          removes all files associated with that cask. In other words,
           {command}`brew uninstall --zap` is run for all those packages.
+
+          (Two invocations are required because, since the bundle subcommand refactor
+          in Homebrew (Homebrew/brew@f38cd4b), `--zap` is accepted only by the
+          `cleanup` subcommand and is rejected by the implicit `install` subcommand
+          that `brew bundle` defaults to.)
 
           If you plan on exclusively using {command}`nix-darwin` to manage packages
           installed by Homebrew, you probably want to set this option to
@@ -173,6 +179,7 @@ let
       };
 
       brewBundleCmd = mkInternalOption { type = types.str; };
+      brewBundleCleanupZapCmd = mkInternalOption { type = types.str; };
     };
 
     config = {
@@ -182,8 +189,13 @@ let
         ++ [ "brew bundle --file='${brewfileFile}'" ]
         ++ optional (!config.upgrade) "--no-upgrade"
         ++ optional (config.cleanup == "uninstall") "--cleanup"
-        ++ optional (config.cleanup == "zap") "--cleanup --zap"
         ++ config.extraFlags
+      );
+
+      brewBundleCleanupZapCmd = concatStringsSep " " (
+        optional (!config.autoUpdate) "HOMEBREW_NO_AUTO_UPDATE=1"
+        ++ mapAttrsToList (k: v: "${k}=${escapeShellArg v}") config.extraEnv
+        ++ [ "brew bundle cleanup --file='${brewfileFile}' --force --zap" ]
       );
     };
   };
@@ -959,7 +971,7 @@ in
       fi
     '';
 
-    system.activationScripts.homebrew.text = mkIf cfg.enable ''
+    system.activationScripts.homebrew.text = mkIf cfg.enable (''
       # Homebrew Bundle
       echo >&2 "Homebrew bundle..."
       if [ -f "${cfg.prefix}/bin/brew" ]; then
@@ -970,10 +982,19 @@ in
           --set-home \
           env \
           ${cfg.onActivation.brewBundleCmd}
+    '' + optionalString (cfg.onActivation.cleanup == "zap") ''
+        PATH="${cfg.prefix}/bin:${lib.makeBinPath [ pkgs.mas ]}:$PATH" \
+        sudo \
+          --preserve-env=PATH \
+          --user=${escapeShellArg cfg.user} \
+          --set-home \
+          env \
+          ${cfg.onActivation.brewBundleCleanupZapCmd}
+    '' + ''
       else
         echo -e "\e[1;31merror: Homebrew is not installed, skipping...\e[0m" >&2
       fi
-    '';
+    '');
   };
 
   meta.maintainers = [
