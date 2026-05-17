@@ -57,6 +57,17 @@ in
       description = "Enable sensible configuration options for tmux.";
     };
 
+    programs.tmux.reverseSplitBindings = mkOption {
+      type = types.bool;
+      default = config.system.stateVersion <= 6 && cfg.enableSensible;
+      defaultText = literalExpression "config.system.stateVersion <= 6 && config.programs.tmux.enableSensible";
+      example = true;
+      description = ''
+        Whether to reverse the `%` and `"` split-window key bindings
+        emitted by the tmux module.
+      '';
+    };
+
     programs.tmux.enableMouse = mkOption {
       type = types.bool;
       default = false;
@@ -127,8 +138,6 @@ in
       set -s escape-time 0
 
       bind c new-window -c '#{pane_current_path}'
-      bind % split-window -v -c '#{pane_current_path}'
-      bind '"' split-window -h -c '#{pane_current_path}'
 
       # TODO: make these interactive
       bind C new-session
@@ -136,6 +145,11 @@ in
 
       # set -g status-utf8 on
       # set -g utf8 on
+    '';
+
+    programs.tmux.tmuxOptions.splitBindings.text = mkIf cfg.reverseSplitBindings ''
+      bind % split-window -v -c '#{pane_current_path}'
+      bind '"' split-window -h -c '#{pane_current_path}'
     '';
 
     programs.tmux.tmuxOptions.mouse.text = mkIf cfg.enableMouse ''
