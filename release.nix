@@ -93,6 +93,7 @@ in {
   tests.networking-networkservices-no-dhcp-client-id = makeTest ./tests/networking-networkservices-no-dhcp-client-id.nix;
   tests.nix-enable = makeTest ./tests/nix-enable.nix;
   tests.nixpkgs-overlays = makeTest ./tests/nixpkgs-overlays.nix;
+  tests.nixpkgs-config-allow-unfree = makeTest ./tests/nixpkgs-config-allow-unfree.nix;
   tests.programs-gnupg = makeTest ./tests/programs-gnupg.nix;
   tests.programs-ssh = makeTest ./tests/programs-ssh.nix;
   tests.programs-tmux = makeTest ./tests/programs-tmux.nix;
