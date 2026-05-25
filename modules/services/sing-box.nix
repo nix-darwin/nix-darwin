@@ -3,26 +3,28 @@
   lib,
   pkgs,
   ...
-}: let
+}:
+let
   cfg = config.services.sing-box;
   sing-box_dir = "/Library/Application Support/sing-box";
-in {
-  meta.maintainers = [lib.maintainers.proteus or "Proteus Qian"];
+in
+{
+  meta.maintainers = [ lib.maintainers.proteus or "Proteus Qian" ];
   options.services.sing-box = {
     enable = lib.mkEnableOption "sing-box universal proxy platform";
-    package = lib.mkPackageOption pkgs "sing-box" {};
-    config_file = lib.mkOption {
+    package = lib.mkPackageOption pkgs "sing-box" { };
+    configFile = lib.mkOption {
       type = lib.types.path;
       description = "Path to the sing-box config file";
     };
   };
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [cfg.package];
+    environment.systemPackages = [ cfg.package ];
 
     system.activationScripts.postActivation.text = ''
       # Ensure the sing-box state directory is initialized
       echo "Setting up Sing-box directory..."
-      if [ ! -d "${sing-box_dir}" ]; then install -dm700 "${sing-box_dir}"; fi
+      if [ ! -d "${sing-box_dir}" ]; then install -dm700 ${lib.escapeShellArg sing-box_dir}; fi
     '';
     launchd.daemons.sing-box.serviceConfig = {
       Label = "io.nekohasekai.sing-box";
@@ -37,8 +39,10 @@ in {
       ProgramArguments = [
         "/bin/sh"
         "-c"
-        ("/bin/wait4path /nix/store"
-          + " && exec ${lib.getExe cfg.package} -c ${cfg.config_file} -D \"${sing-box_dir}\" run")
+        (
+          "/bin/wait4path /nix/store"
+          + " && exec ${lib.getExe cfg.package} -c ${cfg.configFile} -D ${lib.escapeShellArg sing-box_dir} run"
+        )
       ];
     };
   };
