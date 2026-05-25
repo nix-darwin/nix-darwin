@@ -138,7 +138,7 @@ in
       type = configType;
       description = ''
         Global configuration for Nixpkgs.
-        The complete list of [Nixpkgs configuration options](https://nixos.org/manual/nixpkgs/unstable/#sec-config-options-reference) is in the [Nixpkgs manual section on global configuration](https://nixos.org/manual/nixpkgs/unstable/#chap-packageconfig).
+        The complete list of [Nixpkgs configuration options](https://nixos.org/manual/nixpkgs/stable/#sec-config-options-reference) is in the [Nixpkgs manual section on global configuration](https://nixos.org/manual/nixpkgs/stable/#chap-packageconfig).
 
         Ignored when {option}`nixpkgs.pkgs` is set.
       '';
