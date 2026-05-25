@@ -188,9 +188,13 @@ in
       # Ensure the Easytier state directory is initialized
       ${lib.concatLines (
         lib.mapAttrsToList (name: _: ''
-          if [ ! -d "/Library/Application Support/easytier-${name}" ]; then
+          if [ ! -d ${
+            lib.escapeShellArg config.launchd.daemons."easytier-${name}".serviceConfig.WorkingDirectory
+          } ]; then
             echo "Setting up EasyTier directory for ${name}..."
-            install -dm700 "/Library/Application Support/easytier-${name}"
+            install -dm700 ${
+              lib.escapeShellArg config.launchd.daemons."easytier-${name}".serviceConfig.WorkingDirectory
+            }
           fi
         '') active_insts
       )}
