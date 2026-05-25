@@ -43,7 +43,6 @@
         [
           alacritty
           alacritty-graphics
-          contour
           ghostty-bin
           kitty
           mtm
