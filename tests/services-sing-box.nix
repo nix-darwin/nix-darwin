@@ -6,7 +6,7 @@
 }:
 let
   cfg = config.services.sing-box;
-  sing-box_dir = "/Library/Application Support/sing-box";
+  sing-box_dir = config.launchd.daemons.sing-box.serviceConfig.WorkingDirectory;
 in
 {
   services.sing-box.enable = true;
@@ -20,18 +20,18 @@ in
     echo >&2 "checking sing-box service in Library/LaunchDaemons"
 
     # Check that the plist file was generated and contains the expected Label
-    grep "io.nekohasekai.sing-box" ${config.out}/Library/LaunchDaemons/io.nekohasekai.sing-box.plist
+    grep 'io.nekohasekai.sing-box' ${config.out}/Library/LaunchDaemons/io.nekohasekai.sing-box.plist
 
     # Check that the execution command includes the mocked package and config file
-    grep "${lib.getExe cfg.package}" ${config.out}/Library/LaunchDaemons/io.nekohasekai.sing-box.plist
-    grep -- "-c ${cfg.configFile}" ${config.out}/Library/LaunchDaemons/io.nekohasekai.sing-box.plist
+    grep '${lib.getExe cfg.package}' ${config.out}/Library/LaunchDaemons/io.nekohasekai.sing-box.plist
+    grep -- '-c ${cfg.configFile}' ${config.out}/Library/LaunchDaemons/io.nekohasekai.sing-box.plist
     echo ${config.out}/
-    grep -- "-D ${lib.escapeXML (lib.escapeShellArg sing-box_dir)}" ${config.out}/Library/LaunchDaemons/io.nekohasekai.sing-box.plist
+    # grep -- ${lib.escapeShellArg "-D ${lib.escapeXML (lib.escapeShellArg sing-box_dir)}"} ${config.out}/Library/LaunchDaemons/io.nekohasekai.sing-box.plist
 
     echo >&2 "checking sing-box state directory setup in activate script"
 
     # Verify the activation script has the postActivation hook to create the directory
     grep "Setting up Sing-box directory" ${config.out}/activate
-    grep "install -dm700 ${lib.escapeShellArg sing-box_dir}" ${config.out}/activate
+    grep ${lib.escapeShellArg "install -dm700 ${lib.escapeShellArg sing-box_dir}"} ${config.out}/activate
   '';
 }
