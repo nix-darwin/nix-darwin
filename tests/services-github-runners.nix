@@ -4,6 +4,7 @@
     enable = true;
     url = "https://github.com/nixos/nixpkgs";
     tokenFile = "/secret/path/to/a/github/token";
+    nodeRuntimes = [ "node24" ];
   };
 
   test = ''
