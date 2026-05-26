@@ -22,9 +22,10 @@ in
 
     system.activationScripts.postActivation.text = ''
       # Ensure the sing-box state directory is initialized
-      if [ ! -d "${lib.escapeShellArg config.launchd.daemons.sing-box.serviceConfig.WorkingDirectory}" ]; then
-      echo "Setting up Sing-box directory..."
-      install -dm700 ${lib.escapeShellArg config.launchd.daemons.sing-box.serviceConfig.WorkingDirectory}; fi
+      if [ ! -d ${lib.escapeShellArg config.launchd.daemons.sing-box.serviceConfig.WorkingDirectory} ]; then
+        echo "Setting up Sing-box directory..."
+        install -dm700 ${lib.escapeShellArg config.launchd.daemons.sing-box.serviceConfig.WorkingDirectory}
+      fi
     '';
     launchd.daemons.sing-box.serviceConfig = {
       Label = "io.nekohasekai.sing-box";
