@@ -14,6 +14,7 @@ in
     (lib.mkRemovedOptionModule [ "services" "sing-box" "configFile" ] ''
       The `configFile` option has been removed to support secret substitution.
       Please migrate your configuration to `services.sing-box.settings`.
+      For example: `{ _secret = config.sops.secrets."sb_config.json".path; quote = false; }`
     '')
   ];
 
