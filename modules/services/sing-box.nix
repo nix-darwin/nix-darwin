@@ -67,7 +67,12 @@ in
       };
       script = ''
         ${utils.genJqSecretsReplacementSnippet cfg.settings "/run/sing-box/config.json"}
-        "${lib.getExe cfg.package} -D ${config.launchd.daemons.sing-box.serviceConfig.WorkingDirectory} -C /run/sing-box run"
+
+        if [ ! -d '/run/sing-box' ]; then mkdir '/run/sing-box'; fi
+
+        chmod -R 0700 /run/sing-box
+
+        ${lib.getExe cfg.package} -D ${lib.escapeShellArg config.launchd.daemons.sing-box.serviceConfig.WorkingDirectory} -C '/run/sing-box' run
       '';
     };
   };
