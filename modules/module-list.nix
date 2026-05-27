@@ -4,6 +4,7 @@
   ./config/terminfo.nix
   ./documentation
   ./meta.nix
+  ./misc/extra-arguments.nix
   ./misc/ids.nix
   ./misc/lib.nix
   ./security/pam.nix
