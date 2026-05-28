@@ -48,7 +48,6 @@
           rxvt-unicode-unwrapped
           rxvt-unicode-unwrapped-emoji
           st
-          termite
           tmux
           wezterm
         ] ++ lib.optional (pkgs ? ghostty-bin) ghostty-bin
