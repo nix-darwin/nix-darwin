@@ -149,6 +149,7 @@
   system.defaults.controlcenter.Display = false;
   system.defaults.controlcenter.FocusModes = false;
   system.defaults.controlcenter.NowPlaying = true;
+  system.defaults.Spotlight.MenuItemHidden = true;
   test = lib.strings.concatMapStringsSep "\n"
     (x: ''
       echo >&2 "checking ${x} defaults write in /activate"
