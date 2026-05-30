@@ -46,6 +46,7 @@ let
   WindowManager = userDefaultsToList "com.apple.WindowManager" cfg.WindowManager;
   controlcenter = userDefaultsToList "~${config.system.primaryUser}/Library/Preferences/ByHost/com.apple.controlcenter" cfg.controlcenter;
   Spotlight = userDefaultsToList "~${config.system.primaryUser}/Library/Preferences/ByHost/com.apple.Spotlight" cfg.Spotlight;
+  TextInputMenuAgent = userDefaultsToList "com.apple.TextInputMenuAgent" cfg.TextInputMenuAgent;
   CustomUserPreferences = flatten (mapAttrsToList (name: value: userDefaultsToList name value) cfg.CustomUserPreferences);
 
 
@@ -86,6 +87,7 @@ in
         "ActivityMonitor"
         "WindowManager"
         "controlcenter"
+        "TextInputMenuAgent"
       ];
 
     system.activationScripts.defaults.text = mkIfLists [
@@ -126,6 +128,7 @@ in
         WindowManager
         controlcenter
         Spotlight
+        TextInputMenuAgent
       ]
       ''
         # Set defaults
@@ -153,6 +156,7 @@ in
         ${concatStringsSep "\n" WindowManager}
         ${concatStringsSep "\n" controlcenter}
         ${concatStringsSep "\n" Spotlight}
+        ${concatStringsSep "\n" TextInputMenuAgent}
 
         ${optionalString (length dock > 0) ''
           echo >&2 "restarting Dock..."

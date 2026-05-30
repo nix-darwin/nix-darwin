@@ -150,6 +150,7 @@
   system.defaults.controlcenter.FocusModes = false;
   system.defaults.controlcenter.NowPlaying = true;
   system.defaults.Spotlight.MenuItemHidden = true;
+  system.defaults.TextInputMenuAgent."NSStatusItem VisibleCC Item-0" = true;
   test = lib.strings.concatMapStringsSep "\n"
     (x: ''
       echo >&2 "checking ${x} defaults write in /activate"
