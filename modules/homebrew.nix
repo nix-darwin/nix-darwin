@@ -181,8 +181,8 @@ let
         ++ mapAttrsToList (k: v: "${k}=${escapeShellArg v}") config.extraEnv
         ++ [ "brew bundle --file='${brewfileFile}'" ]
         ++ optional (!config.upgrade) "--no-upgrade"
-        ++ optional (config.cleanup == "uninstall") "--cleanup"
-        ++ optional (config.cleanup == "zap") "--cleanup --zap"
+        ++ optional (config.cleanup == "uninstall") "--force-cleanup"
+        ++ optional (config.cleanup == "zap") "--zap --force-cleanup"
         ++ config.extraFlags
       );
     };
