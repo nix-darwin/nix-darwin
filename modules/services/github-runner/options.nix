@@ -263,7 +263,7 @@ in
 
         nodeRuntimes = mkOption {
           type = with types; nonEmptyListOf (enum [ "node20" "node24" ]);
-          default = [ "node20" "node24" ];
+          default = [ "node24" ];
           description = ''
             List of Node.js runtimes the runner should support.
           '';
