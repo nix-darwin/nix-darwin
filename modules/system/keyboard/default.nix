@@ -7,6 +7,8 @@ let
 in
 
 {
+  imports = [ ./shortcuts ];
+
   options = {
     system.keyboard.enableKeyMapping = mkOption {
       type = types.bool;
