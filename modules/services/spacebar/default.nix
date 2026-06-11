@@ -27,6 +27,7 @@ in
 
     services.spacebar.package = mkOption {
       type = path;
+      default = pkgs.spacebar;
       description = "The spacebar package to use.";
     };
 
