@@ -3,19 +3,8 @@
 with lib;
 
 let
-
   cfg = config.time;
-
-  timeZone = optionalString (cfg.timeZone != null) ''
-    if ! systemsetup -listtimezones | grep -q "^ ${cfg.timeZone}$"; then
-      echo "${cfg.timeZone} is not a valid timezone. The command 'listtimezones' will show a list of valid time zones." >&2
-      false
-    fi
-    systemsetup -settimezone "${cfg.timeZone}" 2>/dev/null 1>&2
-  '';
-
 in
-
 {
   options = {
 
@@ -37,8 +26,12 @@ in
     system.activationScripts.time.text = mkIf (cfg.timeZone != null) ''
       # Set defaults
       echo "configuring time..." >&2
-
-      ${timeZone}
+  
+      if ! systemsetup -listtimezones | grep -q "^ ${cfg.timeZone}$"; then
+        echo "${cfg.timeZone} is not a valid timezone. The command 'listtimezones' will show a list of valid time zones." >&2
+        false
+      fi
+      systemsetup -settimezone "${cfg.timeZone}" 2>/dev/null 1>&2
     '';
 
   };
