@@ -156,7 +156,7 @@
 
   `nix.daemonIONice` was renamed to `nix.daemonIOLowPriority`, and
   `nix.daemonNiceLevel` was removed in favor a new option
-  `nix.nix.daemonProcessType`.
+  `nix.daemonProcessType`.
 
 2021-01-16
 - Added `homebrew` module, to manage formulas installed by Homebrew via `brew bundle`.
