@@ -95,12 +95,12 @@ let
           the issue is resolved.
 
           When set to `"uninstall"`, {command}`nix-darwin` invokes
-          {command}`brew bundle [install]` with the {command}`--cleanup` flag. This
+          {command}`brew bundle [install]` with the {command}`--force-cleanup` flag. This
           uninstalls all packages not listed in the generated Brewfile, i.e.,
           {command}`brew uninstall` is run for those packages.
 
           When set to `"zap"`, {command}`nix-darwin` invokes
-          {command}`brew bundle [install]` with the {command}`--cleanup --zap`
+          {command}`brew bundle [install]` with the {command}`--force-cleanup --zap`
           flags. This uninstalls all packages not listed in the generated Brewfile, and if the
           package is a cask, removes all files associated with that cask. In other words,
           {command}`brew uninstall --zap` is run for all those packages.
@@ -181,8 +181,8 @@ let
         ++ mapAttrsToList (k: v: "${k}=${escapeShellArg v}") config.extraEnv
         ++ [ "brew bundle --file='${brewfileFile}'" ]
         ++ optional (!config.upgrade) "--no-upgrade"
-        ++ optional (config.cleanup == "uninstall") "--cleanup"
-        ++ optional (config.cleanup == "zap") "--cleanup --zap"
+        ++ optional (config.cleanup == "uninstall") "--force-cleanup"
+        ++ optional (config.cleanup == "zap") "--force-cleanup --zap"
         ++ config.extraFlags
       );
     };
