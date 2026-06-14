@@ -962,6 +962,7 @@ in
         # );
       }
 
+      (mkIf cfg.distributedBuilds { builders = "@/etc/nix/machines"; })
       (mkIf (!cfg.distributedBuilds) { builders = null; })
 
       (mkIf (isNixAtLeast "2.3pre") { sandbox-fallback = false; })
