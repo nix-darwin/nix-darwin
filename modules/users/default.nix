@@ -203,7 +203,9 @@ in
               else
                 homeDirectory=$(dscl . -read ${dsclUser} NFSHomeDirectory)
                 homeDirectory=''${homeDirectory#NFSHomeDirectory: }
-                if [[ ${escapeShellArg v.home} != "$homeDirectory" ]]; then
+                configuredHomeDirectory=$(realpath ${escapeShellArg v.home})
+                homeDirectory=$(realpath "$homeDirectory")
+                if [[ "$configuredHomeDirectory" != "$homeDirectory" ]]; then
                   printf >&2 '\e[1;31merror: config contains the wrong home directory for %s, aborting activation\e[0m\n' ${name}
                   printf >&2 'nix-darwin does not support changing the home directory of existing users.\n'
                   printf >&2 '\n'
