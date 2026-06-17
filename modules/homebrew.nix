@@ -177,7 +177,15 @@ let
 
     config = {
       brewBundleCmd = concatStringsSep " " (
-        optional (!config.autoUpdate) "HOMEBREW_NO_AUTO_UPDATE=1"
+        [
+          ''PATH="${cfg.prefix}/bin:${lib.makeBinPath [ pkgs.mas ]}:$PATH"''
+          "sudo"
+          "--preserve-env=PATH"
+          "--user=${escapeShellArg cfg.user}"
+          "--set-home"
+          "env"
+        ]
+        ++ optional (!config.autoUpdate) "HOMEBREW_NO_AUTO_UPDATE=1"
         ++ mapAttrsToList (k: v: "${k}=${escapeShellArg v}") config.extraEnv
         ++ [ "brew bundle --file='${brewfileFile}'" ]
         ++ optional (!config.upgrade) "--no-upgrade"
@@ -1024,13 +1032,7 @@ in
       # Homebrew Bundle
       echo >&2 "Homebrew bundle..."
       if [ -f "${cfg.prefix}/bin/brew" ]; then
-        PATH="${cfg.prefix}/bin:${lib.makeBinPath [ pkgs.mas ]}:$PATH" \
-        sudo \
-          --preserve-env=PATH \
-          --user=${escapeShellArg cfg.user} \
-          --set-home \
-          env \
-          ${cfg.onActivation.brewBundleCmd}
+        ${cfg.onActivation.brewBundleCmd}
       else
         echo -e "\e[1;31merror: Homebrew is not installed, skipping...\e[0m" >&2
       fi
