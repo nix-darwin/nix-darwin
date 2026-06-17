@@ -151,7 +151,7 @@ let
         };
         description = ''
           Extra environment variables to set when {command}`nix-darwin` invokes
-          {command}`brew bundle [install]` during system activation.
+          {command}`brew bundle [install]` during system checks and activation.
 
           Useful for setting Homebrew's `HOMEBREW_NO_*` variables (e.g.,
           `HOMEBREW_NO_ENV_HINTS`, `HOMEBREW_NO_ANALYTICS`, `HOMEBREW_NO_UPDATE_REPORT_NEW`)
@@ -1001,6 +1001,7 @@ in
             --user=${escapeShellArg cfg.user} \
             --set-home \
             env HOMEBREW_NO_AUTO_UPDATE=1 \
+            ${concatStringsSep " " (mapAttrsToList (k: v: "${k}=${escapeShellArg v}") cfg.onActivation.extraEnv)} \
             brew bundle cleanup --file='${brewfileFile}' 2>&1) || homebrewCleanupExitCode=$?
         if [ "$homebrewCleanupExitCode" -eq 1 ]; then
           printf >&2 '\e[1;31merror: found Homebrew packages not listed in the Brewfile, aborting activation\e[0m\n'
