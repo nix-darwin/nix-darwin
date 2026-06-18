@@ -9,6 +9,12 @@ let
   zshVariables =
     mapAttrsToList (n: v: ''${n}="${v}"'') cfg.variables;
 
+  zshAliases = builtins.concatStringsSep "\n" (
+    lib.mapAttrsToList (k: v: "alias -- ${k}=${lib.escapeShellArg v}") (
+      lib.filterAttrs (k: v: v != null) cfg.shellAliases
+    )
+  );
+
   fzfCompletion = ./fzf-completion.zsh;
   fzfGit = ./fzf-git.zsh;
   fzfHistory = ./fzf-history.zsh;
@@ -33,6 +39,15 @@ in
         characters.
       '';
       apply = mapAttrs (n: v: if isList v then concatStringsSep ":" v else v);
+    };
+
+    programs.zsh.shellAliases = lib.mkOption {
+      default = { };
+      description = ''
+        Set of aliases for zsh shell, which overrides {option}`environment.shellAliases`.
+        See {option}`environment.shellAliases` for an option format description.
+      '';
+      type = with lib.types; attrsOf (nullOr (either str path));
     };
 
     programs.zsh.shellInit = mkOption {
@@ -71,6 +86,22 @@ in
       description = "Change history file.";
     };
 
+    programs.zsh.setOptions = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [
+        "HIST_IGNORE_DUPS"
+        "SHARE_HISTORY"
+        "HIST_FCNTL_LOCK"
+      ];
+      example = [
+        "EXTENDED_HISTORY"
+        "RM_STAR_WAIT"
+      ];
+      description = ''
+        Configure zsh options. See
+        {manpage}`zshoptions(1)`.
+      '';
+    };
     programs.zsh.enableCompletion = mkOption {
       type = types.bool;
       default = true;
@@ -207,7 +238,10 @@ in
       HISTSIZE=${builtins.toString cfg.histSize}
       HISTFILE=${cfg.histFile}
 
-      setopt HIST_IGNORE_DUPS SHARE_HISTORY HIST_FCNTL_LOCK
+      ${lib.optionalString (cfg.setOptions != [ ]) ''
+        # Set zsh options.
+        setopt ${builtins.concatStringsSep " " cfg.setOptions}
+      ''}
 
       bindkey -e
 
@@ -234,6 +268,9 @@ in
       ${optionalString cfg.enableFzfCompletion "source ${fzfCompletion}"}
       ${optionalString cfg.enableFzfGit "source ${fzfGit}"}
       ${optionalString cfg.enableFzfHistory "source ${fzfHistory}"}
+
+      # Setup aliases.
+      ${zshAliases}
 
       # Read system-wide modifications.
       if test -f /etc/zshrc.local; then
