@@ -173,6 +173,14 @@ in
         Battery powered devices may require being connected to power.
       '';
     };
+
+    networking.timeServers = mkOption {
+      type = types.listOf types.str;
+      default = [ "time.apple.com" ];
+      description = ''
+        The set of NTP servers from which to synchronise.
+      '';
+    };
   };
 
   config = {

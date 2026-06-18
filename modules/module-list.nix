@@ -99,6 +99,7 @@
   ./services/synapse-bt.nix
   ./services/synergy
   ./services/tailscale.nix
+  ./services/timed.nix
   ./services/trezord.nix
   ./services/wg-quick.nix
   ./services/yabai
