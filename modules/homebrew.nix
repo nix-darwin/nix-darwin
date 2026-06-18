@@ -151,7 +151,7 @@ let
         };
         description = ''
           Extra environment variables to set when {command}`nix-darwin` invokes
-          {command}`brew bundle [install]` during system activation.
+          {command}`brew bundle [install]` during system checks and activation.
 
           Useful for setting Homebrew's `HOMEBREW_NO_*` variables (e.g.,
           `HOMEBREW_NO_ENV_HINTS`, `HOMEBREW_NO_ANALYTICS`, `HOMEBREW_NO_UPDATE_REPORT_NEW`)
@@ -172,18 +172,31 @@ let
         '';
       };
 
-      brewBundleCmd = mkInternalOption { type = types.str; };
+      brewBundleCmd = mkInternalOption { type = types.functionTo types.str; };
     };
 
     config = {
-      brewBundleCmd = concatStringsSep " " (
-        optional (!config.autoUpdate) "HOMEBREW_NO_AUTO_UPDATE=1"
+      brewBundleCmd = { onlyCheck }: concatStringsSep " " (
+        [
+          ''PATH="${cfg.prefix}/bin:${lib.makeBinPath [ pkgs.mas ]}:$PATH"''
+          "sudo"
+          "--preserve-env=PATH"
+          "--user=${escapeShellArg cfg.user}"
+          "--set-home"
+          "env"
+        ]
+        ++ optional (onlyCheck || !config.autoUpdate) "HOMEBREW_NO_AUTO_UPDATE=1"
         ++ mapAttrsToList (k: v: "${k}=${escapeShellArg v}") config.extraEnv
         ++ [ "brew bundle --file='${brewfileFile}'" ]
-        ++ optional (!config.upgrade) "--no-upgrade"
-        ++ optional (config.cleanup == "uninstall") "--force-cleanup"
-        ++ optional (config.cleanup == "zap") "--zap --force-cleanup"
-        ++ config.extraFlags
+        ++ (
+          if onlyCheck then
+            [ "cleanup 2>&1" ]
+          else
+            optional (!config.upgrade) "--no-upgrade"
+            ++ optional (config.cleanup == "uninstall") "--force-cleanup"
+            ++ optional (config.cleanup == "zap") "--zap --force-cleanup"
+            ++ config.extraFlags
+        )
       );
     };
   };
@@ -995,13 +1008,7 @@ in
     system.checks.text = mkIf (cfg.enable && cfg.onActivation.cleanup == "check") ''
       if [ -f "${cfg.prefix}/bin/brew" ]; then
         homebrewCleanupExitCode=0
-        homebrewCleanupResult=$(PATH="${cfg.prefix}/bin:${lib.makeBinPath [ pkgs.mas ]}:$PATH" \
-          sudo \
-            --preserve-env=PATH \
-            --user=${escapeShellArg cfg.user} \
-            --set-home \
-            env HOMEBREW_NO_AUTO_UPDATE=1 \
-            brew bundle cleanup --file='${brewfileFile}' 2>&1) || homebrewCleanupExitCode=$?
+        homebrewCleanupResult=$(${cfg.onActivation.brewBundleCmd { onlyCheck = true; }}) || homebrewCleanupExitCode=$?
         if [ "$homebrewCleanupExitCode" -eq 1 ]; then
           printf >&2 '\e[1;31merror: found Homebrew packages not listed in the Brewfile, aborting activation\e[0m\n'
           printf >&2 '%s\n' "$homebrewCleanupResult"
@@ -1023,13 +1030,7 @@ in
       # Homebrew Bundle
       echo >&2 "Homebrew bundle..."
       if [ -f "${cfg.prefix}/bin/brew" ]; then
-        PATH="${cfg.prefix}/bin:${lib.makeBinPath [ pkgs.mas ]}:$PATH" \
-        sudo \
-          --preserve-env=PATH \
-          --user=${escapeShellArg cfg.user} \
-          --set-home \
-          env \
-          ${cfg.onActivation.brewBundleCmd}
+        ${cfg.onActivation.brewBundleCmd { onlyCheck = false; }}
       else
         echo -e "\e[1;31merror: Homebrew is not installed, skipping...\e[0m" >&2
       fi
