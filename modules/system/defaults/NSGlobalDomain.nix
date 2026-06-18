@@ -197,6 +197,14 @@ in {
       '';
     };
 
+    system.defaults.NSGlobalDomain.NSMenuEnableActionImages = mkOption {
+      type = types.nullOr types.bool;
+      default = null;
+      description = ''
+        Whether to show icons in menu items. The default is true.
+      '';
+    };
+
     system.defaults.NSGlobalDomain.AppleWindowTabbingMode = mkOption {
       type = types.nullOr (types.enum [ "manual" "always" "fullscreen" ]);
       default = null;
