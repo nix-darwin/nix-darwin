@@ -95,6 +95,7 @@ in {
   tests.nixpkgs-overlays = makeTest ./tests/nixpkgs-overlays.nix;
   tests.nixpkgs-config-allow-unfree = makeTest ./tests/nixpkgs-config-allow-unfree.nix;
   tests.programs-gnupg = makeTest ./tests/programs-gnupg.nix;
+  tests.programs-nh = makeTest ./tests/programs-nh.nix;
   tests.programs-ssh = makeTest ./tests/programs-ssh.nix;
   tests.programs-tmux = makeTest ./tests/programs-tmux.nix;
   tests.programs-zsh = makeTest ./tests/programs-zsh.nix;
