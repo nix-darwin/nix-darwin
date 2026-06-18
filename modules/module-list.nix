@@ -75,6 +75,7 @@
   ./services/hercules-ci-agent
   ./services/ipfs.nix
   ./services/karabiner-elements
+  ./services/kanata.nix
   ./services/khd
   ./services/kwm
   ./services/lorri.nix
