@@ -529,7 +529,7 @@ in
       { name = "gitlab-runner";
         uid = mkDefault 532;
         # gid = mkDefault config.users.groups.gitlab-runner.gid;
-        home = mkDefault "/var/lib/gitlab-runner";
+        home = mkDefault "/private/var/lib/gitlab-runner";
         shell = "/bin/bash";
         description = "Gitlab agent user";
       };
