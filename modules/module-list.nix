@@ -42,6 +42,7 @@
   ./system/etc.nix
   ./system/keyboard.nix
   ./system/launchd.nix
+  ./system/newsyslog.nix
   ./system/nvram.nix
   ./system/patches.nix
   ./system/shells.nix
