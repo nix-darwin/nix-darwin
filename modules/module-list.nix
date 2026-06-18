@@ -88,6 +88,7 @@
   ./services/nix-gc
   ./services/nix-optimise
   ./services/ofborg
+  ./services/ollama.nix
   ./services/openssh.nix
   ./services/postgresql
   ./services/privoxy
