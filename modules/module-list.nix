@@ -102,6 +102,7 @@
   ./services/trezord.nix
   ./services/wg-quick.nix
   ./services/yabai
+  ./services/yggdrasil.nix
   ./services/nextdns
   ./services/jankyborders
   ./programs/_1password.nix
