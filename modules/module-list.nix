@@ -23,6 +23,7 @@
   ./system/defaults/GlobalPreferences.nix
   ./system/defaults/CustomPreferences.nix
   ./system/defaults/clock.nix
+  ./system/defaults/desktopservices.nix
   ./system/defaults/dock.nix
   ./system/defaults/finder.nix
   ./system/defaults/hitoolbox.nix
