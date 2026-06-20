@@ -14,6 +14,8 @@
    programs.zsh.interactiveShellInit = "source /etc/zshrc.d/*.conf";
    programs.zsh.loginShellInit = "source /etc/zprofile.d/*.conf";
    programs.zsh.promptInit = "autoload -U promptinit && promptinit && prompt off";
+   programs.zsh.histSize = 4000;
+   programs.zsh.saveSize = 3000;
 
    programs.zsh.variables.FOO = "42";
 
@@ -32,6 +34,9 @@
      grep 'source /etc/zshrc.d/\*.conf' ${config.out}/etc/zshrc
      echo >&2 "checking prompt off in /etc/zshrc"
      grep 'prompt off' ${config.out}/etc/zshrc
+     echo >&2 "checking zsh history sizes in /etc/zshrc"
+     grep 'SAVEHIST=3000' ${config.out}/etc/zshrc
+     grep 'HISTSIZE=4000' ${config.out}/etc/zshrc
      echo >&2 "checking compinit in /etc/zshrc"
      grep 'autoload -U compinit && compinit' ${config.out}/etc/zshrc
      echo >&2 "checking bashcompinit in /etc/zshrc"
