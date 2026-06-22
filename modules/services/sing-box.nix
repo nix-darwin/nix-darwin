@@ -7,7 +7,6 @@
 }:
 let
   cfg = config.services.sing-box;
-  settingsFormat = pkgs.formats.json { };
 in
 {
   imports = [
@@ -25,7 +24,7 @@ in
 
     settings = lib.mkOption {
       type = lib.types.submodule {
-        freeformType = settingsFormat.type;
+        freeformType = (pkgs.formats.json { }).type;
       };
       default = { };
       description = ''
@@ -34,6 +33,15 @@ in
         Options containing secret data should be set to an attribute set
         containing the attribute `_secret` - a string pointing to a file
         containing the value the option should be set to.
+      '';
+    };
+    runtimeDir = lib.mkOption {
+      type = lib.types.path;
+      readOnly = true;
+      default = "/var/run/sing-box";
+      description = ''
+        Unlike systemd, launchd don't have shell veriables like $RUNTIME_DIRECTORY and $STATE_DIRECTORY, so make a
+        read-only global option to reduce the duplication.
       '';
     };
   };
@@ -59,21 +67,18 @@ in
         WorkingDirectory = "/Library/Application Support/sing-box";
         StandardErrorPath = "/Library/Logs/io.nekohasekai.sing-box.stderr.log";
         StandardOutPath = "/Library/Logs/io.nekohasekai.sing-box.stdout.log";
-        # ProgramArguments = [
-        #   "/bin/sh"
-        #   "-c"
-        #   ("/bin/wait4path /nix/store" + " && exec ${lib.getExe cfg.package} -c ${cfg.configFile} run")
-        # ];
       };
-      script = ''
-        ${utils.genJqSecretsReplacementSnippet cfg.settings "/run/sing-box/config.json"}
+      script = lib.mkMerge [
+        ''
+          if [ ! -d '${cfg.runtimeDir}' ]; then mkdir '${cfg.runtimeDir}'; fi
+          chmod -R 0700 ${cfg.runtimeDir}
 
-        if [ ! -d '/run/sing-box' ]; then mkdir '/run/sing-box'; fi
-
-        chmod -R 0700 /run/sing-box
-
-        ${lib.getExe cfg.package} -D ${lib.escapeShellArg config.launchd.daemons.sing-box.serviceConfig.WorkingDirectory} -C '/run/sing-box' run
-      '';
+          ${utils.genJqSecretsReplacementSnippet cfg.settings "${cfg.runtimeDir}/config.json"}
+        ''
+        ''
+          ${lib.getExe cfg.package} -D '${config.launchd.daemons.sing-box.serviceConfig.WorkingDirectory}' -C '${cfg.runtimeDir}' run
+        ''
+      ];
     };
   };
 }

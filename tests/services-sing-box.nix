@@ -36,7 +36,7 @@ in
     grep -- ${lib.escapeShellArg "-D ${lib.escapeShellArg working_dir}"} $script_path
 
     # Check that it passes the correct config directory flag
-    grep -- ${lib.escapeShellArg "-C '/run/sing-box'"} $script_path
+    grep -- ${lib.escapeShellArg "-C '${cfg.runtimeDir}'"} $script_path
 
     echo >&2 "checking sing-box state directory setup in activate script"
 
