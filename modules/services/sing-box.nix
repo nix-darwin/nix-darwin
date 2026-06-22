@@ -69,15 +69,15 @@ in
         StandardOutPath = "/Library/Logs/io.nekohasekai.sing-box.stdout.log";
       };
       script = lib.mkMerge [
-        ''
+        (lib.mkBefore ''
           if [ ! -d '${cfg.runtimeDir}' ]; then mkdir '${cfg.runtimeDir}'; fi
           chmod -R 0700 ${cfg.runtimeDir}
 
           ${utils.genJqSecretsReplacementSnippet cfg.settings "${cfg.runtimeDir}/config.json"}
-        ''
-        ''
+        '')
+        (lib.mkOrder 1250 ''
           ${lib.getExe cfg.package} -D '${config.launchd.daemons.sing-box.serviceConfig.WorkingDirectory}' -C '${cfg.runtimeDir}' run
-        ''
+        '')
       ];
     };
   };
