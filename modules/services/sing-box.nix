@@ -70,13 +70,13 @@ in
       };
       script = lib.mkMerge [
         (lib.mkBefore ''
-          if [ ! -d '${cfg.runtimeDir}' ]; then mkdir '${cfg.runtimeDir}'; fi
+          mkdir -p '${cfg.runtimeDir}'
           chmod -R 0700 ${cfg.runtimeDir}
 
           ${utils.genJqSecretsReplacementSnippet cfg.settings "${cfg.runtimeDir}/config.json"}
         '')
         (lib.mkOrder 1250 ''
-          ${lib.getExe cfg.package} -D '${config.launchd.daemons.sing-box.serviceConfig.WorkingDirectory}' -C '${cfg.runtimeDir}' run
+          exec ${lib.getExe cfg.package} -D '${config.launchd.daemons.sing-box.serviceConfig.WorkingDirectory}' -C '${cfg.runtimeDir}' run
         '')
       ];
     };
