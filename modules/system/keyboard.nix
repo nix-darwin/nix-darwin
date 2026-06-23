@@ -26,6 +26,12 @@ in
       description = "Whether to remap the Caps Lock key to Escape.";
     };
 
+    system.keyboard.swapCapsLockAndEscape = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Whether to swap the Caps Lock key and Escape key.";
+    };
+
     system.keyboard.nonUS.remapTilde = mkOption {
       type = types.bool;
       default = false;
@@ -75,6 +81,14 @@ in
     system.keyboard.userKeyMapping = [
       (mkIf cfg.remapCapsLockToControl { HIDKeyboardModifierMappingSrc = 30064771129; HIDKeyboardModifierMappingDst = 30064771296; })
       (mkIf cfg.remapCapsLockToEscape { HIDKeyboardModifierMappingSrc = 30064771129; HIDKeyboardModifierMappingDst = 30064771113; })
+      (mkIf cfg.swapCapsLockAndEscape {
+        HIDKeyboardModifierMappingSrc = 30064771129;
+        HIDKeyboardModifierMappingDst = 30064771113;
+      })
+      (mkIf cfg.swapCapsLockAndEscape {
+        HIDKeyboardModifierMappingSrc = 30064771113;
+        HIDKeyboardModifierMappingDst = 30064771129;
+      })
       (mkIf cfg.nonUS.remapTilde { HIDKeyboardModifierMappingSrc = 30064771172; HIDKeyboardModifierMappingDst = 30064771125; })
       (mkIf cfg.swapCapsLockAndEscape {
         HIDKeyboardModifierMappingSrc = 30064771129;
