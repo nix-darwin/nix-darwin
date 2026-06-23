@@ -94,6 +94,7 @@
   ./services/redis
   ./services/sketchybar
   ./services/skhd
+  ./services/sleepwatcher
   ./services/spacebar
   ./services/spotifyd.nix
   ./services/synapse-bt.nix
