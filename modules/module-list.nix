@@ -104,6 +104,7 @@
   ./services/yabai
   ./services/nextdns
   ./services/jankyborders
+  ./services/plugin-playground
   ./programs/_1password.nix
   ./programs/_1password-gui.nix
   ./programs/arqbackup.nix
