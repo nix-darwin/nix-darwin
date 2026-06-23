@@ -124,9 +124,9 @@ in
 
     systems = mkOption {
       type = types.listOf types.str;
-      default = [ cfg.package.nixosConfig.nixpkgs.hostPlatform.system ];
+      default = [ cfg.package.nixosConfig._module.args.pkgs.stdenv.hostPlatform.system ];
       defaultText = ''
-        The `nixpkgs.hostPlatform.system` of the build machine's final NixOS configuration.
+        The `stdenv.hostPlatform.system` of the build machine's final Nixpkgs instantiation.
       '';
       example = literalExpression ''
         [
