@@ -117,6 +117,7 @@
   ./programs/ssh.nix
   ./programs/tmux.nix
   ./programs/vim.nix
+  ./programs/vscode.nix
   ./programs/zsh
   ./homebrew.nix
   ./users
