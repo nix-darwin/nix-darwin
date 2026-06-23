@@ -75,10 +75,10 @@
       ${lib.optionalString (config.system.primaryUser != null) ''
         # Clean up for links created at the old location in HOME
         # TODO: Remove this in 25.11.
-        if ourLink ~${config.system.primaryUser}/Applications; then
-          rm ~${config.system.primaryUser}/Applications
-        elif ourLink ~${config.system.primaryUser}/Applications/'Nix Apps'; then
-          rm ~${config.system.primaryUser}/Applications/'Nix Apps'
+        if ourLink ~"${config.system.primaryUser}"/Applications; then
+          rm ~"${config.system.primaryUser}"/Applications
+        elif ourLink ~"${config.system.primaryUser}"/Applications/'Nix Apps'; then
+          rm ~"${config.system.primaryUser}"/Applications/'Nix Apps'
         fi
       ''}
 
