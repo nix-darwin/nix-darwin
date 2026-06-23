@@ -186,6 +186,7 @@ let
 
   generateLaunchDaemonAttrs = name: interfaceOpt:
     nameValuePair "wg-quick-${name}" {
+      command = "${lib.getExe' pkgs.wireguard-tools "wg-quick"} up ${name}";
       serviceConfig = {
         EnvironmentVariables = {
           PATH =
@@ -195,8 +196,6 @@ let
           NetworkState = true;
           SuccessfulExit = true;
         };
-        ProgramArguments =
-          [ "${pkgs.wireguard-tools}/bin/wg-quick" "up" "${name}" ];
         RunAtLoad = true;
         StandardErrorPath = "${cfg.logDir}/wg-quick-${name}.log";
         StandardOutPath = "${cfg.logDir}/wg-quick-${name}.log";
