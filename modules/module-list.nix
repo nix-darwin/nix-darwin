@@ -112,6 +112,7 @@
   ./programs/fish.nix
   ./programs/gnupg.nix
   ./programs/man.nix
+  ./programs/htop.nix
   ./programs/info
   ./programs/nix-index
   ./programs/ssh.nix
