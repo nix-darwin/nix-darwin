@@ -153,11 +153,9 @@ in {
                 };
               };
             };
-
-        simpleType = types.either types.str types.path;
         toTagged = path: { app = path; };
         in
-      types.nullOr (types.listOf (types.coercedTo simpleType toTagged taggedType));
+      types.nullOr (types.listOf (types.coercedTo types.str toTagged taggedType));
       default = null;
       example = [
         { app = "/Applications/Safari.app"; }
