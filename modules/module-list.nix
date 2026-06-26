@@ -18,6 +18,8 @@
   ./system/applications.nix
   ./system/defaults-write.nix
   ./system/defaults/controlcenter.nix
+  ./system/defaults/Spotlight.nix
+  ./system/defaults/TextInputMenuAgent.nix
   ./system/defaults/LaunchServices.nix
   ./system/defaults/NSGlobalDomain.nix
   ./system/defaults/GlobalPreferences.nix
