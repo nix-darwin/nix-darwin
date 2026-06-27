@@ -30,6 +30,7 @@ let
   LaunchServices = userDefaultsToList "com.apple.LaunchServices" cfg.LaunchServices;
   NSGlobalDomain = userDefaultsToList "-g" cfg.NSGlobalDomain;
   menuExtraClock = userDefaultsToList "com.apple.menuextra.clock" cfg.menuExtraClock;
+  desktopservices = userDefaultsToList "com.apple.desktopservices" cfg.desktopservices;
   dock = userDefaultsToList "com.apple.dock" dockFiltered;
   finder = userDefaultsToList "com.apple.finder" cfg.finder;
   hitoolbox = userDefaultsToList "com.apple.HIToolbox" cfg.hitoolbox;
@@ -73,6 +74,7 @@ in
         "LaunchServices"
         "NSGlobalDomain"
         "menuExtraClock"
+        "desktopservices"
         "dock"
         "finder"
         "hitoolbox"
@@ -108,6 +110,7 @@ in
         LaunchServices
         NSGlobalDomain
         menuExtraClock
+        desktopservices
         dock
         finder
         hitoolbox
@@ -134,6 +137,7 @@ in
         ${concatStringsSep "\n" GlobalPreferences}
         ${concatStringsSep "\n" LaunchServices}
         ${concatStringsSep "\n" menuExtraClock}
+        ${concatStringsSep "\n" desktopservices}
         ${concatStringsSep "\n" dock}
         ${concatStringsSep "\n" finder}
         ${concatStringsSep "\n" hitoolbox}
