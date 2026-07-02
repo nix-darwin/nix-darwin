@@ -5,6 +5,14 @@ with lib;
 let
   cfg = config.services.tailscale;
 
+  tailscaledSetScript = pkgs.writeShellScript "tailscaled-set" ''
+    for _ in $(seq 1 60); do
+      ${lib.getExe cfg.package} set ${escapeShellArgs cfg.extraSetFlags} && exit 0
+      sleep 1
+    done
+    exit 1
+  '';
+
 in
 {
   imports = [
@@ -37,6 +45,13 @@ in
         all non-MagicDNS queries WILL fail.
       '';
     };
+
+    extraSetFlags = mkOption {
+      description = "Extra flags to pass to {command}`tailscale set`.";
+      type = types.listOf types.str;
+      default = [ ];
+      example = [ "--advertise-exit-node" ];
+    };
   };
 
   config = mkIf cfg.enable {
@@ -57,6 +72,14 @@ in
       command = lib.getExe' cfg.package "tailscaled";
       serviceConfig = {
         Label = "com.tailscale.tailscaled";
+        RunAtLoad = true;
+      };
+    };
+
+    launchd.daemons.tailscaled-set = mkIf (cfg.extraSetFlags != [ ]) {
+      command = "${tailscaledSetScript}";
+      serviceConfig = {
+        Label = "com.tailscale.tailscaled-set";
         RunAtLoad = true;
       };
     };
