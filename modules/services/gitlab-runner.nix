@@ -115,10 +115,71 @@ let
     export CONFIG_FILE=${configPath}
     exec gitlab-runner run --working-directory $HOME
   '';
+  # The service definition shared by both launchd placements; HOME (and
+  # with it config.toml) comes from the daemon's dedicated user or from
+  # the logged-in session user respectively.
+  serviceEnvironment = { #config.networking.proxy.envVars // {
+    NIX_REMOTE = "daemon";
+    NIX_SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+  };
+  servicePath = with pkgs; [
+    bash
+    gawk
+    jq
+    moreutils
+    yq
+    # util-linux
+    cfg.package
+    coreutils
+    gnugrep
+    gnused
+  ] ++ cfg.extraPackages;
+  serviceScript = ''
+    ${configureScript}/bin/gitlab-runner-configure && ${startScript}/bin/gitlab-runner-start
+  '';
+  serviceConfigCommon = {
+    ProcessType = "Interactive";
+    ThrottleInterval = 30;
+
+    # StandardOutPath = "/var/lib/gitlab-runner/out.log";
+    # StandardErrorPath = "/var/lib/gitlab-runner/err.log";
+    # The combination of KeepAlive.NetworkState and WatchPaths
+    # will ensure that buildkite-agent is started on boot, but
+    # after networking is available (so the hostname is
+    # correct).
+    RunAtLoad = true;
+    # KeepAlive.NetworkState = true;
+    WatchPaths = [
+      "/etc/resolv.conf"
+      "/Library/Preferences/SystemConfiguration/NetworkInterfaces.plist"
+    ];
+  };
 in
 {
   options.services.gitlab-runner = {
     enable = mkEnableOption "Gitlab Runner";
+    launchdType = mkOption {
+      type = types.enum [ "daemon" "agent" ];
+      default = "daemon";
+      example = "agent";
+      description = ''
+        The launchd service class the runner is placed in.
+
+        `"daemon"` runs the runner as a system LaunchDaemon under the
+        dedicated `gitlab-runner` user, with no access to any GUI
+        session. This fits session-independent workloads, for example
+        nix or Android builds.
+
+        `"agent"` runs the runner as a LaunchAgent in the logged-in
+        session of {option}`system.primaryUser`, which GitLab documents
+        as the only supported mode on macOS
+        (<https://docs.gitlab.com/runner/install/osx/>).
+        Session-dependent workloads require it: code signing against
+        the login keychain and the iOS Simulator. Jobs only run while
+        that user's session exists, so pair it with automatic login on
+        a dedicated CI host.
+      '';
+    };
     configFile = mkOption {
       type = types.nullOr types.path;
       default = null;
@@ -523,8 +584,13 @@ in
       });
     };
   };
-  config = mkIf cfg.enable {
+  config = mkIf cfg.enable (mkMerge [ {
 
+    warnings = optional (cfg.configFile != null) "services.gitlab-runner.`configFile` is deprecated, please use services.gitlab-runner.`services`.";
+    environment.systemPackages = [ cfg.package ];
+  }
+
+  (mkIf (cfg.launchdType == "daemon") {
     users.users.gitlab-runner =
       { name = "gitlab-runner";
         uid = mkDefault 532;
@@ -545,56 +611,36 @@ in
     #  chown ${toString user.uid}:${toString user.gid} '${user.home}'
     #'';
 
-
-    warnings = optional (cfg.configFile != null) "services.gitlab-runner.`configFile` is deprecated, please use services.gitlab-runner.`services`.";
-    environment.systemPackages = [ cfg.package ];
-
     launchd.daemons.gitlab-runner = {
-      environment = { #config.networking.proxy.envVars // {
+      environment = serviceEnvironment // {
         HOME = "${config.users.users.gitlab-runner.home}";
-        NIX_REMOTE = "daemon";
-        NIX_SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
       };
-      path = with pkgs; [
-        bash
-        gawk
-        jq
-        moreutils
-        yq
-        # util-linux
-        cfg.package
-        coreutils
-        gnugrep
-        gnused
-      ] ++ cfg.extraPackages;
-
-        script = ''
-            ${configureScript}/bin/gitlab-runner-configure && ${startScript}/bin/gitlab-runner-start
-        '';
-
-        serviceConfig = {
-            ProcessType = "Interactive";
-            ThrottleInterval = 30;
-
-          # StandardOutPath = "/var/lib/gitlab-runner/out.log";
-          # StandardErrorPath = "/var/lib/gitlab-runner/err.log";
-          # The combination of KeepAlive.NetworkState and WatchPaths
-          # will ensure that buildkite-agent is started on boot, but
-          # after networking is available (so the hostname is
-          # correct).
-          RunAtLoad = true;
-        #   KeepAlive.NetworkState = true;
-          WatchPaths = [
-            "/etc/resolv.conf"
-            "/Library/Preferences/SystemConfiguration/NetworkInterfaces.plist"
-          ];
-
-          GroupName = "gitlab-runner";
-          UserName  = "gitlab-runner";
-          WorkingDirectory = config.users.users.gitlab-runner.home;
-        };
-
+      path = servicePath;
+      script = serviceScript;
+      serviceConfig = serviceConfigCommon // {
+        GroupName = "gitlab-runner";
+        UserName  = "gitlab-runner";
+        WorkingDirectory = config.users.users.gitlab-runner.home;
+      };
     };
+  })
+
+  (mkIf (cfg.launchdType == "agent") {
+    launchd.user.agents.gitlab-runner = {
+      environment = serviceEnvironment;
+      path = servicePath;
+      script = serviceScript;
+      managedBy = "services.gitlab-runner.launchdType";
+      serviceConfig = serviceConfigCommon // {
+        # GitLab's documented LaunchAgent sets SessionCreate so code
+        # signing can reach the login keychain, and restarts the runner
+        # only on unsuccessful exit:
+        # https://docs.gitlab.com/runner/install/osx/
+        SessionCreate = true;
+        KeepAlive.SuccessfulExit = false;
+      };
+    };
+  })
     # systemd.services.gitlab-runner = {
     #   description = "Gitlab Runner";
     #   documentation = [ "https://docs.gitlab.com/runner/" ];
@@ -636,7 +682,7 @@ in
     # virtualisation.docker.enable = mkIf (
     #   any (s: s.executor == "docker") (attrValues cfg.services)
     # ) (mkDefault true);
-  };
+  ]);
   imports = [
     (mkRenamedOptionModule [ "services" "gitlab-runner" "packages" ] [ "services" "gitlab-runner" "extraPackages" ] )
     (mkRemovedOptionModule [ "services" "gitlab-runner" "configOptions" ] "Use services.gitlab-runner.services option instead" )
