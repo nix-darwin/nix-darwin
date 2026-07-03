@@ -105,8 +105,8 @@ let
             "del(.[] | nulls)"
             "del(.session_server[] | nulls)"
          ])} ${configPath} \
-        > config.toml.new
-      mv config.toml.new ${configPath}
+        > ${configPath}.new
+      mv ${configPath}.new ${configPath}
 
       # make config file readable by service
       chown -R --reference=$HOME $(dirname ${configPath})
