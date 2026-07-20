@@ -47,6 +47,7 @@
   ./system/shells.nix
   ./system/startup.nix
   ./system/version.nix
+  ./system/wallpaper.nix
   ./time
   ./networking
   ./networking/applicationFirewall.nix
