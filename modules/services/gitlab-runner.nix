@@ -111,10 +111,30 @@ let
       # make config file readable by service
       chown -R --reference=$HOME $(dirname ${configPath})
     '');
-  startScript = pkgs.writeShellScriptBin "gitlab-runner-start" ''
-    export CONFIG_FILE=${configPath}
-    exec gitlab-runner run --working-directory $HOME
-  '';
+  # Exec the current-system gitlab-runner (the nix-daemon launchd pattern),
+  # not the pinned store path, so a runner restarted in place comes back on
+  # the deployed version with no plist reload. A normal reload lands the new
+  # binary anyway, so this is transparent unless a caller turns
+  # restartIfChanged off and cycles the runner itself.
+  runnerExec = "/run/current-system/sw/bin/gitlab-runner";
+  startScript = pkgs.writeShellScriptBin "gitlab-runner-start" (
+    if cfg.gracefulTermination then ''
+      export CONFIG_FILE=${configPath}
+      # launchd only ever sends SIGTERM (a forceful abort to gitlab-runner)
+      # and cannot be told to send another signal, so catch it and forward
+      # SIGQUIT to drain the jobs first. wait returns the moment the trapped
+      # signal fires, so the wait that matters is the one in the handler,
+      # after the forward. The launchd analogue of the systemd unit's
+      # KillSignal = SIGQUIT.
+      ${runnerExec} run --working-directory "$HOME" &
+      runner=$!
+      trap 'kill -QUIT "$runner" 2>/dev/null; wait "$runner"; exit' TERM QUIT INT
+      wait "$runner"
+    '' else ''
+      export CONFIG_FILE=${configPath}
+      exec ${runnerExec} run --working-directory "$HOME"
+    ''
+  );
   # The service definition shared by both launchd placements; HOME (and
   # with it config.toml) comes from the daemon's dedicated user or from
   # the logged-in session user respectively.
@@ -134,8 +154,11 @@ let
     gnugrep
     gnused
   ] ++ cfg.extraPackages;
+  # exec into the runner so gitlab-runner is the launchd job's main process,
+  # not a child of the shell: launchctl kill / signals then reach it directly
+  # (a configure failure still short-circuits and lets KeepAlive retry).
   serviceScript = ''
-    ${configureScript}/bin/gitlab-runner-configure && ${startScript}/bin/gitlab-runner-start
+    ${configureScript}/bin/gitlab-runner-configure && exec ${startScript}/bin/gitlab-runner-start
   '';
   serviceConfigCommon = {
     ProcessType = "Interactive";
@@ -153,6 +176,14 @@ let
       "/etc/resolv.conf"
       "/Library/Preferences/SystemConfiguration/NetworkInterfaces.plist"
     ];
+  } // optionalAttrs cfg.gracefulTermination {
+    # Complete the graceful stop begun by the SIGQUIT-forwarding start script:
+    # AbandonProcessGroup keeps launchd from tearing down the in-flight job
+    # when the runner exits (the KillMode = process analogue), and ExitTimeOut
+    # = 0 lets the drain run instead of the default 20s cap (TimeoutStopSec;
+    # a shutdown is still bounded by macOS).
+    AbandonProcessGroup = true;
+    ExitTimeOut = 0;
   };
 in
 {
@@ -283,6 +314,14 @@ in
         Finish all remaining jobs before stopping.
         If not set gitlab-runner will stop immediatly without waiting
         for jobs to finish, which will lead to failed builds.
+
+        On darwin, where launchd always sends SIGTERM (a forceful abort to
+        gitlab-runner) and offers no way to change that signal, this runs the
+        runner under a SIGQUIT-forwarding start script plus
+        {var}`AbandonProcessGroup` and an unbounded {var}`ExitTimeOut`, so a
+        launchd-initiated stop drains its jobs first. The launchd analogue of
+        the systemd unit's KillSignal = SIGQUIT, KillMode = process and
+        TimeoutStopSec.
       '';
     };
     gracefulTimeout = mkOption {
