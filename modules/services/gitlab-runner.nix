@@ -4,13 +4,104 @@ with lib;
 let
   cfg = config.services.gitlab-runner;
   hasDocker = config.virtualisation.docker.enable;
-  hashedServices = mapAttrs'
-    (name: service: nameValuePair
-      "${name}_${config.networking.hostName}_${
-        substring 0 12
-        (hashString "md5" (unsafeDiscardStringContext (toJSON service)))}"
-      service)
-    cfg.services;
+  # config.toml is generated directly with tomlq (a real TOML serializer), a pure
+  # function of these options and the one value not known at build time: each
+  # runner's token, taken from its registrationConfigFile at runtime and so kept
+  # out of the store. gitlab-runner run reads and runs whatever [[runners]] the
+  # file defines (https://docs.gitlab.com/runner/commands/), so a modern
+  # authentication token (glrt-) needs no registration step: it authenticates on
+  # its own and the runner fills in its id and system_id from the server on
+  # startup. A deprecated registration token, which register still accepts, is
+  # exchanged for a runner token by a one-time register in the configure script
+  # below; a runner's server-side attributes (tags, run_untagged, access_level,
+  # maximum_timeout) are stored there, the only place they take for either token
+  # type (https://docs.gitlab.com/runner/register/).
+
+  # An attribute set as a config.toml fragment: drop null-valued attributes (TOML
+  # has no null, so an unset optional must not appear) and render the rest as a
+  # JSON object literal, which is also a jq expression. tomlq (-n, null input)
+  # serializes that to TOML, nested [runners.docker] table and arrays included, so
+  # nothing is hand-assembled.
+  tomlObject = attrs: toJSON (filterAttrs (_: v: v != null) attrs);
+
+  globalObject = tomlObject {
+    concurrent = cfg.concurrent;
+    check_interval = cfg.checkInterval;
+    sentry_dsn = cfg.sentryDSN;
+    listen_address = cfg.prometheusListenAddress;
+    session_server = filterAttrs (_: v: v != null) {
+      session_timeout = cfg.sessionServer.sessionTimeout;
+      listen_address = cfg.sessionServer.listenAddress;
+      advertise_address = cfg.sessionServer.advertiseAddress;
+    };
+  };
+
+  # A runner's [[runners]] entry as a jq object, minus the name, url, and token
+  # the configure script splices in at runtime (the name because it is hashed for
+  # a legacy runner and plain for an authentication-token one).
+  runnerObject = service: tomlObject {
+    executor = service.executor;
+    limit = service.limit;
+    request_concurrency = service.requestConcurrency;
+    debug_trace_disabled = service.debugTraceDisabled;
+    environment = mapAttrsToList (n: v: "${n}=${v}") service.environmentVariables;
+    builds_dir = service.buildsDir;
+    clone_url = service.cloneUrl;
+    pre_clone_script = service.preCloneScript;
+    pre_build_script = service.preBuildScript;
+    post_build_script = service.postBuildScript;
+    docker =
+      if hasPrefix "docker" service.executor
+      then (
+        assert assertMsg (service.dockerImage != null)
+          "services.gitlab-runner.services.${service.executor} needs dockerImage for the docker executor";
+        {
+          image = service.dockerImage;
+          disable_cache = service.dockerDisableCache;
+          privileged = service.dockerPrivileged;
+          volumes = service.dockerVolumes;
+          extra_hosts = service.dockerExtraHosts;
+          allowed_images = service.dockerAllowedImages;
+          allowed_services = service.dockerAllowedServices;
+        }
+      )
+      else null;
+  };
+
+  # A legacy runner's identity on GitLab is exactly what register stores
+  # server-side; a change to any of it is a different runner that must be
+  # re-registered, and nothing else (an environment, a limit, a volume) is. The
+  # runner is named over just these fields so that a server-side change moves the
+  # name (forcing a re-register and sweeping the old one) while a local change
+  # leaves it, and so reloads config.toml without re-registering.
+  runnerIdentity = service: {
+    inherit (service)
+      registrationConfigFile registrationFlags
+      tagList runUntagged protected maximumTimeout;
+  };
+  legacyName = name: service:
+    "${name}_${config.networking.hostName}_${
+      substring 0 12
+      (hashString "md5" (unsafeDiscardStringContext
+        (toJSON (runnerIdentity service))))}";
+
+  # The attributes register stores server-side when it exchanges a deprecated
+  # registration token. An authentication token has these set at creation, so
+  # register ignores them there; they are never config.toml fields.
+  registrationServerFlags = service:
+    optional (service.tagList != [ ]) "--tag-list ${escapeShellArg (concatStringsSep "," service.tagList)}"
+    ++ optional service.runUntagged "--run-untagged"
+    ++ optional service.protected "--access-level ref_protected"
+    ++ optional (service.maximumTimeout > 0) "--maximum-timeout ${toString service.maximumTimeout}"
+    ++ service.registrationFlags;
+  # Whether any runner uses the deprecated registration flow. Gates the register
+  # tooling and the unregister sweep so an authentication-only instance carries
+  # neither.
+  hasLegacyRunner = any (service: service.registrationType == "registration") (attrValues cfg.services);
+  # The runner names this configuration registers on GitLab (the deprecated
+  # registration flow only). The unregister sweep keeps GitLab to exactly these.
+  legacyNames = mapAttrsToList (name: service: legacyName name service)
+    (filterAttrs (_: service: service.registrationType == "registration") cfg.services);
   configPath = "$HOME/.gitlab-runner/config.toml";
   configureScript = pkgs.writeShellScriptBin "gitlab-runner-configure" (
     if (cfg.configFile != null) then ''
@@ -20,103 +111,75 @@ let
       chown -R --reference=$HOME $(dirname ${configPath})
     '' else ''
       set -e
-      export CONFIG_FILE=${configPath}
-
-      mkdir -p $(dirname ${configPath})
-
-      # remove no longer existing services
-      gitlab-runner verify --delete
-
-      # current and desired state
-      NEEDED_SERVICES=$(echo ${concatStringsSep " " (attrNames hashedServices)} | tr " " "\n")
-      REGISTERED_SERVICES=$(gitlab-runner list 2>&1 | grep 'Executor' | awk '{ print $1 }')
-
-      # difference between current and desired state
-      NEW_SERVICES=$(grep -vxF -f <(echo "$REGISTERED_SERVICES") <(echo "$NEEDED_SERVICES") || true)
-      OLD_SERVICES=$(grep -vxF -f <(echo "$NEEDED_SERVICES") <(echo "$REGISTERED_SERVICES") || true)
-
-      # register new services
-      ${concatStringsSep "\n" (mapAttrsToList (name: service: ''
-        if echo "$NEW_SERVICES" | grep -xq ${name}; then
-          bash -c ${escapeShellArg (concatStringsSep " \\\n " ([
-            "set -a && source ${service.registrationConfigFile} &&"
-            "gitlab-runner register"
-            "--non-interactive"
-            "--name ${name}"
-            "--executor ${service.executor}"
-            "--limit ${toString service.limit}"
-            "--request-concurrency ${toString service.requestConcurrency}"
-            "--maximum-timeout ${toString service.maximumTimeout}"
-          ] ++ service.registrationFlags
-            ++ optional (service.buildsDir != null)
-            "--builds-dir ${service.buildsDir}"
-            ++ optional (service.cloneUrl != null)
-            "--clone-url ${service.cloneUrl}"
-            ++ optional (service.preCloneScript != null)
-            "--pre-clone-script ${service.preCloneScript}"
-            ++ optional (service.preBuildScript != null)
-            "--pre-build-script ${service.preBuildScript}"
-            ++ optional (service.postBuildScript != null)
-            "--post-build-script ${service.postBuildScript}"
-            ++ optional (service.tagList != [ ])
-            "--tag-list ${concatStringsSep "," service.tagList}"
-            ++ optional service.runUntagged
-            "--run-untagged"
-            ++ optional service.protected
-            "--access-level ref_protected"
-            ++ optional service.debugTraceDisabled
-            "--debug-trace-disabled"
-            ++ map (e: "--env ${escapeShellArg e}") (mapAttrsToList (name: value: "${name}=${value}") service.environmentVariables)
-            ++ optionals (hasPrefix "docker" service.executor) (
-              assert (
-                assertMsg (service.dockerImage != null)
-                  "dockerImage option is required for ${service.executor} executor (${name})");
-              [ "--docker-image ${service.dockerImage}" ]
-              ++ optional service.dockerDisableCache
-              "--docker-disable-cache"
-              ++ optional service.dockerPrivileged
-              "--docker-privileged"
-              ++ map (v: "--docker-volumes ${escapeShellArg v}") service.dockerVolumes
-              ++ map (v: "--docker-extra-hosts ${escapeShellArg v}") service.dockerExtraHosts
-              ++ map (v: "--docker-allowed-images ${escapeShellArg v}") service.dockerAllowedImages
-              ++ map (v: "--docker-allowed-services ${escapeShellArg v}") service.dockerAllowedServices
-            )
-          ))} && sleep 1 || exit 1
-        fi
-      '') hashedServices)}
-
-      # unregister old services
-      for NAME in $(echo "$OLD_SERVICES")
-      do
-        [ ! -z "$NAME" ] && gitlab-runner unregister \
-          --name "$NAME" && sleep 1
+      mkdir -p "$(dirname ${configPath})"
+      ${optionalString hasLegacyRunner ''
+      # Unregister dropped legacy runners, the base module's OLD_SERVICES: a
+      # runner in config.toml named by our "<name>_<host>_<hash>" convention that
+      # this rebuild no longer registers (a removed service, or a server-side
+      # change that moved the hash). Registered names are read with tomlq rather
+      # than parsed out of `gitlab-runner list`, and scoped to our naming so an
+      # operator-owned authentication runner (plain name) is never touched.
+      tomlq -r '.runners[]?.name' "${configPath}" 2>/dev/null | while read -r registered_name; do
+        case "$registered_name" in
+          *_${config.networking.hostName}_????????????)
+            printf '%s\n' ${escapeShellArg (concatStringsSep "\n" legacyNames)} | grep -qxF -- "$registered_name" \
+              || gitlab-runner unregister --config "${configPath}" --name "$registered_name" || true ;;
+        esac
       done
-
-      # update global options
-      tomlq -t \
-         ${escapeShellArg (concatStringsSep " | " [
-            ".check_interval = ${toJSON cfg.checkInterval}"
-            ".concurrent = ${toJSON cfg.concurrent}"
-            ".sentry_dsn = ${toJSON cfg.sentryDSN}"
-            ".listen_address = ${toJSON cfg.prometheusListenAddress}"
-            ".session_server.listen_address = ${toJSON cfg.sessionServer.listenAddress}"
-            ".session_server.advertise_address = ${toJSON cfg.sessionServer.advertiseAddress}"
-            ".session_server.session_timeout = ${toJSON cfg.sessionServer.sessionTimeout}"
-            "del(.[] | nulls)"
-            "del(.session_server[] | nulls)"
-         ])} ${configPath} \
-        > ${configPath}.new
-      mv ${configPath}.new ${configPath}
+      ''}
+      # Generate config.toml with tomlq. url and token are the only runtime
+      # values, sourced from each runner's registrationConfigFile. Whether a
+      # runner uses an authentication token or a deprecated registration token is
+      # declared per runner (registrationType), so this branch is resolved at
+      # build time and runners of either kind share one config.toml.
+      {
+        tomlq -n -t ${escapeShellArg globalObject}
+      ${concatStringsSep "\n" (mapAttrsToList (name: service: ''
+        (
+          . ${service.registrationConfigFile}
+        ${if service.registrationType == "registration" then ''
+          # Deprecated registration token: register exchanges it for a runner
+          # token (reused from config.toml on later rebuilds, so only a
+          # server-side change, which moves the hashed name, re-registers) and
+          # stores the server-side attributes. https://docs.gitlab.com/runner/register/
+          runner_name=${escapeShellArg (legacyName name service)}
+          runner_token="$(tomlq -r ${escapeShellArg "[.runners[]? | select(.name == ${toJSON (legacyName name service)}) | .token][0] // empty"} "${configPath}" 2>/dev/null || true)"
+          if [ -z "$runner_token" ]; then
+            scratch="$(mktemp -d)"
+            gitlab-runner register --config "$scratch/config.toml" --non-interactive \
+              --url "$CI_SERVER_URL" --registration-token "$REGISTRATION_TOKEN" \
+              --name "$runner_name" --executor ${escapeShellArg service.executor} \
+              ${concatStringsSep " " (registrationServerFlags service)}
+            runner_token="$(tomlq -r '.runners[0].token' "$scratch/config.toml")"
+            rm -rf "$scratch"
+          fi
+        '' else ''
+          # Authentication token: written to config.toml as-is, no register; the
+          # runner self-binds on run.
+          runner_name=${escapeShellArg name}
+          runner_token="$REGISTRATION_TOKEN"
+        ''}
+          tomlq -n -t --arg name "$runner_name" --arg url "$CI_SERVER_URL" --arg token "$runner_token" \
+            ${escapeShellArg "{runners: [${runnerObject service} + {name: $name, url: $url, token: $token}]}"}
+        )'') cfg.services)}
+      } > "${configPath}.new"
+      mv "${configPath}.new" "${configPath}"
 
       # make config file readable by service
-      chown -R --reference=$HOME $(dirname ${configPath})
+      chown -R --reference="$HOME" "$(dirname ${configPath})"
     '');
-  # Exec the current-system gitlab-runner (the nix-daemon launchd pattern),
-  # not the pinned store path, so a runner restarted in place comes back on
-  # the deployed version with no plist reload. A normal reload lands the new
-  # binary anyway, so this is transparent unless a caller turns
-  # restartIfChanged off and cycles the runner itself.
-  runnerExec = "/run/current-system/sw/bin/gitlab-runner";
+  # seamlessRestart makes a runner able to deploy the host it runs on. Its plist
+  # is made immutable (below, it embeds the /run/current-system profile, not
+  # store paths), so activation never reloads it (the plist never differs across
+  # closures) and the switch it runs never tears it down mid-job; it picks up
+  # each new deployment on its own graceful restart, running the current-system
+  # gitlab-runner rather than a pinned /nix/store path so that restart lands the
+  # deployed version.
+  selfDeploy = cfg.seamlessRestart;
+  runnerExec =
+    if selfDeploy
+    then "/run/current-system/sw/bin/gitlab-runner"
+    else "${cfg.package}/bin/gitlab-runner";
   startScript = pkgs.writeShellScriptBin "gitlab-runner-start" (
     if cfg.gracefulTermination then ''
       export CONFIG_FILE=${configPath}
@@ -140,7 +203,10 @@ let
   # the logged-in session user respectively.
   serviceEnvironment = { #config.networking.proxy.envVars // {
     NIX_REMOTE = "daemon";
-    NIX_SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+    NIX_SSL_CERT_FILE =
+      if selfDeploy
+      then "/run/current-system/sw/etc/ssl/certs/ca-bundle.crt"
+      else "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
   };
   servicePath = with pkgs; [
     bash
@@ -160,6 +226,14 @@ let
   serviceScript = ''
     ${configureScript}/bin/gitlab-runner-configure && exec ${startScript}/bin/gitlab-runner-start
   '';
+  # In selfDeploy mode the plist must embed no /nix/store paths, so activation
+  # never rewrites it and it needs no reload. Everything it names resolves
+  # through the current-system profile instead: this service script is installed
+  # into the system profile and run by its profile path, PATH is the profile bin
+  # dir, and the CA bundle is the profile's. A fork or nixpkgs change then moves
+  # only the symlink targets and the plist bytes stay identical, so one bootstrap
+  # ever installs it and every later change lands on the next SIGQUIT cycle.
+  serviceRunnerService = pkgs.writeShellScriptBin "gitlab-runner-service" serviceScript;
   serviceConfigCommon = {
     ProcessType = "Interactive";
     ThrottleInterval = 30;
@@ -209,6 +283,26 @@ in
         the login keychain and the iOS Simulator. Jobs only run while
         that user's session exists, so pair it with automatic login on
         a dedicated CI host.
+      '';
+    };
+    seamlessRestart = mkOption {
+      type = types.bool;
+      default = false;
+      example = true;
+      description = ''
+        Whether the runner can deploy the nix-darwin configuration of the
+        host it runs on, for example a CI job that runs `darwin-rebuild
+        switch` on this machine.
+
+        When `true` the runner's launchd plist embeds no `/nix/store` paths:
+        it runs the `gitlab-runner` on the `/run/current-system` profile and
+        resolves its config and CA bundle through that profile. The plist is
+        therefore immutable across closures, so activation never reloads the
+        runner (the switch it runs cannot tear it down mid-job) and the runner
+        picks up each new deployment on its own graceful restart, which the
+        deploy triggers with `launchctl kill SIGQUIT`. Pair it with
+        {option}`services.gitlab-runner.gracefulTermination` so that restart
+        drains the running job rather than aborting it.
       '';
     };
     configFile = mkOption {
@@ -442,6 +536,28 @@ in
               `REGISTRATION_TOKEN=<registration secret>`
             '';
           };
+          registrationType = mkOption {
+            type = types.enum [ "authentication" "registration" ];
+            default = "authentication";
+            description = ''
+              The kind of token {option}`registrationConfigFile` provides.
+
+              `"authentication"` (the default) treats it as a runner
+              authentication token (the `glrt-` prefix), created for the runner
+              in the GitLab UI or API. config.toml is written with the token
+              directly and the runner authenticates on its own; no
+              `gitlab-runner register` runs. From GitLab 18.0 this is the only
+              supported token type.
+
+              `"registration"` treats it as a deprecated registration token,
+              which `gitlab-runner register` exchanges for a runner token,
+              setting the runner's server-side attributes ({option}`tagList`,
+              {option}`runUntagged`, {option}`protected`,
+              {option}`maximumTimeout`) at creation.
+
+              Runners of either type can share one instance.
+            '';
+          };
           registrationFlags = mkOption {
             type = types.listOf types.str;
             default = [ ];
@@ -626,7 +742,8 @@ in
   config = mkIf cfg.enable (mkMerge [ {
 
     warnings = optional (cfg.configFile != null) "services.gitlab-runner.`configFile` is deprecated, please use services.gitlab-runner.`services`.";
-    environment.systemPackages = [ cfg.package ];
+    environment.systemPackages = [ cfg.package ]
+      ++ optionals selfDeploy (servicePath ++ [ serviceRunnerService pkgs.cacert ]);
   }
 
   (mkIf (cfg.launchdType == "daemon") {
@@ -653,10 +770,13 @@ in
     launchd.daemons.gitlab-runner = {
       environment = serviceEnvironment // {
         HOME = "${config.users.users.gitlab-runner.home}";
-      };
-      path = servicePath;
-      script = serviceScript;
-      serviceConfig = serviceConfigCommon // {
+      } // optionalAttrs selfDeploy { PATH = "/run/current-system/sw/bin"; };
+      path = if selfDeploy then [ ] else servicePath;
+      command = if selfDeploy then "/run/current-system/sw/bin/gitlab-runner-service" else "";
+      script = if selfDeploy then "" else serviceScript;
+      serviceConfig = serviceConfigCommon // optionalAttrs selfDeploy {
+        KeepAlive = true;
+      } // {
         GroupName = "gitlab-runner";
         UserName  = "gitlab-runner";
         WorkingDirectory = config.users.users.gitlab-runner.home;
@@ -666,17 +786,19 @@ in
 
   (mkIf (cfg.launchdType == "agent") {
     launchd.user.agents.gitlab-runner = {
-      environment = serviceEnvironment;
-      path = servicePath;
-      script = serviceScript;
+      environment = serviceEnvironment // optionalAttrs selfDeploy { PATH = "/run/current-system/sw/bin"; };
+      path = if selfDeploy then [ ] else servicePath;
+      command = if selfDeploy then "/run/current-system/sw/bin/gitlab-runner-service" else "";
+      script = if selfDeploy then "" else serviceScript;
       managedBy = "services.gitlab-runner.launchdType";
       serviceConfig = serviceConfigCommon // {
-        # GitLab's documented LaunchAgent sets SessionCreate so code
-        # signing can reach the login keychain, and restarts the runner
-        # only on unsuccessful exit:
+        # GitLab's documented LaunchAgent sets SessionCreate so code signing can
+        # reach the login keychain. It normally restarts the runner only on an
+        # unsuccessful exit; a selfDeploy runner exits cleanly on its graceful
+        # drain and must relaunch, so it keeps KeepAlive on.
         # https://docs.gitlab.com/runner/install/osx/
         SessionCreate = true;
-        KeepAlive.SuccessfulExit = false;
+        KeepAlive = if selfDeploy then true else { SuccessfulExit = false; };
       };
     };
   })
