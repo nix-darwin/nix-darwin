@@ -251,13 +251,20 @@ let
       "/Library/Preferences/SystemConfiguration/NetworkInterfaces.plist"
     ];
   } // optionalAttrs cfg.gracefulTermination {
-    # Complete the graceful stop begun by the SIGQUIT-forwarding start script:
-    # AbandonProcessGroup keeps launchd from tearing down the in-flight job
-    # when the runner exits (the KillMode = process analogue), and ExitTimeOut
-    # = 0 lets the drain run instead of the default 20s cap (TimeoutStopSec;
-    # a shutdown is still bounded by macOS).
+    # Complete the graceful stop begun by the SIGQUIT-forwarding start script.
+    # AbandonProcessGroup keeps launchd from tearing down the in-flight job when the
+    # runner exits, the KillMode = process analogue.
+    #
+    # ExitTimeOut is how long launchd waits between SIGTERM and SIGKILL when it stops
+    # a job, the TimeoutStopSec analogue, and it holds the drain open. launchd.plist(5)
+    # says zero is read as infinity, but measured on macOS 26.5 it is an immediate
+    # kill: the job's SIGTERM handler never runs at all, so a stop, a bootout, or a
+    # system shutdown aborts the running build rather than draining it, which is the
+    # one thing this option exists to prevent. The value is a count of seconds with no
+    # literal for unbounded, so a year stands in for the gracefulTimeout default of
+    # "infinity": a ceiling no build reaches rather than a bound anyone means to hit.
     AbandonProcessGroup = true;
-    ExitTimeOut = 0;
+    ExitTimeOut = 31536000;
   };
 in
 {
