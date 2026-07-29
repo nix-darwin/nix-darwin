@@ -78,6 +78,7 @@
   ./services/khd
   ./services/kwm
   ./services/lorri.nix
+  ./services/newsyslog.nix
   ./services/mail/offlineimap.nix
   ./services/mopidy.nix
   ./services/monitoring/telegraf.nix
