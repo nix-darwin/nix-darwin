@@ -17,24 +17,26 @@ let
       group = if conf.group != null then conf.group else "";
       ownerGroup =
         if (conf.owner == null) && (conf.group == null) then
-          ""
+          null
         else
           "${owner}:${group}";
-      flags = if conf.flags != null then conf.flags else "";
-      pathToPidFile = if conf.pathToPidFile != null then conf.pathToPidFile else "";
-      signalNumber = if conf.signalNumber != null then (toString conf.signalNumber) else "";
+      flags = if conf.flags != null then conf.flags else "-";
+      pathToPidFile = if conf.pathToPidFile != null then conf.pathToPidFile else null;
+      signalNumber = if conf.signalNumber != null then (toString conf.signalNumber) else null;
+      lines = [
+        path
+        ownerGroup
+        conf.mode
+        (toString conf.count)
+        conf.size
+        conf.when
+        flags
+        pathToPidFile
+        signalNumber
+      ];
+      linesFiltered = filter (s: s != null) lines;
     in
-    concatStringsSep " " [
-      path
-      ownerGroup
-      conf.mode
-      (toString conf.count)
-      conf.size
-      conf.when
-      flags
-      pathToPidFile
-      signalNumber
-    ];
+    concatStringsSep " " linesFiltered;
 
   mkFile = name: moduleConf:
     let
@@ -96,16 +98,33 @@ in
               description = "When to rotate the log file. Defaults to midnight ($D0).";
             };
 
+            # TODO This doesn't validate flags
             flags = mkOption {
               type = types.nullOr types.str;
               default = null;
-              description = "Flags for log rotation behavior.";
+              description = ''
+                Flags for log rotation behavior. Available flags:
+
+                * B
+                * C
+                * D
+                * G
+                * J
+                * N
+                * U
+                * Z
+                * -
+              '';
             };
+
+            # TODO this should validate or warn when the user
+            # provides signalNumber without setting pathToPidFile
             pathToPidFile = mkOption {
               type = types.nullOr types.str;
               default = null;
               description = "Specifies the file name containing the PID of the process writing to this log file.";
             };
+
             signalNumber = mkOption {
               type = types.nullOr types.int;
               default = null;

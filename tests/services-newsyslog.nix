@@ -2,9 +2,10 @@
 
 {
   # case 1
-  # Specify file name, mode, count, size, and when
+  # Specify file owner, name, mode, count, size, and when
   services.newsyslog.modules.test1 = {
     "/var/log/case1.log" = {
+      owner = "admin";
       mode = "640";
       count = 10;
       size = "1000";
@@ -30,34 +31,51 @@
       pathToPidFile = "/var/run/test.pid";
       signalNumber = 1;
     };
+    # case 4
+    # check for no trailing whitespace when no fields set
+    "/var/log/case4.log" = {};
   };
 
 
+  # test3
+  # test for edge cases
+  services.newsyslog.modules.test3 = {
+  };
+
   test = ''
     echo >&2 "checking case 1"
-    if grep -o '^/var/log/case1.log  640 10 1000 $D0' ${config.out}/etc/newsyslog.d/test1.conf; then
-      echo "ok"
+    if grep -o '^/var/log/case1.log admin: 640 10 1000 $D0 -$' ${config.out}/etc/newsyslog.d/test1.conf; then
+      echo >&2 "ok"
     else
-      echo "case 1 failed. Found:"
+      echo >&2 "case 1 failed. Found:"
       cat ${config.out}/etc/newsyslog.d/test1.conf
       exit 1
     fi
 
     echo >&2 "checking case 2"
-    if grep -o '^/var/log/case2.log nobody:admin 600 10 \* $D0' ${config.out}/etc/newsyslog.d/test2.conf; then
-      echo "ok"
+    if grep -o '^/var/log/case2.log nobody:admin 600 10 \* $D0 -' ${config.out}/etc/newsyslog.d/test2.conf; then
+      echo >&2 "ok"
     else
-      echo "case 2 failed. Found:"
+      echo >&2 "case 2 failed. Found:"
       cat ${config.out}/etc/newsyslog.d/test2.conf
       exit 1
     fi
 
     echo >&2 "checking case 3"
-    if grep -o '^/var/log/case3.log  600 5 500 $M1D0  /var/run/test.pid 1$' ${config.out}/etc/newsyslog.d/test2.conf; then
-      echo "ok"
+    if grep -o '^/var/log/case3.log 600 5 500 $M1D0 - /var/run/test.pid 1$' ${config.out}/etc/newsyslog.d/test2.conf; then
+      echo >&2 "ok"
     else
       echo "case 3 failed. Found:"
       cat ${config.out}/etc/newsyslog.d/test2.conf
+      exit 1
+    fi
+
+    echo >&2 "checking case 4"
+    if grep -o '^/var/log/case4.log 600 10 \* $D0 -$' ${config.out}/etc/newsyslog.d/test2.conf; then
+      echo >&2 "ok"
+    else
+      echo >&2 "case 4 failed. Found:"
+      tr " " "." < ${config.out}/etc/newsyslog.d/test2.conf
       exit 1
     fi
   '';
