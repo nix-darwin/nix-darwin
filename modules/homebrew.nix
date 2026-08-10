@@ -29,6 +29,39 @@ let
     "mas info"
   ];
 
+  # Deprecation gate helpers. `brew info --json=v2` carries deprecated/disabled
+  # plus reason, date, and brew's suggested replacement for every formula and
+  # cask; one invocation over the whole declared set costs ~1-2s from the
+  # local API cache, so the check runs unconditionally when enabled.
+  deprecationCheckTargets = map (b: b.name) cfg.brews ++ map (c: c.name) cfg.casks;
+
+  deprecationFilter = pkgs.writeText "brew-deprecation-filter.jq" ''
+    ((.formulae // [])[]
+     | select(.deprecated or .disabled)
+     | "formula \(.name): \(if .disabled then "DISABLED" else "deprecated" end)"
+       + (if (.disable_date // .deprecation_date) then " since \(.disable_date // .deprecation_date)" else "" end)
+       + (if (.disable_reason // .deprecation_reason) then " (\(.disable_reason // .deprecation_reason))" else "" end)
+       + (if .deprecation_replacement_formula then "; brew suggests: \(.deprecation_replacement_formula)" else "" end)),
+    ((.casks // [])[]
+     | select(.deprecated or .disabled)
+     | "cask \(.token): \(if .disabled then "DISABLED" else "deprecated" end)"
+       + (if (.disable_date // .deprecation_date) then " since \(.disable_date // .deprecation_date)" else "" end)
+       + (if (.disable_reason // .deprecation_reason) then " (\(.disable_reason // .deprecation_reason))" else "" end)
+       + (if .deprecation_replacement_cask then "; brew suggests: \(.deprecation_replacement_cask)" else "" end))
+  '';
+
+  brewInfoJsonCmd = concatStringsSep " " [
+    ''PATH="${cfg.prefix}/bin:$PATH"''
+    "sudo"
+    "--preserve-env=PATH"
+    "--user=${escapeShellArg cfg.user}"
+    "--set-home"
+    "env"
+    "HOMEBREW_NO_AUTO_UPDATE=1"
+    "brew info --json=v2 --"
+    (escapeShellArgs deprecationCheckTargets)
+  ];
+
   # Brewfile creation helper functions -------------------------------------------------------------
 
   mkBrewfileSectionString = heading: entries: optionalString (entries != [ ]) ''
@@ -223,6 +256,22 @@ let
           are reported as warnings so offline activation still works. Results
           are cached per ID set under {file}`/var/db/nix-darwin/homebrew`, so
           the check costs nothing until the ID set changes.
+        '';
+      };
+
+      denyDeprecated = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Whether to refuse activation while any declared formula or cask is
+          deprecated or disabled upstream. Checked in the pre-mutation phase
+          from `brew info --json=v2` (local API cache, no network); the error
+          names each package with the reason, date, and brew's suggested
+          replacement.
+
+          A `brew info` failure (e.g. an untapped tap on a first run) is a
+          warning, not a failure: the bundle step is the authority on whether
+          the declaration is installable.
         '';
       };
 
@@ -1138,6 +1187,20 @@ in
     };
 
     system.checks.text = mkMerge [
+      (mkIf (cfg.enable && cfg.onActivation.denyDeprecated && deprecationCheckTargets != [ ]) ''
+        echo >&2 "Checking declared Homebrew packages for deprecation..."
+        if brewInfoJson=$(${brewInfoJsonCmd}); then
+          deprecatedReport=$(printf '%s' "$brewInfoJson" | ${pkgs.jq}/bin/jq -r -f ${deprecationFilter})
+          if [ -n "$deprecatedReport" ]; then
+            printf >&2 '\e[1;31merror: declared Homebrew packages are deprecated or disabled upstream, aborting activation\e[0m\n'
+            printf >&2 '%s\n' "$deprecatedReport"
+            printf >&2 'Switch each to its replacement (or drop it) in the Homebrew declaration.\n'
+            exit 2
+          fi
+        else
+          printf >&2 'warning: brew info failed; skipping deprecation check (untapped tap on a first run?)\n'
+        fi
+      '')
       (mkIf (cfg.enable && cfg.onActivation.validateMasApps && cfg.masApps != { }) ''
         masIdsStateDir=/var/db/nix-darwin/homebrew
         masIdsState="$masIdsStateDir/validated-mas-ids"
