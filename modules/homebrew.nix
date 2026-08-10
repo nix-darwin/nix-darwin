@@ -14,6 +14,21 @@ let
     inherit (cfg.onActivation) cleanup extraEnv;
   });
 
+  # Content identity of the masApps set; the ID validation check is skipped
+  # while the state file matches it, so validation reruns exactly when the
+  # declared set changes.
+  masAppsIdentity = builtins.hashString "sha256" (builtins.toJSON cfg.masApps);
+
+  # `mas info` as the Homebrew user, matching how `brew bundle` invokes mas.
+  masInfoCmd = concatStringsSep " " [
+    ''PATH="${lib.makeBinPath [ pkgs.mas ]}:$PATH"''
+    "sudo"
+    "--preserve-env=PATH"
+    "--user=${escapeShellArg cfg.user}"
+    "--set-home"
+    "mas info"
+  ];
+
   # Brewfile creation helper functions -------------------------------------------------------------
 
   mkBrewfileSectionString = heading: entries: optionalString (entries != [ ]) ''
@@ -190,6 +205,24 @@ let
           [](#opt-homebrew.onActivation.upgrade) to be disabled. It does not support arbitrary
           Brewfile directives, extra flags, Visual Studio Code extensions, Go packages, Cargo
           packages, or formula options that reconcile link, conflict, or service state.
+        '';
+      };
+
+      validateMasApps = mkOption {
+        type = types.bool;
+        default = true;
+        description = ''
+          Whether to verify, before activation mutates anything, that every
+          [](#opt-homebrew.masApps) ID still resolves in the Mac App Store
+          ({command}`mas info <id>`). App Store IDs rot silently (Apple retires
+          legacy IDs), and a dead ID fails {command}`brew bundle` with an error
+          buried hundreds of lines deep; this check fails early and names the
+          app and ID instead.
+
+          Only the definitive "No apps found" answer is fatal; network errors
+          are reported as warnings so offline activation still works. Results
+          are cached per ID set under {file}`/var/db/nix-darwin/homebrew`, so
+          the check costs nothing until the ID set changes.
         '';
       };
 
@@ -1104,7 +1137,38 @@ in
       '';
     };
 
-    system.checks.text = mkIf (cfg.enable && cfg.onActivation.cleanup == "check") ''
+    system.checks.text = mkMerge [
+      (mkIf (cfg.enable && cfg.onActivation.validateMasApps && cfg.masApps != { }) ''
+        masIdsStateDir=/var/db/nix-darwin/homebrew
+        masIdsState="$masIdsStateDir/validated-mas-ids"
+        masIdsExpected=${masAppsIdentity}
+        if [ -f "$masIdsState" ] && [ "$(cat "$masIdsState")" = "$masIdsExpected" ]; then
+          : # this exact masApps set already validated
+        else
+          echo >&2 "Validating Mac App Store IDs..."
+          masIdsBad=
+          ${concatStringsSep "\n" (mapAttrsToList (n: id: ''
+            if ! masInfoOut=$(${masInfoCmd} ${toString id} 2>&1); then
+              case $masInfoOut in
+                *"No apps found"*)
+                  printf >&2 '\e[1;31merror: masApps entry %s (id %s) no longer resolves in the Mac App Store\e[0m\n' ${escapeShellArg n} ${toString id}
+                  masIdsBad=1
+                  ;;
+                *)
+                  printf >&2 'warning: could not verify masApps entry %s (id %s), continuing (offline?): %s\n' ${escapeShellArg n} ${toString id} "$masInfoOut"
+                  ;;
+              esac
+            fi
+          '') cfg.masApps)}
+          if [ -n "$masIdsBad" ]; then
+            printf >&2 'Find current IDs with `mas search <name>`, then update the masApps declaration.\n'
+            exit 2
+          fi
+          mkdir -p "$masIdsStateDir"
+          printf '%s' "$masIdsExpected" > "$masIdsState"
+        fi
+      '')
+      (mkIf (cfg.enable && cfg.onActivation.cleanup == "check") ''
       if [ -f "${cfg.prefix}/bin/brew" ]; then
         homebrewCleanupExitCode=0
         homebrewCleanupResult=$(${cfg.onActivation.brewBundleCmd { onlyCheck = true; }}) || homebrewCleanupExitCode=$?
@@ -1123,7 +1187,8 @@ in
           exit 2
         fi
       fi
-    '';
+    '')
+    ];
 
     system.activationScripts.homebrew.text = mkIf cfg.enable ''
       # Homebrew Bundle
