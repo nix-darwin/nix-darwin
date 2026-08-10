@@ -1146,15 +1146,27 @@ in
 
           if cmp -s "$homebrewState" "$homebrewStateNext"; then
             echo >&2 "Homebrew inventory unchanged, skipping bundle."
-          else
-            ${cfg.onActivation.brewBundleCmd { onlyCheck = false; }}
+          elif ${cfg.onActivation.brewBundleCmd { onlyCheck = false; }}; then
             writeHomebrewState
             mv -f "$homebrewStateNext" "$homebrewState"
+          else
+            # Do not write the state file: the next activation must retry.
+            # Deferred rather than fatal so the activation still reaches the
+            # /run/current-system link; re-raised at the end of `activate`.
+            homebrewBundleFailed=$?
+            printf >&2 '\e[1;31merror: brew bundle failed (exit %s); deferring failure so activation can finish\e[0m\n' "$homebrewBundleFailed"
           fi
 
           rm -f "$homebrewStateNext"
           trap - EXIT
-        '' else cfg.onActivation.brewBundleCmd { onlyCheck = false; }}
+        '' else ''
+          if ${cfg.onActivation.brewBundleCmd { onlyCheck = false; }}; then
+            :
+          else
+            homebrewBundleFailed=$?
+            printf >&2 '\e[1;31merror: brew bundle failed (exit %s); deferring failure so activation can finish\e[0m\n' "$homebrewBundleFailed"
+          fi
+        ''}
       else
         echo -e "\e[1;31merror: Homebrew is not installed, skipping...\e[0m" >&2
       fi

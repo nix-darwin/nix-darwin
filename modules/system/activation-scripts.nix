@@ -148,6 +148,15 @@ in
       if [[ -d /nix/var/nix/gcroots ]]; then
         ln -sfn /run/current-system /nix/var/nix/gcroots/current-system
       fi
+
+      # A deferred Homebrew bundle failure (see modules/homebrew.nix) is
+      # re-raised here, after /run/current-system has moved: user-app
+      # installs must never strand the system half-activated, but the
+      # activation as a whole still reports the failure.
+      if [[ -n "''${homebrewBundleFailed:-}" ]]; then
+        printf >&2 '\e[1;31merror: activation completed, but brew bundle failed earlier (scroll up for the brew error)\e[0m\n'
+        exit 112
+      fi
     '';
 
     # Extra activation scripts, that can be customized by users
