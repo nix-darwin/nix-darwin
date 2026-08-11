@@ -104,7 +104,26 @@ in
 
         hostsOriginal=""
         if [[ -f /etc/hosts ]]; then
-          hostsOriginal="$(sed '/^# BEGIN Nix-managed$/,/^# END Nix-managed$/d' /etc/hosts)"
+          # Buffer managed blocks so an incomplete block can be preserved.
+          hostsOriginal="$(awk '
+            /^# BEGIN Nix-managed$/ {
+              inManaged=1
+              managed=$0 ORS
+              next
+            }
+            inManaged {
+              managed=managed $0 ORS
+              if (/^# END Nix-managed$/) {
+                inManaged=0
+                managed=""
+              }
+              next
+            }
+            { print }
+            END {
+              if (inManaged) printf "%s", managed
+            }
+          ' /etc/hosts)"
         fi
 
         ${
@@ -121,8 +140,13 @@ in
             ''
           else
             ''
-              if [[ -n "$hostsOriginal" ]]; then
-                printf '%s\n' "$hostsOriginal" > /etc/hosts
+              # Rewrite even an empty result so stale managed blocks disappear.
+              if [[ -f /etc/hosts ]]; then
+                if [[ -n "$hostsOriginal" ]]; then
+                  printf '%s\n' "$hostsOriginal" > /etc/hosts
+                else
+                  : > /etc/hosts
+                fi
               fi
             ''
         }

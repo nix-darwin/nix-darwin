@@ -6,28 +6,40 @@
   # (tests the "content is empty / restore" path)
 
   test = ''
-    echo "checking activation script runs even without host content" >&2
-    grep "setting up /etc/hosts" ${config.out}/activate
+    set -e
+    tmpDir=$(mktemp -d)
+    hostsPath=$tmpDir/hosts
+    printf '%s\n' 'unmanaged before' '# BEGIN Nix-managed' 'stale entry' '# END Nix-managed' 'unmanaged after' > "$hostsPath"
 
-    echo "checking sed stripping logic is present" >&2
-    grep -F "sed '/^# BEGIN Nix-managed\$/,/^# END Nix-managed\$/d'" ${config.out}/activate
+    sed -n '/setting up \/etc\/hosts/,/# Make this configuration the current configuration./{ /# Make this configuration/q; p; }' \
+      ${config.out}/activate | sed "s#/etc/hosts#$hostsPath#g" > "$tmpDir/hosts-activate"
+    bash "$tmpDir/hosts-activate"
 
-    echo "checking original content preservation is in the script" >&2
-    grep "hostsOriginal" ${config.out}/activate
+    assertLine() {
+      if ! grep -Fx "$1" "$hostsPath" >/dev/null; then
+        printf 'FAIL: expected hosts line: %s\n' "$1" >&2
+        printf '%s\n' 'Actual hosts file:' >&2
+        nl -ba "$hostsPath" >&2
+        exit 1
+      fi
+    }
+    assertNoLine() {
+      if grep -Fx "$1" "$hostsPath" >/dev/null; then
+        printf 'FAIL: unexpected hosts line: %s\n' "$1" >&2
+        printf '%s\n' 'Actual hosts file:' >&2
+        nl -ba "$hostsPath" >&2
+        exit 1
+      fi
+    }
+    assertLine 'unmanaged before'
+    assertLine 'unmanaged after'
+    assertNoLine 'stale entry'
 
-    echo "checking restore path writes original back (no Nix block)" >&2
-    grep "hostsOriginal.*> /etc/hosts" ${config.out}/activate
-
-    echo "checking Nix-managed markers are NOT written" >&2
-    if grep -F "printf '# BEGIN Nix-managed\n'" ${config.out}/activate; then
-      echo "FAIL: Nix-managed block should not be written when no content" >&2
-      exit 1
-    fi
-    if grep -F "printf '# END Nix-managed\n'" ${config.out}/activate; then
-      echo "FAIL: Nix-managed END marker should not be written" >&2
-      exit 1
-    fi
-
-    echo "ok: restore path verified" >&2
+    printf '%s\n' 'unmanaged before' '# BEGIN Nix-managed' 'unfinished entry' 'unmanaged after' > "$hostsPath"
+    bash "$tmpDir/hosts-activate"
+    assertLine 'unmanaged before'
+    assertLine '# BEGIN Nix-managed'
+    assertLine 'unfinished entry'
+    assertLine 'unmanaged after'
   '';
 }

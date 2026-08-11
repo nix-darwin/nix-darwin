@@ -15,31 +15,20 @@
   '';
 
   test = ''
-    echo "checking activation script is present (cleanup always runs)" >&2
-    grep "setting up /etc/hosts" ${config.out}/activate
+    set -e
+    tmpDir=$(mktemp -d)
+    hostsPath=$tmpDir/hosts
+    printf '%s\n' '# BEGIN Nix-managed' 'stale entry' '# END Nix-managed' > "$hostsPath"
 
-    echo "checking sed stripping logic is present" >&2
-    grep -F "sed '/^# BEGIN Nix-managed\$/,/^# END Nix-managed\$/d'" ${config.out}/activate
+    sed -n '/setting up \/etc\/hosts/,/# Make this configuration the current configuration./{ /# Make this configuration/q; p; }' \
+      ${config.out}/activate | sed "s#/etc/hosts#$hostsPath#g" > "$tmpDir/hosts-activate"
+    bash "$tmpDir/hosts-activate"
 
-    echo "checking no Nix-managed markers despite content being set" >&2
-    if grep -F "printf '# BEGIN Nix-managed\n'" ${config.out}/activate; then
-      echo "FAIL: Nix-managed block written despite enableHosts=false" >&2
+    if [[ -s "$hostsPath" ]]; then
+      printf 'FAIL: expected stale managed hosts file to be empty\n' >&2
+      printf '%s\n' 'Actual hosts file:' >&2
+      nl -ba "$hostsPath" >&2
       exit 1
     fi
-    if grep -F "printf '# END Nix-managed\n'" ${config.out}/activate; then
-      echo "FAIL: Nix-managed END marker despite enableHosts=false" >&2
-      exit 1
-    fi
-
-    echo "checking hosts content NOT referenced in activation script" >&2
-    if grep "should-not-appear" ${config.out}/activate 2>/dev/null; then
-      echo "FAIL: hosts content referenced despite enableHosts=false" >&2
-      exit 1
-    fi
-
-    echo "checking restore path writes original back" >&2
-    grep "hostsOriginal.*> /etc/hosts" ${config.out}/activate
-
-    echo "ok: enableHosts=false path verified" >&2
   '';
 }
