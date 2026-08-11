@@ -41,5 +41,11 @@
     assertLine '# BEGIN Nix-managed'
     assertLine 'unfinished entry'
     assertLine 'unmanaged after'
+
+    printf '%s\n' 'unmanaged before' '# END Nix-managed' 'unmanaged after' > "$hostsPath"
+    bash "$tmpDir/hosts-activate"
+    assertLine 'unmanaged before'
+    assertLine '# END Nix-managed'
+    assertLine 'unmanaged after'
   '';
 }
