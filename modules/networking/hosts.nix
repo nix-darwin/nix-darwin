@@ -4,6 +4,8 @@ with lib;
 
 let
 
+  awk = lib.getExe pkgs.gawk;
+
   localhostHosts = pkgs.writeText "localhost-hosts" ''
     127.0.0.1 localhost
     ::1 localhost
@@ -105,7 +107,7 @@ in
         hostsOriginal=""
         if [[ -f /etc/hosts ]]; then
           # Buffer managed blocks so an incomplete block can be preserved.
-          hostsOriginal="$(awk '
+          hostsOriginal="$(${awk} '
             /^# BEGIN Nix-managed$/ {
               inManaged=1
               managed=$0 ORS
