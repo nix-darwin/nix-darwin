@@ -1,16 +1,21 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
 let
   cfg = config.environment;
 
-  exportVariables =
-    mapAttrsToList (n: v: ''export ${n}="${v}"'') cfg.variables;
+  exportVariables = mapAttrsToList (n: v: ''export ${n}="${v}"'') cfg.variables;
 
-  aliasCommands =
-    mapAttrsToList (n: v: ''alias ${n}=${escapeShellArg v}'')
-      (filterAttrs (k: v: v != null) cfg.shellAliases);
+  aliasCommands = mapAttrsToList (n: v: ''alias ${n}=${escapeShellArg v}'') (
+    filterAttrs (k: v: v != null) cfg.shellAliases
+  );
 in
 
 {
@@ -59,8 +64,11 @@ in
 
     environment.variables = mkOption {
       type = types.attrsOf (types.either types.str (types.listOf types.str));
-      default = {};
-      example = { EDITOR = "vim"; LANG = "nl_NL.UTF-8"; };
+      default = { };
+      example = {
+        EDITOR = "vim";
+        LANG = "nl_NL.UTF-8";
+      };
       description = ''
         A set of environment variables used in the global environment.
         These variables will be set on shell initialisation.
@@ -73,8 +81,10 @@ in
 
     environment.shellAliases = mkOption {
       type = types.attrsOf types.str;
-      default = {};
-      example = { ll = "ls -l"; };
+      default = { };
+      example = {
+        ll = "ls -l";
+      };
       description = ''
         An attribute set that maps aliases (the top level attribute names in
         this option) to command strings or directly to build outputs. The
@@ -122,19 +132,29 @@ in
       '';
       type = types.lines;
     };
+    environment.extraAppPaths = mkOption {
+      type = types.listOf types.str;
+      default = [ ];
+      description = ''
+        		A list of extra paths to link
+        	  '';
+    };
   };
 
   config = {
 
     # This is horrible, sorry.
-    system.requiresPrimaryUser = mkIf (
-      config.nix.enable
-      && !config.nixpkgs.flake.setNixPath
-      && config.system.stateVersion < 6
-      && options.environment.darwinConfig.highestPrio == (mkOptionDefault {}).priority
-    ) [
-      "environment.darwinConfig"
-    ];
+    system.requiresPrimaryUser =
+      mkIf
+        (
+          config.nix.enable
+          && !config.nixpkgs.flake.setNixPath
+          && config.system.stateVersion < 6
+          && options.environment.darwinConfig.highestPrio == (mkOptionDefault { }).priority
+        )
+        [
+          "environment.darwinConfig"
+        ];
 
     environment.systemPath = mkMerge [
       [ (makeBinPath cfg.profiles) ]
@@ -144,21 +164,23 @@ in
     # Use user, default and system profiles.
     environment.profiles = mkMerge [
       (mkOrder 800 [ "$HOME/.nix-profile" ])
-      [ "/run/current-system/sw" "/nix/var/nix/profiles/default" ]
+      [
+        "/run/current-system/sw"
+        "/nix/var/nix/profiles/default"
+      ]
     ];
 
     environment.extraInit = ''
-       export NIX_USER_PROFILE_DIR="/nix/var/nix/profiles/per-user/$USER"
-       export NIX_PROFILES="${concatStringsSep " " (reverseList cfg.profiles)}"
+      export NIX_USER_PROFILE_DIR="/nix/var/nix/profiles/per-user/$USER"
+      export NIX_PROFILES="${concatStringsSep " " (reverseList cfg.profiles)}"
     '';
 
-    environment.variables =
-      {
-        XDG_CONFIG_DIRS = map (path: path + "/etc/xdg") cfg.profiles;
-        XDG_DATA_DIRS = map (path: path + "/share") cfg.profiles;
-        EDITOR = mkDefault "nano";
-        PAGER = mkDefault "less -R";
-      };
+    environment.variables = {
+      XDG_CONFIG_DIRS = map (path: path + "/etc/xdg") cfg.profiles;
+      XDG_DATA_DIRS = map (path: path + "/share") cfg.profiles;
+      EDITOR = mkDefault "nano";
+      PAGER = mkDefault "less -R";
+    };
 
     system.build.setEnvironment = pkgs.writeText "set-environment" ''
       # Prevent this file from being sourced by child shells.
