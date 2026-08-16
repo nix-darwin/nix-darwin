@@ -25,7 +25,17 @@ in {
         example = -1.0;
         description = ''
           Sets the mouse tracking speed. Found in the "Mouse" section of
-          "System Preferences". Set to -1.0 to disable mouse acceleration.
+          "System Preferences". Set to -1.0 to disable mouse acceleration on versions of macOS before 14.0.
+        '';
+      };
+
+    system.defaults.".GlobalPreferences"."com.apple.mouse.linear" =
+      mkOption {
+        type = types.nullOr types.bool;
+        default = null;
+        description = ''
+          Sets whether the pointer precision is turned on or off. Found in the "Mouse" section of
+          "System Preferences" under the "Advanced" tab. Set to true to enable pointer precision.
         '';
       };
   };
