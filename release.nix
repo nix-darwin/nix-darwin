@@ -84,6 +84,7 @@ in {
   tests.environment-terminfo = makeTest ./tests/environment-terminfo.nix;
   tests.homebrew = makeTest ./tests/homebrew.nix;
   tests.homebrew-cleanup-check = makeTest ./tests/homebrew-cleanup-check.nix;
+  tests.homebrew-skip-bundle-if-unchanged = makeTest ./tests/homebrew-skip-bundle-if-unchanged.nix;
   tests.homebrew-shell-integration = makeTest ./tests/homebrew-shell-integration.nix;
   tests.launchd-daemons = makeTest ./tests/launchd-daemons.nix;
   tests.launchd-setenv = makeTest ./tests/launchd-setenv.nix;
