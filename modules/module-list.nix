@@ -97,6 +97,7 @@
   ./services/skhd
   ./services/spacebar
   ./services/spotifyd.nix
+  ./services/socket-vmnet.nix
   ./services/synapse-bt.nix
   ./services/synergy
   ./services/tailscale.nix
