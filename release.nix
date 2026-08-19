@@ -114,6 +114,7 @@ in {
   tests.services-dnsmasq = makeTest ./tests/services-dnsmasq.nix;
   tests.services-dnscrypt-proxy = makeTest ./tests/services-dnscrypt-proxy.nix;
   tests.services-eternal-terminal = makeTest ./tests/services-eternal-terminal.nix;
+  tests.services-freenet-core = makeTest ./tests/services-freenet-core.nix;
   tests.services-nix-gc = makeTest ./tests/services-nix-gc.nix;
   tests.services-nix-optimise = makeTest ./tests/services-nix-optimise.nix;
   tests.services-nextdns = makeTest ./tests/services-nextdns.nix;
