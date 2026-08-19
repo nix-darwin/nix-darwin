@@ -181,6 +181,15 @@ in {
       '';
     };
 
+    system.defaults.NSGlobalDomain.NSConvolutionOverride1 = mkOption {
+      type = types.nullOr types.int;
+      default = null;
+      description = ''
+        Sets the corner radius for windows.  Higher values produce
+        more rounded corners, 1 being the sharpest.
+      '';
+    };
+
     system.defaults.NSGlobalDomain.NSDisableAutomaticTermination = mkOption {
       type = types.nullOr types.bool;
       default = null;
