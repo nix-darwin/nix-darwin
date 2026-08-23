@@ -67,7 +67,7 @@
       description = "nix flake init -t nix-darwin";
     };
 
-    checks = forDarwinSystems (system: jobs.${system}.tests // jobs.${system}.examples);
+    checks = forDarwinSystems (system: jobs.${system}.tests // { inherit (jobs.${system}.examples) simple;});
 
     packages = forAllSystems (system: {
       inherit (jobs.${system}.docs) manualHTML manpages optionsJSON;
