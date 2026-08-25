@@ -5,14 +5,22 @@ with lib;
 let
   cfg = config.system.defaults;
 
+  asuser = cmd:
+    let
+      user = escapeShellArg config.system.primaryUser;
+    in
+      ''launchctl asuser "$(id -u -- ${user})" sudo --user=${user} -- ${cmd}'';
+
+  readDefault = domain:
+    "defaults read ${domain} 2>/dev/null";
+  readUserDefault = (flip pipe) [ readDefault asuser ];
+
   writeDefault = domain: key: value:
     "defaults write ${domain} ${escapeShellArg key} ${escapeShellArg (generators.toPlist { escape = true; } value)}";
 
   defaultsToList = domain: attrs: mapAttrsToList (writeDefault domain) (filterAttrs (n: v: v != null) attrs);
-  userDefaultsToList = domain: attrs: let
-    user = escapeShellArg config.system.primaryUser;
-  in map
-    (cmd: ''launchctl asuser "$(id -u -- ${user})" sudo --user=${user} -- ${cmd}'')
+  userDefaultsToList = domain: attrs: map
+    asuser
     (defaultsToList domain attrs);
 
   # Filter out options to not pass through
@@ -129,6 +137,8 @@ in
         # Set defaults
         echo >&2 "user defaults..."
 
+        _previousDock=$(${readUserDefault "com.apple.dock"} | sha256)
+
         ${concatStringsSep "\n" NSGlobalDomain}
 
         ${concatStringsSep "\n" GlobalPreferences}
@@ -151,10 +161,12 @@ in
         ${concatStringsSep "\n" WindowManager}
         ${concatStringsSep "\n" controlcenter}
 
-        ${optionalString (length dock > 0) ''
+        _newDock=$(${readUserDefault "com.apple.dock"} | sha256)
+
+        if [[ "$_previousDock" != "$_newDock" ]]; then
           echo >&2 "restarting Dock..."
           killall -qu ${escapeShellArg config.system.primaryUser} Dock || true
-        ''}
+        fi
       '';
 
   };
