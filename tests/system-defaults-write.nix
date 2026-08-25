@@ -68,6 +68,8 @@
   system.defaults.menuExtraClock.Show24Hour = false;
   system.defaults.menuExtraClock.ShowDayOfWeek = true;
   system.defaults.menuExtraClock.ShowDate = 2;
+  system.defaults.desktopservices.DSDontWriteNetworkStores = true;
+  system.defaults.desktopservices.DSDontWriteUSBStores = true;
   system.defaults.dock.expose-group-apps = true;
   system.defaults.dock.appswitcher-all-displays = false;
   system.defaults.dock.autohide-delay = 0.24;
