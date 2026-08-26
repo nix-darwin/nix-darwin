@@ -6,9 +6,9 @@ let
     mkDefault mkIf mkMerge nameValuePair optionalString replaceStrings;
 
   mkSvcName = name: "github-runner-${name}";
-  mkStateDir = cfg: "/var/lib/github-runners/${cfg.name}";
-  mkLogDir = cfg: "/var/log/github-runners/${cfg.name}";
-  mkWorkDir = cfg: if (cfg.workDir != null) then cfg.workDir else "/private/var/lib/github-runners/_work/${cfg.name}";
+  mkStateDir = name: "/var/lib/github-runners/${name}";
+  mkLogDir = name: "/var/log/github-runners/${name}";
+  mkWorkDir = cfg: name: if (cfg.workDir != null) then cfg.workDir else "/private/var/lib/github-runners/_work/${name}";
 in
 {
   config.assertions = flatten (
@@ -55,20 +55,20 @@ in
     {
       launchd = mkIf cfg.enable {
         text = mkBefore ''
-          echo >&2 "setting up GitHub Runner '${cfg.name}'..."
+          echo >&2 "setting up GitHub Runner '${name}'..."
 
           # shellcheck disable=SC2174
-          ${getExe' pkgs.coreutils "mkdir"} -p -m u=rwx,g=rx,o= ${escapeShellArg (mkStateDir cfg)}
-          ${getExe' pkgs.coreutils "chown"} ${user}:${group} ${escapeShellArg (mkStateDir cfg)}
+          ${getExe' pkgs.coreutils "mkdir"} -p -m u=rwx,g=rx,o= ${escapeShellArg (mkStateDir name)}
+          ${getExe' pkgs.coreutils "chown"} ${user}:${group} ${escapeShellArg (mkStateDir name)}
 
           # shellcheck disable=SC2174
-          ${getExe' pkgs.coreutils "mkdir"} -p -m u=rwx,g=rx,o= ${escapeShellArg (mkLogDir cfg)}
-          ${getExe' pkgs.coreutils "chown"} ${user}:${group} ${escapeShellArg (mkLogDir cfg)}
+          ${getExe' pkgs.coreutils "mkdir"} -p -m u=rwx,g=rx,o= ${escapeShellArg (mkLogDir name)}
+          ${getExe' pkgs.coreutils "chown"} ${user}:${group} ${escapeShellArg (mkLogDir name)}
 
           ${optionalString (cfg.workDir == null) ''
             # shellcheck disable=SC2174
-            ${getExe' pkgs.coreutils "mkdir"} -p -m u=rwx,g=rx,o= ${escapeShellArg (mkWorkDir cfg)}
-            ${getExe' pkgs.coreutils "chown"} ${user}:${group} ${escapeShellArg (mkWorkDir cfg)}
+            ${getExe' pkgs.coreutils "mkdir"} -p -m u=rwx,g=rx,o= ${escapeShellArg (mkWorkDir cfg name)}
+            ${getExe' pkgs.coreutils "chown"} ${user}:${group} ${escapeShellArg (mkWorkDir cfg name)}
           ''}
         '';
       };
@@ -77,9 +77,9 @@ in
   config.launchd.daemons = flip mapAttrs' config.services.github-runners (name: cfg:
     let
       package = cfg.package.override { inherit (cfg) nodeRuntimes; };
-      stateDir = mkStateDir cfg;
-      logDir = mkLogDir cfg;
-      workDir = mkWorkDir cfg;
+      stateDir = mkStateDir name;
+      logDir = mkLogDir name;
+      workDir = mkWorkDir cfg name;
     in
     nameValuePair
       (mkSvcName name)
