@@ -206,6 +206,11 @@ in
           name
         ]
       ) (attrNames cfg.user.envVariables)
+      ++ lib.map (name: lib.showOption [
+        "launchd"
+        "agents"
+        name
+      ]) (attrNames cfg.agents)
       ++ lib.map ({ managedBy, ... }: managedBy) (attrValues cfg.user.agents);
 
     environment.launchAgents = mapAttrs' toEnvironmentText cfg.agents;
