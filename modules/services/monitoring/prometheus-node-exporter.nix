@@ -81,7 +81,7 @@ in {
     users.users._prometheus-node-exporter = {
       uid = config.ids.uids._prometheus-node-exporter;
       gid = config.ids.gids._prometheus-node-exporter;
-      home = "/var/lib/prometheus-node-exporter";
+      home = "/private/var/lib/prometheus-node-exporter";
       createHome = true;
       shell = "/usr/bin/false";
       description = "System user for the Prometheus Node exporter";

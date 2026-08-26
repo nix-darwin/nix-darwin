@@ -84,7 +84,7 @@ in
 
     users.users.ofborg.uid = mkDefault 531;
     users.users.ofborg.gid = mkDefault config.users.groups.ofborg.gid;
-    users.users.ofborg.home = mkDefault "/var/lib/ofborg";
+    users.users.ofborg.home = mkDefault "/private/var/lib/ofborg";
     users.users.ofborg.shell = "/bin/bash";
     users.users.ofborg.description = "OfBorg service user";
 
