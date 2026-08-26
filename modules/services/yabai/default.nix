@@ -77,9 +77,9 @@ in
       environment.systemPackages = [ cfg.package ];
 
       launchd.user.agents.yabai = {
-        serviceConfig.ProgramArguments = [ "${cfg.package}/bin/yabai" ]
-          ++ optionals (cfg.config != { } || cfg.extraConfig != "") [ "-c" configFile ];
-
+        command = "${lib.getExe' cfg.package "yabai"} ${
+          lib.optionalString (cfg.config != { } || cfg.extraConfig != "") "-c ${configFile}"
+        }";
         serviceConfig.KeepAlive = true;
         serviceConfig.RunAtLoad = true;
         serviceConfig.EnvironmentVariables = {
