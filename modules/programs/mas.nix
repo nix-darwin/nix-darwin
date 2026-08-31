@@ -27,8 +27,8 @@ let
 
   apps = mapAttrsToList (name: id: { inherit name id; }) cfg.packages;
 
-  desiredIds = map (app: toString app.id) apps;
-  homebrewIds = map toString (attrValues config.homebrew.masApps);
+  desiredIds = map (app: escapeShellArg app.id) apps;
+  homebrewIds = map (id: escapeShellArg id) (attrValues config.homebrew.masApps);
 
   hasWork = cfg.update || cfg.packages != { } || cfg.cleanup || homebrewIds != [ ];
 
@@ -46,49 +46,59 @@ let
         }
 
         listStatus=0
+        listErrFile=$(mktemp)
         listOutput=$(
-          runAsUser ${getExe cfg.package} list 2>&1
+          runAsUser ${getExe cfg.package} list --json 2>"$listErrFile"
         ) || listStatus=$?
+        listErrors=$(<"$listErrFile")
+        rm -f "$listErrFile"
 
         if (( listStatus != 0 )); then
           echo >&2 "warning: mas list failed (exit ''${listStatus}):"
-          echo >&2 "''${listOutput}"
-          if echo "''${listOutput}" | grep -qi "not signed in"; then
+          echo >&2 "''${listErrors}"
+          if echo "''${listErrors}" | grep -qi "not signed in"; then
             echo >&2 "login required; skipping App Store installs/updates/cleanup"
             exit 0
           fi
         fi
 
-        # Only emit cleanup-only shell variables when cleanup is enabled; otherwise shellcheck
-        # treats them as unused and fails the activation script build.
-        installedIds=()
-        ${if cfg.cleanup then
-          ''
-            # Parse mas list output: "ID  AppName  (version)"
-            declare -A installedApps
-            while IFS= read -r line; do
-              [[ -z "$line" ]] && continue
-              line="''${line#"''${line%%[![:space:]]*}"}"
-              id="''${line%% *}"
-              rest="''${line#"$id"}"
-              rest="''${rest#"''${rest%%[![:space:]]*}"}"
+        installedAdamIds=()
+        installedBundleIds=()
+        ${optionalString cfg.cleanup ''
+          installedNames=()
+        ''}
+        while IFS=$'\t' read -r adamId bundleId${optionalString cfg.cleanup " name"}; do
+          [[ -z "$adamId" && -z "$bundleId" ]] && continue
+          installedAdamIds+=( "$adamId" )
+          installedBundleIds+=( "$bundleId" )
+          ${optionalString cfg.cleanup ''
+            installedNames+=( "$name" )
+          ''}
+        done < <(
+          printf '%s' "$listOutput" | sed 's/}{/}\n{/g' |
+            ${getExe pkgs.jq} --raw-output -R \
+              'fromjson? | select(type == "object") | [(.adamID // "" | tostring), .bundleID // ""${if cfg.cleanup then ", .name // \"\"" else ""}] | @tsv'
+        )
+
+        if (( ''${#installedAdamIds[@]} == 0 )) && [[ -n "$listOutput" ]]; then
+          while IFS= read -r line; do
+            [[ -z "$line" ]] && continue
+            line="''${line#"''${line%%[![:space:]]*}"}"
+            adamId="''${line%% *}"
+            rest="''${line#"$adamId"}"
+            rest="''${rest#"''${rest%%[![:space:]]*}"}"
+            ${optionalString cfg.cleanup ''
               name="''${rest% (*}"
               name="''${name%"''${name##*[![:space:]]}"}"
-              [[ -n "$id" ]] && {
-                installedIds+=( "$id" )
-                installedApps["$id"]="$name"
-              }
-            done <<<"$listOutput"
-          ''
-        else
-          ''
-            while IFS= read -r line; do
-              [[ -z "$line" ]] && continue
-              line="''${line#"''${line%%[![:space:]]*}"}"
-              id="''${line%% *}"
-              [[ -n "$id" ]] && installedIds+=( "$id" )
-            done <<<"$listOutput"
-          ''}
+            ''}
+            [[ -n "$adamId" ]] || continue
+            installedAdamIds+=( "$adamId" )
+            installedBundleIds+=( "" )
+            ${optionalString cfg.cleanup ''
+              installedNames+=( "$name" )
+            ''}
+          done <<<"$listOutput"
+        fi
 
         ${optionalString cfg.update ''
           runAsUser ${getExe cfg.package} update || true
@@ -100,8 +110,10 @@ let
 
         is_installed() {
           local needle=$1
-          for id in "''${installedIds[@]}"; do
-            if [[ "$id" == "$needle" ]]; then
+          local i
+          for (( i=0; i<''${#installedAdamIds[@]}; i++ )); do
+            if [[ "''${installedAdamIds[$i]}" == "$needle" ||
+                  "''${installedBundleIds[$i]}" == "$needle" ]]; then
               return 0
             fi
           done
@@ -113,7 +125,18 @@ let
             if is_installed "$appId"; then
               continue
             fi
-            runAsUser ${getExe cfg.package} install "$appId" || true
+            installStatus=0
+            installOutput=$(
+              runAsUser ${getExe cfg.package} install "$appId" 2>&1
+            ) || installStatus=$?
+            if [[ "$installOutput" =~ Warning:\ Already\ (installed|got) ]]; then
+              continue
+            fi
+            if [[ -n "$installOutput" ]]; then
+              echo >&2 "$installOutput"
+            elif (( installStatus != 0 )); then
+              echo >&2 "warning: mas install $appId failed (exit ''${installStatus})"
+            fi
           done
         ''}
 
@@ -124,17 +147,21 @@ let
 
           keepIds=( "''${desiredIds[@]}" "''${homebrewIds[@]}" )
 
-          for installedId in "''${installedIds[@]}"; do
+          for (( i=0; i<''${#installedAdamIds[@]}; i++ )); do
+            adamId="''${installedAdamIds[$i]}"
+            bundleId="''${installedBundleIds[$i]}"
             keep=false
             for keepId in "''${keepIds[@]}"; do
-              if [[ "$installedId" == "$keepId" ]]; then
+              if [[ "$adamId" == "$keepId" || "$bundleId" == "$keepId" ]]; then
                 keep=true
                 break
               fi
             done
 
             if ! $keep; then
-              appName="''${installedApps[$installedId]:-$installedId}"
+              installedId="$adamId"
+              [[ -n "$installedId" ]] || installedId="$bundleId"
+              appName="''${installedNames[$i]:-$installedId}"
               echo >&2 "removing $appName from App Store"
               runAsUser ${getExe cfg.package} uninstall "$installedId" || true
             fi
@@ -161,17 +188,18 @@ in
     package = mkPackageOption pkgs "mas" { };
 
     packages = mkOption {
-      type = types.attrsOf types.ints.positive;
+      type = types.attrsOf (types.either types.ints.positive types.str);
       default = { };
       example = literalExpression ''
         {
           Xcode = 497799835;
           "1Password for Safari" = 1569813296;
+          Keynote = "com.apple.iWork.Keynote";
         }
       '';
       description = ''
         Applications to install from the Mac App Store. Attribute names are only for readability;
-        values must be the numeric identifiers used by {command}`mas`.
+        values must be the numeric or bundle identifiers used by {command}`mas`.
       '';
     };
 
