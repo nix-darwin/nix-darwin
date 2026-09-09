@@ -475,7 +475,7 @@ in {
       default = null;
       description = ''
         Whether to tint the current window background with the color of the system wallpaper.
-        The default tints the current window background with the color of the system wallpaper so the setting is inverted
+        The default is to tint the current window background with the color of the system wallpaper, so the setting is inverted.
       '';
     };
 

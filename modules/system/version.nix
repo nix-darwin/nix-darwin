@@ -42,7 +42,7 @@ in
         changes, the new version will probably be unable to read your
         existing databases. To prevent such breakage, you can set the
         value of this option to the nix-darwin release with which you want
-        to be compatible. The effect is that nix-darwin will option
+        to be compatible. The effect is that nix-darwin will set option
         defaults corresponding to the specified release (such as using
         an older version of PostgreSQL).
       '';

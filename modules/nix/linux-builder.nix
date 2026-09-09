@@ -151,7 +151,7 @@ in
     };
 
     ephemeral = mkEnableOption ''
-      wipe the builder's filesystem on every restart.
+      Whether to wipe the builder's filesystem on every restart.
 
       This is disabled by default as maintaining the builder's Nix Store reduces
       rebuilds. You can enable this if you don't want your builder to accumulate

@@ -73,7 +73,7 @@ let
         description = ''
           A list of verbatim OpenSSH public keys that should be added to the
           user's authorized keys. The keys are added to a file that the SSH
-          daemon reads in addition to the the user's authorized_keys file.
+          daemon reads in addition to the user's authorized_keys file.
           You can combine the `keys` and
           `keyFiles` options.
           Warning: If you are using `NixOps` then don't use this
@@ -88,7 +88,7 @@ let
           A list of files each containing one OpenSSH public key that should be
           added to the user's authorized keys. The contents of the files are
           read at build time and added to a file that the SSH daemon reads in
-          addition to the the user's authorized_keys file. You can combine the
+          addition to the user's authorized_keys file. You can combine the
           `keyFiles` and `keys` options.
         '';
       };
