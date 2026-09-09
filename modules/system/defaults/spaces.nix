@@ -14,7 +14,7 @@ with lib;
         this setting will take effect).
 
         false = each physical display has a separate space (Mac default);
-        true = one space spans across all physical displays
+        true = one space spans across all physical displays.
       '';
     };
   };

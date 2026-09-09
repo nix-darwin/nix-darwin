@@ -715,7 +715,7 @@ in
         description = ''
           Configuration for Nix, see
           <https://nixos.org/manual/nix/stable/#sec-conf-file>
-          for avalable options.
+          for available options.
           The value declared here will be translated directly to the key-value pairs Nix expects.
 
           Nix configurations defined under {option}`nix.*` will be translated and applied to this
