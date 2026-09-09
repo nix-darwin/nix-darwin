@@ -258,7 +258,7 @@ in {
       default = null;
       example = 0.20;
       description = ''
-        Sets the speed speed of window resizing. The default is given in the example.
+        Sets the speed of window resizing. The default is given in the example.
       '';
     };
 
