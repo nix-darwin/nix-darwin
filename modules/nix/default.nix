@@ -268,7 +268,7 @@ in
         type = types.bool;
         inherit (managedDefault "nix.daemonIOLowPriority" false) default defaultText;
         description = ''
-          Whether the Nix daemon process should considered to be low priority when
+          Whether the Nix daemon process should be considered to be low priority when
           doing file system I/O.
         '';
       };
@@ -562,7 +562,7 @@ in
               description = ''
                 This option defines the maximum number of jobs that Nix will try to
                 build in parallel. The default is auto, which means it will use all
-                available logical cores. It is recommend to set it to the total
+                available logical cores. It is recommended to set it to the total
                 number of logical cores in your system (e.g., 16 for two CPUs with 4
                 cores each and hyper-threading).
               '';
@@ -715,7 +715,7 @@ in
         description = ''
           Configuration for Nix, see
           <https://nixos.org/manual/nix/stable/#sec-conf-file>
-          for avalaible options.
+          for available options.
           The value declared here will be translated directly to the key-value pairs Nix expects.
 
           Nix configurations defined under {option}`nix.*` will be translated and applied to this

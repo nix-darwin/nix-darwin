@@ -25,7 +25,7 @@ in
   options = {
     environment.profiles = mkOption {
       type = types.listOf types.str;
-      description = "A list of profiles used to setup the global environment.";
+      description = "A list of profiles used to set up the global environment.";
     };
 
     environment.darwinConfig = mkOption {
@@ -78,7 +78,7 @@ in
       description = ''
         An attribute set that maps aliases (the top level attribute names in
         this option) to command strings or directly to build outputs. The
-        alises are added to all users' shells.
+        aliases are added to all users' shells.
       '';
     };
 
@@ -97,7 +97,7 @@ in
       default = "";
       description = ''
         Shell script code called during shell initialisation.
-        This code is asumed to be shell-independent, which means you should
+        This code is assumed to be shell-independent, which means you should
         stick to pure sh without sh word split.
       '';
       type = types.lines;
@@ -107,7 +107,7 @@ in
       default = "";
       description = ''
         Shell script code called during login shell initialisation.
-        This code is asumed to be shell-independent, which means you should
+        This code is assumed to be shell-independent, which means you should
         stick to pure sh without sh word split.
       '';
       type = types.lines;
@@ -117,7 +117,7 @@ in
       default = "";
       description = ''
         Shell script code called during interactive shell initialisation.
-        This code is asumed to be shell-independent, which means you should
+        This code is assumed to be shell-independent, which means you should
         stick to pure sh without sh word split.
       '';
       type = types.lines;

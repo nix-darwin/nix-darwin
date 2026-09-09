@@ -10,7 +10,7 @@ in
       type = types.package;
       default = pkgs.netbird;
       defaultText = literalExpression "pkgs.netbird";
-      description = "The package to use for netbird";
+      description = "The package to use for netbird.";
     };
   };
   config = mkIf cfg.enable {
