@@ -55,7 +55,7 @@ in
       default = null;
       description = ''
         Change the default finder view.
-        "icnv" = Icon view, "Nlsv" = List view, "clmv" = Column View, "Flwv" = Gallery View
+        "icnv" = Icon view, "Nlsv" = List view, "clmv" = Column View, "Flwv" = Gallery View.
         The default is icnv.
       '';
     };
@@ -153,7 +153,7 @@ in
       type = types.nullOr types.bool;
       default = null;
       description = ''
-        Whether to show warnings when change the file extension of files. The default is true.
+        Whether to show warnings when changing the file extension of files. The default is true.
       '';
     };
 

@@ -50,7 +50,7 @@ in
       default = null;
       description = ''
         This optional key specifies the group to run the job as. This key is only applicable when launchd is
-        running as root. If UserName is set and GroupName is not, the the group will be set to the default
+        running as root. If UserName is set and GroupName is not, the group will be set to the default
         group of the user.
       '';
     };
@@ -213,7 +213,7 @@ in
             type = types.nullOr types.bool;
             default = null;
             description = ''
-              If true, the the job will be restarted as long as it exited due to a signal which is typically
+              If true, the job will be restarted as long as it exited due to a signal which is typically
               associated with a crash (SIGILL, SIGSEGV, etc.). If false, the job will be restarted in the
               inverse condition.
             '';
