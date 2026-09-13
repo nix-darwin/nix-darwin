@@ -87,6 +87,7 @@ in {
   tests.homebrew-shell-integration = makeTest ./tests/homebrew-shell-integration.nix;
   tests.launchd-daemons = makeTest ./tests/launchd-daemons.nix;
   tests.launchd-setenv = makeTest ./tests/launchd-setenv.nix;
+  tests.launchd-setenv-before-dock-restart = makeTest ./tests/launchd-setenv-before-dock-restart.nix;
   tests.networking-firewall = makeTest ./tests/networking-firewall.nix;
   tests.networking-hostname = makeTest ./tests/networking-hostname.nix;
   tests.networking-networkservices = makeTest ./tests/networking-networkservices.nix;
