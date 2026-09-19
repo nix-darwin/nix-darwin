@@ -79,6 +79,7 @@ in {
   examples.simple = makeSystem ./modules/examples/simple.nix;
 
   tests.activation-scripts = makeTest ./tests/activation-scripts.nix;
+  tests.assertion-messages = makeTest ./tests/assertion-messages.nix;
   tests.autossh = makeTest ./tests/autossh.nix;
   tests.environment-path = makeTest ./tests/environment-path.nix;
   tests.environment-terminfo = makeTest ./tests/environment-terminfo.nix;
