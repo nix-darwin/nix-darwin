@@ -94,6 +94,7 @@ in {
   tests.nix-enable = makeTest ./tests/nix-enable.nix;
   tests.nixpkgs-overlays = makeTest ./tests/nixpkgs-overlays.nix;
   tests.nixpkgs-config-allow-unfree = makeTest ./tests/nixpkgs-config-allow-unfree.nix;
+  tests.power-sleep-per-source = makeTest ./tests/power-sleep-per-source.nix;
   tests.programs-devenv = makeTest ./tests/programs-devenv.nix;
   tests.programs-gnupg = makeTest ./tests/programs-gnupg.nix;
   tests.programs-mas = makeTest ./tests/programs-mas.nix;
