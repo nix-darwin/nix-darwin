@@ -112,6 +112,7 @@
   ./programs/devenv.nix
   ./programs/direnv.nix
   ./programs/fish.nix
+  ./programs/git.nix
   ./programs/gnupg.nix
   ./programs/man.nix
   ./programs/mas.nix
