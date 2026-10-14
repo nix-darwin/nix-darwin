@@ -90,9 +90,11 @@ in {
   tests.networking-firewall = makeTest ./tests/networking-firewall.nix;
   tests.networking-hostname = makeTest ./tests/networking-hostname.nix;
   tests.networking-hosts = makeTest ./tests/networking-hosts.nix;
+  tests.networking-hosts-cleanup = makeTest ./tests/networking-hosts-cleanup.nix;
   tests.networking-hosts-disabled = makeTest ./tests/networking-hosts-disabled.nix;
   tests.networking-hosts-empty = makeTest ./tests/networking-hosts-empty.nix;
   tests.networking-hosts-incomplete = makeTest ./tests/networking-hosts-incomplete.nix;
+  tests.networking-hosts-metadata = makeTest ./tests/networking-hosts-metadata.nix;
   tests.networking-hosts-migration = makeTest ./tests/networking-hosts-migration.nix;
   tests.networking-hosts-restore = makeTest ./tests/networking-hosts-restore.nix;
   tests.networking-networkservices = makeTest ./tests/networking-networkservices.nix;
