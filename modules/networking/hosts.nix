@@ -6,6 +6,8 @@ let
 
   cfg = config.networking;
 
+  awk = lib.getExe pkgs.gawk;
+
   # Entries mapped to no hostnames produce no line, so they do not count as
   # content either.
   nonEmptyHosts = filterAttrs (_: v: v != [ ]) cfg.hosts;
@@ -32,6 +34,8 @@ let
     ]
     ++ cfg.hostFiles
   );
+
+  hasHostsContent = nonEmptyHosts != { } || cfg.extraHosts != "" || cfg.hostFiles != [ ];
 
   localhostMultiple = any (elem "localhost") (
     attrValues (removeAttrs cfg.hosts [ "127.0.0.1" "::1" ])
@@ -137,5 +141,84 @@ in
         '';
       }
     ];
+
+    # Unlike NixOS, /etc/hosts cannot be a symlink into the Nix store, as macOS
+    # and third-party software edit it in place. Instead, keep a marked block
+    # of generated entries in a regular file and leave everything else alone.
+    system.activationScripts.postActivation.text = mkAfter ''
+      # Prints /etc/hosts as it should be: without Nix-managed blocks, and
+      # followed by the generated one if it is enabled.
+      generateHosts() {
+        if [[ -f /etc/hosts ]]; then
+          # A block that is never closed is not ours to remove, so it is kept;
+          # a new BEGIN also ends it, so that it cannot swallow what follows.
+          ${awk} '
+            /^# BEGIN Nix-managed$/ {
+              printf "%s", managed
+              managed = $0 ORS
+              inManaged = 1
+              next
+            }
+            inManaged {
+              managed = managed $0 ORS
+              if (/^# END Nix-managed$/) {
+                inManaged = 0
+                managed = ""
+              }
+              next
+            }
+            { print }
+            END { printf "%s", managed }
+          ' /etc/hosts
+        fi
+        ${optionalString (cfg.enableHosts && hasHostsContent) ''
+          printf '# BEGIN Nix-managed\n'
+          cat ${generatedHosts}
+          printf '# END Nix-managed\n'
+        ''}
+      }
+
+      # A subshell, so that its exit trap is gone once it returns.
+      setupHosts() (
+        # Left behind if a previous activation was killed without a chance to
+        # clean up. Those are named after the PID of the activation, so that
+        # one still running, in another terminal, keeps its own.
+        for stale in /etc/hosts.nix.*; do
+          [[ -e "$stale" ]] || continue
+          stalePid="''${stale#/etc/hosts.nix.}"
+          kill -0 "''${stalePid%%.*}" 2>/dev/null || rm -f "$stale"
+        done
+
+        ${optionalString (!(cfg.enableHosts && hasHostsContent)) ''
+          # Nothing to manage: do not create /etc/hosts out of thin air.
+          [[ -e /etc/hosts ]] || exit 0
+        ''}
+        # Do not touch /etc/hosts, not even through a temporary file, unless
+        # its content changes.
+        if [[ -f /etc/hosts ]] && cmp -s <(generateHosts) /etc/hosts; then
+          exit 0
+        fi
+
+        printf >&2 'setting up /etc/hosts...\n'
+
+        # Build the new file next to /etc/hosts, so that it can be renamed into
+        # place and an interrupted write cannot truncate /etc/hosts.
+        hostsTmp="$(mktemp /etc/hosts.nix.$$.XXXXXX)"
+        trap 'rm -f "$hostsTmp"' EXIT
+
+        if [[ -f /etc/hosts && ! -L /etc/hosts ]]; then
+          # Carry over owner, mode, flags, ACLs and extended attributes, which
+          # replacing the file would otherwise drop. This is the system cp,
+          # as it is the one that knows about the latter two.
+          /bin/cp -p /etc/hosts "$hostsTmp"
+        else
+          # New file, or a symlink (e.g. into the Nix store) being replaced.
+          chmod 0644 "$hostsTmp"
+        fi
+        generateHosts > "$hostsTmp"
+        mv -f "$hostsTmp" /etc/hosts
+      )
+      setupHosts
+    '';
   };
 }

@@ -89,6 +89,7 @@ in {
   tests.launchd-setenv = makeTest ./tests/launchd-setenv.nix;
   tests.networking-firewall = makeTest ./tests/networking-firewall.nix;
   tests.networking-hostname = makeTest ./tests/networking-hostname.nix;
+  tests.networking-hosts = makeTest ./tests/networking-hosts.nix;
   tests.networking-networkservices = makeTest ./tests/networking-networkservices.nix;
   tests.networking-networkservices-no-dhcp-client-id = makeTest ./tests/networking-networkservices-no-dhcp-client-id.nix;
   tests.nix-enable = makeTest ./tests/nix-enable.nix;
