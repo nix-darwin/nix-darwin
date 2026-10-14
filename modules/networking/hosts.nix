@@ -123,6 +123,12 @@ in
   };
 
   config = {
+    warnings = optional (!cfg.enableHosts && hasHostsContent) ''
+      `networking.hosts`, `networking.extraHosts` or `networking.hostFiles` is
+      set, but `networking.enableHosts` is false, so {file}`/etc/hosts` is not
+      managed and these options have no effect.
+    '';
+
     assertions = [
       {
         assertion = !localhostMultiple;
