@@ -175,9 +175,9 @@ in
 
       bind-key -T copy-mode-vi p send-keys -X copy-pipe-and-cancel "tmux paste-buffer"
       bind-key -T copy-mode-vi v send-keys -X begin-selection
-    '' + optionalString stdenv.isLinux ''
+    '' + optionalString stdenv.hostPlatform.isLinux ''
       bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
-    '' + optionalString stdenv.isDarwin ''
+    '' + optionalString stdenv.hostPlatform.isDarwin ''
       bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "pbcopy"
     '');
 
