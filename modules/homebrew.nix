@@ -868,12 +868,13 @@ in
     };
 
     masApps = mkOption {
-      type = types.attrsOf types.ints.positive;
+      type = types.attrsOf (types.either types.ints.positive types.str);
       default = { };
       example = literalExpression ''
         {
           "1Password for Safari" = 1569813296;
           Xcode = 497799835;
+          Fantastical = "com.flexibits.fantastical2.mac";
         }
       '';
       description = ''
