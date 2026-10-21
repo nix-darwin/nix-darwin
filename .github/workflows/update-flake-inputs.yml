@@ -1,0 +1,31 @@
+name: Update flake inputs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: update-flake-inputs
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - uses: cachix/install-nix-action@v30
+
+      - name: Update flake inputs
+        uses: nixos-contrib/nix-update@66a6de7828436a397a377a83a1f85f463b0432b9 # v1.0.1
+        with:
+          token: ${{ secrets.CI_PR_TOKEN }}
+          commit-msg: "flake: update inputs"
+          branch: ci/flake-update
+          auto-merge: true
+          merge-method: merge
