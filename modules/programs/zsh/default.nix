@@ -254,6 +254,8 @@ in
       "c5a00c072c920f46216454978c44df044b2ec6d03409dc492c7bdcd92c94a110"  # official Nix installer
       "40b0d8751adae5b0100a4f863be5b75613a49f62706427e92604f7e04d2e2261"  # official Nix installer
       "bf76c5ed8e65e616f4329eccf662ee91be33b8bfd33713ce9946f2fe94fea7fa"  # official Nix installer (macOS 26b1 and higher)
+      "af60f7af4a5b4c1b0efe950e3e3f3ee8b136834ecb46fd7dba76f4b66adbc3e1"  # official Nix installer 2.32 and higher
+      "cf0f7b7775b4c058d6085d9e7e57d58c307ca43730f8e4d921a9ef4e530e7e16"  # official Nix installer 2.32 and higher (macOS 26b1 and higher)
       "2af1b563e389d11b76a651b446e858116d7a20370d9120a7e9f78991f3e5f336"  # DeterminateSystems installer
       "27274e44b88a1174787f9a3d437d3387edc4f9aaaf40356054130797f5dc7912"  # DeterminateSystems installer (macOS 26b1 and higher)
     ];
