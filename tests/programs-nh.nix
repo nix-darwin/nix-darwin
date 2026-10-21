@@ -2,7 +2,7 @@
 
 let
   nix = pkgs.runCommand "nix-2.2" { } "mkdir -p $out";
-  nh = pkgs.runCommand "nh" { } "mkdir -p $out";
+  nh = pkgs.runCommand "nh" { meta.mainProgram = "nh"; } "mkdir -p $out";
 in
 
 {

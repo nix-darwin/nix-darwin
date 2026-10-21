@@ -3,7 +3,7 @@
 with lib;
 
 let
-  netdata = pkgs.runCommand "netdata-0.0.0" {} "mkdir $out";
+  netdata = pkgs.runCommand "netdata-0.0.0" { meta.mainProgram = "netdata"; } "mkdir $out";
 in
 {
   services.netdata = {
