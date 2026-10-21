@@ -6,7 +6,16 @@ let
   cfg = config.security.pki;
 
   cacertPackage = pkgs.cacert.override {
-    blacklist = cfg.caCertificateBlacklist;
+    blacklist = cfg.caCertificateBlacklist ++ [
+      # Compromised eMudhra intermediates also have Sectigo cross-signs.
+      # https://github.com/NixOS/nixpkgs/issues/576485
+      "Comodo AAA Services root"
+      "emSign ECC Root CA - G3"
+      # Retired roots removed alongside the compromise mitigation in NSS 3.131.1.
+      # https://bugzilla.mozilla.org/show_bug.cgi?id=2083709
+      "emSign Root CA - C1"
+      "emSign ECC Root CA - C3"
+    ];
   };
 
   caCertificates = pkgs.runCommand "ca-certificates.crt"
