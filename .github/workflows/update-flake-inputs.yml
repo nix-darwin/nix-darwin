@@ -1,0 +1,45 @@
+name: Update flake inputs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: update-flake-inputs
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+      - uses: cachix/install-nix-action@v30
+
+      - name: Update flake inputs
+        run: nix flake update
+
+      - name: Create pull request
+        id: create-pr
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+        with:
+          token: ${{ secrets.CI_PR_TOKEN }}
+          commit-message: "flake: update inputs"
+          title: "flake: update inputs"
+          body: Automated weekly update of flake inputs.
+          branch: ci/flake-update
+          base: master
+          delete-branch: true
+          add-paths: flake.lock
+
+      - name: Enable auto-merge
+        if: steps.create-pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.CI_PR_TOKEN }}
+          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+        run: gh pr merge --auto --merge "$PR_NUMBER"
