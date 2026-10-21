@@ -8,7 +8,7 @@ on:
 
 env:
   NIXPKGS_BRANCH: nixpkgs-unstable
-  NIX_VERSION: 2.24.11
+  NIX_VERSION: 2.35.3
 
 jobs:
   # The `test-stable` and `install-against-stable` job names are
