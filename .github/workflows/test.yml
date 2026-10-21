@@ -25,7 +25,7 @@ jobs:
       uses: cachix/install-nix-action@v30
       with:
         install_url: https://releases.nixos.org/nix/nix-${{ env.NIX_VERSION }}/install
-    - run: nix flake check
+    - run: nix flake check --no-update-lock-file
 
   install-against-stable:
     runs-on: macos-14
