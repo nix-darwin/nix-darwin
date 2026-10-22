@@ -45,13 +45,16 @@ in
     security.pki.certificateFiles = mkOption {
       type = types.listOf types.path;
       default = [];
-      example = literalExpression "[ \"\${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt\" ]";
+      example = literalExpression "[ ./my-company-root.crt ]";
       description = ''
         A list of files containing trusted root certificates in PEM
         format. These are concatenated to form
         {file}`/etc/ssl/certs/ca-certificates.crt`, which is
         used by many programs that use OpenSSL, such as
         {command}`curl` and {command}`git`.
+
+        The Mozilla CA bundle is included automatically. Use this option
+        to add other trusted CAs.
       '';
     };
 
@@ -88,6 +91,9 @@ in
         the Mozilla Trust Store into
         {file}`/etc/ssl/certs/ca-certificates.crt`. Use the
         names from that file.
+
+        Certificates added through {option}`security.pki.certificateFiles`
+        or {option}`security.pki.certificates` are not filtered.
       '';
     };
   };
