@@ -10,6 +10,10 @@ let
       # Compromised eMudhra intermediates also have Sectigo cross-signs.
       # https://github.com/NixOS/nixpkgs/issues/576485
       "Comodo AAA Services root"
+    ]
+    # NSS 3.131.1 already removes these roots. Blacklisting absent certificates
+    # causes buildcatrust to fail (NixOS/nixpkgs#249080).
+    ++ optionals (versionOlder pkgs.cacert.version "3.131.1") [
       "emSign ECC Root CA - G3"
       # Retired roots removed alongside the compromise mitigation in NSS 3.131.1.
       # https://bugzilla.mozilla.org/show_bug.cgi?id=2083709
