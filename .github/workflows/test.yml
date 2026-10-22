@@ -33,11 +33,15 @@ jobs:
     timeout-minutes: 30
     steps:
     - uses: actions/checkout@v4
+    - name: Record known files before Nix installation
+      run: bash scripts/record-known-files.sh
     - name: Install Nix
       uses: cachix/install-nix-action@v30
       with:
         install_url: https://releases.nixos.org/nix/nix-${{ env.NIX_VERSION }}/install
         nix_path: nixpkgs=channel:${{ env.NIXPKGS_BRANCH }}
+    - name: Record known files after Nix installation
+      run: bash scripts/record-known-files.sh
     - name: Install channels
       run: |
         sudo nix-channel --add https://nixos.org/channels/${{ env.NIXPKGS_BRANCH }} nixpkgs
@@ -92,10 +96,14 @@ jobs:
     timeout-minutes: 30
     steps:
     - uses: actions/checkout@v4
+    - name: Record known files before Nix installation
+      run: bash scripts/record-known-files.sh
     - name: Install Nix
       uses: cachix/install-nix-action@v30
       with:
         install_url: https://releases.nixos.org/nix/nix-${{ env.NIX_VERSION }}/install
+    - name: Record known files after Nix installation
+      run: bash scripts/record-known-files.sh
     - name: Install nix-darwin
       run: |
         sudo mkdir -p /etc/nix-darwin
