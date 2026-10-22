@@ -17,6 +17,8 @@
 
    programs.zsh.variables.FOO = "42";
 
+   programs.zsh.shellAliases.ls = "ls -l";
+
    test = ''
      echo >&2 "checking for share/zsh in /sw"
      test -e ${config.out}/sw/share/zsh
@@ -44,6 +46,7 @@
      echo >&2 "checking zsh variables in /etc/zprofile"
      grep 'FOO="42"' ${config.out}/etc/zprofile
      echo >&2 "checking shell aliases in /etc/zprofile"
-     grep "alias ls='ls -G'" ${config.out}/etc/zprofile
+     (! grep "ls='ls -G'" ${config.out}/etc/zprofile)
+     grep "ls='ls -l'" ${config.out}/etc/zprofile
    '';
 }
