@@ -7,8 +7,7 @@ on:
       - master
 
 env:
-  NIXPKGS_BRANCH: nixpkgs-unstable
-  NIX_VERSION: 2.24.11
+  NIX_VERSION: 2.35.3
 
 jobs:
   # The `test-stable` and `install-against-stable` job names are
@@ -26,21 +25,24 @@ jobs:
       uses: cachix/install-nix-action@v30
       with:
         install_url: https://releases.nixos.org/nix/nix-${{ env.NIX_VERSION }}/install
-    - run: nix flake check --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
+    - run: nix flake check --no-update-lock-file
 
   install-against-stable:
     runs-on: macos-14
     timeout-minutes: 30
     steps:
     - uses: actions/checkout@v4
+    - name: Get pinned Nixpkgs URL
+      run: echo "NIXPKGS_URL=$(jq -r .nodes.nixpkgs.locked.url flake.lock)" >> "$GITHUB_ENV"
     - name: Install Nix
       uses: cachix/install-nix-action@v30
       with:
         install_url: https://releases.nixos.org/nix/nix-${{ env.NIX_VERSION }}/install
-        nix_path: nixpkgs=channel:${{ env.NIXPKGS_BRANCH }}
     - name: Install channels
       run: |
-        sudo nix-channel --add https://nixos.org/channels/${{ env.NIXPKGS_BRANCH }} nixpkgs
+        # nix-channel does not recognize zstd tarball URLs.
+        # https://github.com/NixOS/nix/issues/16126
+        sudo nix-channel --add "${NIXPKGS_URL%/nixexprs.tar.zst}" nixpkgs
         sudo nix-channel --update
     - name: Install nix-darwin
       run: |
@@ -81,17 +83,17 @@ jobs:
         # We need to specify `--extra-experimental-features` because `experimental-features` is set by
         # `cachix/install-nix-action` but not by our default config above
         sudo nix run .#darwin-uninstaller \
-          --extra-experimental-features "nix-command flakes" \
-          --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
+          --extra-experimental-features "nix-command flakes"
         sudo nix run .#darwin-uninstaller.tests.uninstaller \
-          --extra-experimental-features "nix-command flakes" \
-          --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
+          --extra-experimental-features "nix-command flakes"
 
   install-flake:
     runs-on: macos-14
     timeout-minutes: 30
     steps:
     - uses: actions/checkout@v4
+    - name: Get pinned Nixpkgs URL
+      run: echo "NIXPKGS_URL=$(jq -r .nodes.nixpkgs.locked.url flake.lock)" >> "$GITHUB_ENV"
     - name: Install Nix
       uses: cachix/install-nix-action@v30
       with:
@@ -115,7 +117,7 @@ jobs:
         popd
         sudo nix run .#darwin-rebuild -- switch \
           --override-input nix-darwin . \
-          --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
+          --override-input nixpkgs "$NIXPKGS_URL"
     - name: Switch to new configuration
       run: |
         . /etc/bashrc
@@ -126,10 +128,10 @@ jobs:
 
         sudo darwin-rebuild switch \
           --override-input nix-darwin . \
-          --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
+          --override-input nixpkgs "$NIXPKGS_URL"
 
         hello
     - name: Test uninstallation of nix-darwin
       run: |
-        sudo nix run .#darwin-uninstaller --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
-        sudo nix run .#darwin-uninstaller.tests.uninstaller --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
+        sudo nix run .#darwin-uninstaller
+        sudo nix run .#darwin-uninstaller.tests.uninstaller
