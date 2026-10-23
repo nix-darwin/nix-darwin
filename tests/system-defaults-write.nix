@@ -52,6 +52,7 @@
   system.defaults.NSGlobalDomain.NSScrollAnimationEnabled = true;
   system.defaults.NSGlobalDomain.NSWindowResizeTime = 0.01;
   system.defaults.NSGlobalDomain.NSWindowShouldDragOnGesture = true;
+  system.defaults.NSGlobalDomain.NSMenuEnableActionImages = false;
   system.defaults.NSGlobalDomain.InitialKeyRepeat = 10;
   system.defaults.NSGlobalDomain.KeyRepeat = 1;
   system.defaults.NSGlobalDomain.PMPrintingExpandedStateForPrint = true;
