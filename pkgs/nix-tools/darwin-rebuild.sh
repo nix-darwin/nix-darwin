@@ -11,6 +11,11 @@ fi
 export PATH=@path@
 export NIX_PATH=${NIX_PATH:-@nixPath@}
 
+# Make sure that Nix can find the system CA bundle needed by git.
+if [[ -r /etc/ssl/certs/ca-certificates.crt ]]; then
+  export NIX_SSL_CERT_FILE=${NIX_SSL_CERT_FILE:-/etc/ssl/certs/ca-certificates.crt}
+fi
+
 # Use the daemon even as `root` so that resource limits, TLS and proxy
 # configuration, etc. work as expected.
 export NIX_REMOTE=${NIX_REMOTE:-daemon}
