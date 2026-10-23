@@ -19,7 +19,20 @@ jobs:
   # TODO: Change them once the repository configuration is updated.
 
   test-stable:
-    runs-on: macos-14
+    needs: test
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+    - run: test "$RESULT" = success
+      env:
+        RESULT: ${{ needs.test.result }}
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
     - name: Install Nix
@@ -29,7 +42,20 @@ jobs:
     - run: nix flake check --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
 
   install-against-stable:
-    runs-on: macos-14
+    needs: install-with-channels
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+    - run: test "$RESULT" = success
+      env:
+        RESULT: ${{ needs.install-with-channels.result }}
+
+  install-with-channels:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, macos-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     steps:
     - uses: actions/checkout@v4
@@ -88,7 +114,20 @@ jobs:
           --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
 
   install-flake:
-    runs-on: macos-14
+    needs: install-with-flakes
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+    - run: test "$RESULT" = success
+      env:
+        RESULT: ${{ needs.install-with-flakes.result }}
+
+  install-with-flakes:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, macos-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     steps:
     - uses: actions/checkout@v4
