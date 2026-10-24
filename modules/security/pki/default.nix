@@ -34,6 +34,20 @@ in
 
 {
   options = {
+    security.pki.environment = mkOption {
+      internal = true;
+      readOnly = true;
+      type = types.attrsOf types.str;
+      default = {
+        NIX_SSL_CERT_FILE = config.environment.variables.NIX_SSL_CERT_FILE
+          or "${cacertPackage}/etc/ssl/certs/ca-bundle.crt";
+      };
+      description = ''
+        Certificate environment variables to pass to services, using the
+        configured CA bundle or falling back to the filtered Mozilla bundle.
+      '';
+    };
+
     security.pki.installCACerts = mkOption {
       type = types.bool;
       default = true;

@@ -60,9 +60,6 @@ in
       serviceConfig.EnvironmentVariables = mkMerge [
         config.nix.envVars
         {
-          NIX_SSL_CERT_FILE = mkIf
-            (config.environment.variables ? NIX_SSL_CERT_FILE)
-            (mkDefault config.environment.variables.NIX_SSL_CERT_FILE);
           TMPDIR = mkIf (cfg.tempDir != null) cfg.tempDir;
           # FIXME: workaround for https://github.com/NixOS/nix/issues/2523
           OBJC_DISABLE_INITIALIZE_FORK_SAFETY = mkDefault "YES";
