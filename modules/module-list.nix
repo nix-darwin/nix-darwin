@@ -16,6 +16,7 @@
   ./system/checks.nix
   ./system/activation-scripts.nix
   ./system/applications.nix
+  ./system/auto-upgrade.nix
   ./system/defaults-write.nix
   ./system/defaults/controlcenter.nix
   ./system/defaults/LaunchServices.nix
