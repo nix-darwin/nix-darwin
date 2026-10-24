@@ -124,4 +124,6 @@
   ./programs/zsh
   ./homebrew.nix
   ./users
+  ./services-modular/system.nix
+  ./services-modular/user.nix
 ]
