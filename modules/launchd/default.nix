@@ -132,6 +132,13 @@ in
         The value of each variable can be either a string or a list of
         strings.  The latter is concatenated, interspersed with colon
         characters.
+
+        Processes that are already running, including Dock and Finder,
+        keep their existing environment, and apps launched from them
+        inherit it. Dock is restarted during activation only when
+        {option}`system.defaults.dock` options are set; otherwise, log
+        out and back in (or run {command}`killall Dock`) for apps
+        launched from Dock to see changed values.
       '';
       apply = mapAttrs (n: v: if isList v then concatStringsSep ":" v else v);
     };
