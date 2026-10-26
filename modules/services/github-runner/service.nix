@@ -188,7 +188,7 @@ in
       createHome = false;
       description = "GitHub Runner service user";
       gid = config.users.groups."_github-runner".gid;
-      home = "/var/lib/github-runners";
+      home = "/private/var/lib/github-runners";
       shell = "/bin/bash";
       uid = mkDefault 533;
     };

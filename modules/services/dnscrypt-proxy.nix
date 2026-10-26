@@ -46,7 +46,7 @@ in
     users.users._dnscrypt-proxy = {
       uid = config.ids.uids._dnscrypt-proxy;
       gid = config.ids.gids._dnscrypt-proxy;
-      home = "/var/lib/dnscrypt-proxy";
+      home = "/private/var/lib/dnscrypt-proxy";
       createHome = true;
       shell = "/usr/bin/false";
       description = "System user for dnscrypt-proxy";

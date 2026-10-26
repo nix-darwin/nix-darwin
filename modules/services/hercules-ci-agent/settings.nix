@@ -25,7 +25,7 @@ let
       };
       baseDirectory = mkOption {
         type = types.path;
-        default = "/var/lib/hercules-ci-agent";
+        default = "/private/var/lib/hercules-ci-agent";
         description = ''
           State directory (secrets, work directory, etc) for agent
         '';
