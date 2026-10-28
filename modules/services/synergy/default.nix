@@ -119,14 +119,11 @@ in
     (mkIf cfg.client.enable {
       launchd.user.agents."synergy-client" = {
         path = [ config.environment.systemPath ];
-        serviceConfig.ProgramArguments = [
-          "${cfg.package}/bin/synergyc" "-f"
-        ] ++ optionals (cfg.client.tls.enable) [ "--enable-crypto" ]
-          ++ optionals (cfg.client.tls.cert != null) [ "--tls-cert" cfg.client.tls.cert ]
-          ++ optionals (cfg.client.screenName != "") [ "-n" cfg.client.screenName ]
-          ++ [
-          cfg.client.serverAddress
-        ];
+        command = "${lib.getExe' cfg.package "synergyc"} -f ${lib.optionalString cfg.client.tls.enable "--enable-crypto"} ${
+          lib.optionalString (cfg.client.tls.cert != null) "--tls-cert ${cfg.client.tls.cert}"
+        } ${
+          lib.optionalString (cfg.client.screenName != "") "-n ${cfg.client.screenName}"
+        } ${cfg.client.serverAddress}";
         serviceConfig.KeepAlive = true;
         serviceConfig.RunAtLoad = cfg.client.autoStart;
         serviceConfig.ProcessType = "Interactive";
@@ -137,12 +134,11 @@ in
     (mkIf cfg.server.enable {
       launchd.user.agents."synergy-server" = {
         path = [ config.environment.systemPath ];
-        serviceConfig.ProgramArguments = [
-          "${cfg.package}/bin/synergys" "-c" "${cfg.server.configFile}" "-f"
-        ] ++ optionals (cfg.server.tls.enable) [ "--enable-crypto" ]
-          ++ optionals (cfg.server.tls.cert != null) [ "--tls-cert" cfg.server.tls.cert ]
-          ++ optionals (cfg.server.screenName != "") [ "-n" cfg.server.screenName ]
-          ++ optionals (cfg.server.address != "") [ "-a" cfg.server.address ];
+        command = "${lib.getExe' cfg.package "synergys"} -c ${cfg.server.configFile} -f ${lib.optionalString cfg.tls.enable "--enable-crypto"} ${
+          lib.optionalString (cfg.tls.cert != null) "--tls-cert ${cfg.server.tls.cert}"
+        } ${lib.optionalString (cfg.server.screenName != "") "-n ${cfg.server.screenName}"} ${
+          lib.optionalString (cfg.server.address != "") "-a ${cfg.server.address}"
+        }";
         serviceConfig.KeepAlive = true;
         serviceConfig.RunAtLoad = cfg.server.autoStart;
         serviceConfig.ProcessType = "Interactive";

@@ -137,7 +137,8 @@ in {
     environment.systemPackages = [cfg.package];
 
     launchd.user.agents.jankyborders = {
-      serviceConfig.ProgramArguments =
+      command = 
+        let args =
         [
           "${cfg.package}/bin/borders"
         ]
@@ -160,6 +161,8 @@ in {
         ++ (optionalArg "blacklist" (joinStrings cfg.blacklist))
         ++ (optionalArg "whitelist" (joinStrings cfg.whitelist))
         ++ (optionalArg "order" cfg.order);
+        in
+        lib.escapeShellArgs args;
       serviceConfig.KeepAlive = true;
       serviceConfig.RunAtLoad = true;
       managedBy = "services.jankyborders.enable";

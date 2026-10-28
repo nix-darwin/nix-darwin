@@ -44,8 +44,8 @@ in {
 
     launchd.user.agents.emacs = {
       path = cfg.additionalPath ++ [ config.environment.systemPath ];
+      command = "${lib.getExe' cfg.package cfg.exec} --fg-daemon";
       serviceConfig = {
-        ProgramArguments = [ "${cfg.package}/bin/${cfg.exec}" "--fg-daemon" ];
         RunAtLoad = true;
         KeepAlive = true;
       };
