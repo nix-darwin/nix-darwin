@@ -4,6 +4,12 @@ with lib;
 
 let
   cfg = config.programs.bash;
+
+  bashAliases = builtins.concatStringsSep "\n" (
+    lib.mapAttrsToList (k: v: "alias -- ${k}=${lib.escapeShellArg v}") (
+      lib.filterAttrs (k: v: v != null) cfg.shellAliases
+    )
+  );
 in
 
 {
@@ -17,6 +23,15 @@ in
       type = types.bool;
       default = true;
       description = "Whether to configure bash as an interactive shell.";
+    };
+
+    programs.bash.shellAliases = lib.mkOption {
+      default = { };
+      description = ''
+        Set of aliases for bash shell, which overrides {option}`environment.shellAliases`.
+        See {option}`environment.shellAliases` for an option format description.
+      '';
+      type = with lib.types; attrsOf (nullOr (either str path));
     };
 
     programs.bash.interactiveShellInit = mkOption {
@@ -74,6 +89,8 @@ in
       shopt -s checkwinsize
 
       ${config.system.build.setAliases.text}
+
+      ${bashAliases}
 
       ${config.environment.interactiveShellInit}
       ${cfg.interactiveShellInit}
