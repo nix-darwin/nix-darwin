@@ -46,9 +46,20 @@ in
     grep 'mas install \"$appId\"' ${config.out}/activate
     grep 'mas update' ${config.out}/activate
 
+    echo "checking mas parses JSON output" >&2
+    grep 'mas list --json' ${config.out}/activate
+    grep 'fromjson?' ${config.out}/activate
+    grep '\.adamID' ${config.out}/activate
+    grep '\.bundleID' ${config.out}/activate
+
+    if grep 'list --json 2>&1' ${config.out}/activate; then
+      echo "mas list stderr must not be merged into JSON output" >&2
+      exit 1
+    fi
+
     echo "checking cleanup-only variables are omitted" >&2
-    if grep 'declare -A installedApps' ${config.out}/activate; then
-      echo "unexpected installedApps declaration when cleanup is disabled" >&2
+    if grep 'installedNames=' ${config.out}/activate; then
+      echo "unexpected installedNames declaration when cleanup is disabled" >&2
       exit 1
     fi
 
