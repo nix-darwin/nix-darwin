@@ -49,6 +49,7 @@ in
         "5" = "^built-in retina display$";
         "6" = [ "secondary" "dell" ];
     };
+    key-mapping.preset = "qwerty";
   };
 
   test = ''
@@ -90,5 +91,11 @@ in
     grep '4 = "built-in"' $conf
     grep '5 = "^built-in retina display$"' $conf
     grep '6 = \["secondary", "dell"\]' $conf
+
+    echo >&2 "checking TOML section headers are unquoted (issue #1592)"
+    grep '\[mode\.main\.binding\]' $conf
+    grep '\[gaps\.outer\]' $conf
+    grep '\[key-mapping\]' $conf
+    (! grep '^\[[^]]*"' $conf)  # Ensure no quoted keys inside TOML section headers
   '';
 }
