@@ -10,6 +10,7 @@
   ./security/pki
   ./security/sandbox
   ./security/sudo.nix
+  ./security/chmodbpf.nix
   ./system
   ./system/base.nix
   ./system/primary-user.nix
