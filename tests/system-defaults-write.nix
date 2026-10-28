@@ -43,6 +43,7 @@
   system.defaults.NSGlobalDomain.NSAutomaticWindowAnimationsEnabled = false;
   system.defaults.NSGlobalDomain.NSDisableAutomaticTermination = true;
   system.defaults.NSGlobalDomain.NSDocumentSaveNewDocumentsToCloud = false;
+  system.defaults.NSGlobalDomain.NSMenuEnableActionImages = false;
   system.defaults.NSGlobalDomain.AppleWindowTabbingMode = "always";
   system.defaults.NSGlobalDomain.NSNavPanelExpandedStateForSaveMode = true;
   system.defaults.NSGlobalDomain.NSNavPanelExpandedStateForSaveMode2 = true;
