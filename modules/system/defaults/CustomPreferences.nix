@@ -1,25 +1,12 @@
-{ config, lib, ... }:
-
-with lib;
+{ lib, pkgs, ... }:
 
 let
-  valueType = with lib.types; nullOr (oneOf [
-    bool
-    int
-    float
-    str
-    path
-    (attrsOf valueType)
-    (listOf valueType)
-  ]) // {
-    description = "plist value";
-  };
-  defaultsType = types.submodule {
-    freeformType = valueType;
+  defaultsType = lib.types.submodule {
+    freeformType = (pkgs.formats.plist { }).type;
   };
 in {
   options = {
-    system.defaults.CustomUserPreferences = mkOption {
+    system.defaults.CustomUserPreferences = lib.mkOption {
       type = defaultsType;
       default = { };
       example = {
@@ -34,7 +21,7 @@ in {
       '';
     };
 
-    system.defaults.CustomSystemPreferences = mkOption {
+    system.defaults.CustomSystemPreferences = lib.mkOption {
       type = defaultsType;
       default = { };
       example = {
