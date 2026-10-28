@@ -29,6 +29,19 @@
       '';
     };
 
+    picture = mkOption {
+      type = types.nullOr types.path;
+      default = null;
+      example = "./my-profile.jpg";
+      description = ''
+        The profile image used for the user, as a path to a JPEG.
+
+        Non-JPEG images will not appear on the login screen.
+
+        This defaults to `null`, meaning the picture will not be managed.
+      '';
+    };
+
     uid = mkOption {
       type = types.int;
       description = "The user's UID.";

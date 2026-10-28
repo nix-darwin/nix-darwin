@@ -17,6 +17,7 @@
   users.users.foo.home = "/Users/foo";
   users.users.foo.createHome = true;
   users.users.foo.shell = pkgs.bashInteractive;
+  users.users.foo.picture = ./.;
 
   users.users."created.user".uid = 42001;
   users.users."created.user".description = null;
@@ -61,6 +62,7 @@
     grep "createhomedir -cu ${lib.escapeShellArg "foo"}" ${config.out}/activate
     grep "dscl . -create ${lib.escapeShellArg "/Users/foo"} UserShell ${lib.escapeShellArg "/run/current-system/sw/bin/bash"}" ${config.out}/activate
     grep "dscl . -create ${lib.escapeShellArg "/Users/foo"} IsHidden 0" ${config.out}/activate
+    grep "dscl . -create ${lib.escapeShellArg "/Users/foo"} Picture /nix/store" ${config.out}/activate
 
     # checking user properties that are null don't get updated in /activate
     (! grep "dscl . -create ${lib.escapeShellArg "/Users/created.user"} RealName" ${config.out}/activate)
