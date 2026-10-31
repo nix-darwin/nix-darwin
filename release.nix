@@ -7,12 +7,19 @@
 }:
 
 let
+  sharedPkgs = import nixpkgs { inherit system; };
+
   buildFromConfig = configuration: sel: sel
-    (import ./. { inherit nixpkgs configuration system; }).config;
+    (import ./. {
+      inherit nixpkgs configuration system;
+      inherit (sharedPkgs) lib;
+    }).config;
 
   makeSystem = configuration: buildFromConfig configuration (config: config.system.build.toplevel);
 
-  makeTest = test:
+  makeTest = makeTestWith { };
+
+  makeTestWith = { useSharedPkgs ? true }: test:
     let
       testName =
         builtins.replaceStrings [ ".nix" ] [ "" ]
@@ -35,6 +42,11 @@ let
           };
 
           config = {
+            nixpkgs = mkIf useSharedPkgs {
+              pkgs = sharedPkgs;
+              source = nixpkgs;
+            };
+
             system.stateVersion = lib.mkDefault config.system.maxStateVersion;
 
             system.build.run-test = pkgs.runCommand "darwin-test-${testName}"
@@ -92,8 +104,8 @@ in {
   tests.networking-networkservices = makeTest ./tests/networking-networkservices.nix;
   tests.networking-networkservices-no-dhcp-client-id = makeTest ./tests/networking-networkservices-no-dhcp-client-id.nix;
   tests.nix-enable = makeTest ./tests/nix-enable.nix;
-  tests.nixpkgs-overlays = makeTest ./tests/nixpkgs-overlays.nix;
-  tests.nixpkgs-config-allow-unfree = makeTest ./tests/nixpkgs-config-allow-unfree.nix;
+  tests.nixpkgs-overlays = makeTestWith { useSharedPkgs = false; } ./tests/nixpkgs-overlays.nix;
+  tests.nixpkgs-config-allow-unfree = makeTestWith { useSharedPkgs = false; } ./tests/nixpkgs-config-allow-unfree.nix;
   tests.programs-devenv = makeTest ./tests/programs-devenv.nix;
   tests.programs-gnupg = makeTest ./tests/programs-gnupg.nix;
   tests.programs-mas = makeTest ./tests/programs-mas.nix;
