@@ -107,6 +107,7 @@ in {
   tests.nixpkgs-overlays = makeTestWith { useSharedPkgs = false; } ./tests/nixpkgs-overlays.nix;
   tests.nixpkgs-config-allow-unfree = makeTestWith { useSharedPkgs = false; } ./tests/nixpkgs-config-allow-unfree.nix;
   tests.programs-devenv = makeTest ./tests/programs-devenv.nix;
+  tests.programs-git = makeTest ./tests/programs-git.nix;
   tests.programs-gnupg = makeTest ./tests/programs-gnupg.nix;
   tests.programs-mas = makeTest ./tests/programs-mas.nix;
   tests.programs-mas-no-cleanup = makeTest ./tests/programs-mas-no-cleanup.nix;
