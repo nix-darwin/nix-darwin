@@ -34,9 +34,6 @@ in
       script = "exec ${cfg.package}/bin/hercules-ci-agent --config ${cfg.tomlFile}";
 
       path = [ config.nix.package config.environment.systemPath ];
-      environment = {
-        NIX_SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-      };
 
       serviceConfig.KeepAlive = true;
       serviceConfig.RunAtLoad = true;

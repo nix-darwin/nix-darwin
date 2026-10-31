@@ -228,7 +228,6 @@ in
         environment = {
           HOME = cfg.dataDir;
           NIX_REMOTE = "daemon";
-          inherit (config.environment.variables) NIX_SSL_CERT_FILE;
         };
 
         ## NB: maximum care is taken so that secrets (ssh keys and the CI token)
