@@ -6,6 +6,12 @@ let
   cfg = config.programs.zsh;
   opt = options.programs.zsh;
 
+  zshAliases = builtins.concatStringsSep "\n" (
+    lib.mapAttrsToList (k: v: "alias -- ${k}=${lib.escapeShellArg v}") (
+      lib.filterAttrs (k: v: v != null) cfg.shellAliases
+    )
+  );
+
   zshVariables =
     mapAttrsToList (n: v: ''${n}="${v}"'') cfg.variables;
 
@@ -20,6 +26,15 @@ in
       type = types.bool;
       default = true;
       description = "Whether to configure zsh as an interactive shell.";
+    };
+
+    programs.zsh.shellAliases = lib.mkOption {
+      type = with lib.types; attrsOf (nullOr (either str path));
+      default = { };
+      description = ''
+        Set of aliases for zsh shell, which overrides {option}`environment.shellAliases`.
+        See {option}`environment.shellAliases` for an option format description.
+      '';
     };
 
     programs.zsh.variables = mkOption {
@@ -147,6 +162,8 @@ in
 
     environment.pathsToLink = [ "/share/zsh" ];
 
+    programs.zsh.shellAliases = builtins.mapAttrs (name: lib.mkDefault) config.environment.shellAliases;
+
     environment.etc."zshenv".text = ''
       # /etc/zshenv: DO NOT EDIT -- this file has been generated automatically.
       # This file is read for all shells.
@@ -183,7 +200,7 @@ in
       __ETC_ZPROFILE_SOURCED=1
 
       ${concatStringsSep "\n" zshVariables}
-      ${config.system.build.setAliases.text}
+      ${zshAliases}
 
       ${cfg.loginShellInit}
 
