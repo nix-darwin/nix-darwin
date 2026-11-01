@@ -56,7 +56,10 @@
       darwin-uninstaller = prev.callPackage ./pkgs/darwin-uninstaller { };
     };
 
-    flakeModules.default = ./flake-module.nix;
+    flakeModules = rec {
+      nix-darwin = ./flake-module.nix;
+      default = nix-darwin;
+    };
 
     darwinModules.hydra = ./modules/examples/hydra.nix;
     darwinModules.lnl = ./modules/examples/lnl.nix;
