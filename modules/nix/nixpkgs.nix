@@ -293,11 +293,13 @@ in
     assertions = [
       (
         let
+          darwinExpectedSystem = if hasHostPlatform then cfg.hostPlatform.system else cfg.system;
+          darwinOption = if hasHostPlatform then "nixpkgs.hostPlatform" else "nixpkgs.system";
           pkgsSystem = finalPkgs.stdenv.targetPlatform.system;
         in
         {
-          assertion = cfg.constructedByUs -> !hasPlatform -> cfg.system == pkgsSystem;
-          message = "The nix-darwin nixpkgs.pkgs option was set to a Nixpkgs invocation that compiles to target system ${pkgsSystem} but nix-darwin was configured for system ${config.nixpkgs.system} via nix-darwin option nixpkgs.system. The nix-darwin system settings must match the Nixpkgs target system.";
+          assertion = cfg.constructedByUs -> !hasPlatform -> darwinExpectedSystem == pkgsSystem;
+          message = "The nix-darwin nixpkgs.pkgs option was set to a Nixpkgs invocation that compiles to target system ${pkgsSystem} but nix-darwin was configured for system ${darwinExpectedSystem} via nix-darwin option ${darwinOption}. The nix-darwin system settings must match the Nixpkgs target system.";
         }
       )
       {
