@@ -155,7 +155,7 @@ in
       if [ -n "''${__ETC_ZSHENV_SOURCED-}" ]; then return; fi
       __ETC_ZSHENV_SOURCED=1
 
-      if [[ -o rcs ]]; then
+      if [[ -o rcs && -o global_rcs ]]; then
         if [ -z "''${__NIX_DARWIN_SET_ENVIRONMENT_DONE-}" ]; then
           . ${config.system.build.setEnvironment}
         fi
