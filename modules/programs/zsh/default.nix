@@ -126,6 +126,12 @@ in
       description = "Enable zsh-syntax-highlighting.";
     };
 
+    programs.zsh.enablePathHelper = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Whether to run the macOS path_helper utility to add extra directories from Applications to PATH";
+    };
+
     programs.zsh.enableFastSyntaxHighlighting = mkEnableOption "zsh-fast-syntax-highlighting";
   };
 
@@ -191,6 +197,12 @@ in
       if test -f /etc/zprofile.local; then
         source /etc/zprofile.local
       fi
+
+      ${optionalString cfg.enablePathHelper ''
+        if [ -x /usr/libexec/path_helper ]; then
+          eval `/usr/libexec/path_helper -s`
+        fi 
+      ''}
     '';
 
     environment.etc."zshrc".text = ''
