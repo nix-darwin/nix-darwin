@@ -92,6 +92,7 @@ in {
 
   tests.activation-scripts = makeTest ./tests/activation-scripts.nix;
   tests.autossh = makeTest ./tests/autossh.nix;
+  tests.environment-apple-developer-tools = makeTest ./tests/environment-apple-developer-tools.nix;
   tests.environment-path = makeTest ./tests/environment-path.nix;
   tests.environment-terminfo = makeTest ./tests/environment-terminfo.nix;
   tests.homebrew = makeTest ./tests/homebrew.nix;
