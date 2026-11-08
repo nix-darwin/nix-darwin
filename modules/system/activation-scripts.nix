@@ -123,10 +123,12 @@ in
       ${cfg.activationScripts.patches.text}
       ${cfg.activationScripts.openssh.text}
       ${cfg.activationScripts.etc.text}
-      ${cfg.activationScripts.defaults.text}
-      ${cfg.activationScripts.userDefaults.text}
+      # `launchctl setenv` must run before `userDefaults` restarts Dock, so
+      # that apps launched from Dock inherit `launchd.user.envVariables`.
       ${cfg.activationScripts.launchd.text}
       ${cfg.activationScripts.userLaunchd.text}
+      ${cfg.activationScripts.defaults.text}
+      ${cfg.activationScripts.userDefaults.text}
       ${cfg.activationScripts.nix-daemon.text}
       ${cfg.activationScripts.time.text}
       ${cfg.activationScripts.networking.text}
