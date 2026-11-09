@@ -69,6 +69,15 @@ in
 
   config = {
 
+    assertions = let
+      srcs = map (m: m.HIDKeyboardModifierMappingSrc) cfg.userKeyMapping;
+    in [
+      {
+        assertion = length srcs == length (unique srcs);
+        message = "Conflicting keyboard mappings: the following source keys are remapped more than once: ${concatStringsSep ", " (map toString (filter (s: count (x: x == s) srcs > 1) (unique srcs)))}.";
+      }
+    ];
+
     warnings = mkIf (!cfg.enableKeyMapping && cfg.userKeyMapping != [])
       [ "system.keyboard.enableKeyMapping is not enabled, keyboard mappings will not be configured." ];
 
