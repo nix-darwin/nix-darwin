@@ -186,6 +186,10 @@ let
 
   generateLaunchDaemonAttrs = name: interfaceOpt:
     nameValuePair "wg-quick-${name}" {
+      # `command` rather than ProgramArguments, so launchd waits for the Nix
+      # store volume: at boot it otherwise finds no executable and gives up
+      # on the job for good (exit 78).
+      command = "${pkgs.wireguard-tools}/bin/wg-quick up ${escapeShellArg name}";
       serviceConfig = {
         EnvironmentVariables = {
           PATH =
@@ -195,8 +199,6 @@ let
           NetworkState = true;
           SuccessfulExit = true;
         };
-        ProgramArguments =
-          [ "${pkgs.wireguard-tools}/bin/wg-quick" "up" "${name}" ];
         RunAtLoad = true;
         StandardErrorPath = "${cfg.logDir}/wg-quick-${name}.log";
         StandardOutPath = "${cfg.logDir}/wg-quick-${name}.log";
