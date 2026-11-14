@@ -36,9 +36,8 @@ in {
 
   config = mkIf cfg.enable {
     launchd.user.agents.trezord = {
+      command = "${lib.getExe' pkgs.trezord "trezord-go"} ${lib.optionalString cfg.emulator.enable "-e ${builtins.toString cfg.emulator.port}"}";
       serviceConfig = {
-        ProgramArguments = [ "${pkgs.trezord}/bin/trezord-go" ]
-          ++ optionals cfg.emulator.enable [ "-e" (builtins.toString cfg.emulator.port) ];
         KeepAlive = true;
         RunAtLoad = true;
       };

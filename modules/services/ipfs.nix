@@ -54,9 +54,8 @@ in
   config = mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
     launchd.user.agents.ipfs = {
+      command = "${lib.getExe' cfg.package "ipfs"} daemon ${lib.optionalString cfg.enableGarbageCollection "--enable-gc"}";
       serviceConfig = {
-        ProgramArguments = [ "${cfg.package}/bin/ipfs" "daemon" ]
-          ++ optionals (cfg.enableGarbageCollection) [ "--enable-gc" ];
         KeepAlive = true;
         RunAtLoad = true;
         ProcessType = "Background";
