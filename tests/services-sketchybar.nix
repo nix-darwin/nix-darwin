@@ -29,7 +29,7 @@ in
     grep "<string>org.nixos.sketchybar</string>" ${config.out}/user/Library/LaunchAgents/org.nixos.sketchybar.plist
     grep "<string>${sketchybar}/bin/sketchybar</string>" ${config.out}/user/Library/LaunchAgents/org.nixos.sketchybar.plist
     grep "<string>--config</string>" ${config.out}/user/Library/LaunchAgents/org.nixos.sketchybar.plist
-    grep "<string>${dummyPkg}</string>" ${config.out}/user/Library/LaunchAgents/org.nixos.sketchybar.plist
+    grep "${dummyPkg}/bin" ${config.out}/user/Library/LaunchAgents/org.nixos.sketchybar.plist
     grep "<key>KeepAlive</key>" ${config.out}/user/Library/LaunchAgents/org.nixos.sketchybar.plist
     grep "<key>RunAtLoad</key>" ${config.out}/user/Library/LaunchAgents/org.nixos.sketchybar.plist
   '';

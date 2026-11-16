@@ -18,7 +18,7 @@ in
   test = ''
     echo "checking tailscale daemon in /Library/LaunchDaemons" >&2
     grep "<string>com.tailscale.tailscaled</string>" ${config.out}/Library/LaunchDaemons/com.tailscale.tailscaled.plist
-    grep "<string>${tailscale}/bin/tailscaled</string>" ${config.out}/Library/LaunchDaemons/com.tailscale.tailscaled.plist
+    grep "${tailscale}/bin/tailscaled" ${config.out}/Library/LaunchDaemons/com.tailscale.tailscaled.plist
     grep "<key>RunAtLoad</key>" ${config.out}/Library/LaunchDaemons/com.tailscale.tailscaled.plist
 
     echo "checking tailscale resolver configuration in /etc/resolver" >&2
