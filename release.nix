@@ -106,6 +106,7 @@ in {
   tests.nix-enable = makeTest ./tests/nix-enable.nix;
   tests.nixpkgs-overlays = makeTestWith { useSharedPkgs = false; } ./tests/nixpkgs-overlays.nix;
   tests.nixpkgs-config-allow-unfree = makeTestWith { useSharedPkgs = false; } ./tests/nixpkgs-config-allow-unfree.nix;
+  tests.programs-1password = makeTest ./tests/programs-1password.nix;
   tests.programs-devenv = makeTest ./tests/programs-devenv.nix;
   tests.programs-gnupg = makeTest ./tests/programs-gnupg.nix;
   tests.programs-mas = makeTest ./tests/programs-mas.nix;
