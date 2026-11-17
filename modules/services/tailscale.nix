@@ -7,6 +7,10 @@ let
 
 in
 {
+  meta.maintainers = [
+    lib.maintainers.anish or "anish"
+  ];
+
   imports = [
     (mkRemovedOptionModule [ "services" "tailscale" "domain" ] "Tailscale no longer requires setting the search domain manually.")
     (mkRemovedOptionModule [ "services" "tailscale" "magicDNS" ] "MagicDNS no longer requires overriding the DNS servers, if this is necessary you can use `services.tailscale.overrideLocalDns`.")
