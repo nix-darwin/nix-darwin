@@ -37,6 +37,52 @@ in
         all non-MagicDNS queries WILL fail.
       '';
     };
+
+    authKeyFile = mkOption {
+      type = types.nullOr types.externalPath;
+      default = null;
+      example = "/run/secrets/tailscale_key";
+      description = ''
+        A file containing the auth key.
+        Tailscale will log in with it automatically if provided.
+      '';
+    };
+
+    authKeyParameters = mkOption {
+      type = types.submodule {
+        options = {
+          ephemeral = mkOption {
+            type = types.nullOr types.bool;
+            default = null;
+            description = "Whether to register as an ephemeral node.";
+          };
+          preauthorized = mkOption {
+            type = types.nullOr types.bool;
+            default = null;
+            description = "Whether to skip manual device approval.";
+          };
+          baseURL = mkOption {
+            type = types.nullOr types.str;
+            default = null;
+            description = "Base URL for the Tailscale API.";
+          };
+        };
+      };
+      default = { };
+      description = ''
+        Extra parameters to pass after the auth key.
+        See <https://tailscale.com/kb/1215/oauth-clients#registering-new-nodes-using-oauth-credentials>
+      '';
+    };
+
+    extraUpFlags = mkOption {
+      description = ''
+        Extra flags to pass to {command}`tailscale up`. Only applied if {option}`services.tailscale.authKeyFile` is specified.
+      '';
+      type = types.listOf types.str;
+      default = [ ];
+      example = [ "--ssh" ];
+    };
   };
 
   config = mkIf cfg.enable {
@@ -58,6 +104,63 @@ in
       serviceConfig = {
         Label = "com.tailscale.tailscaled";
         RunAtLoad = true;
+      };
+    };
+
+    launchd.daemons.tailscaled-autoconnect = mkIf (cfg.authKeyFile != null) {
+      path = [
+        cfg.package
+        pkgs.coreutils
+        pkgs.jq
+      ];
+      script =
+        let
+          paramToString = v: if (builtins.isBool v) then (boolToString v) else (toString v);
+          params = pipe cfg.authKeyParameters [
+            (filterAttrs (_: v: v != null))
+            (mapAttrsToList (k: v: "${k}=${paramToString v}"))
+            (concatStringsSep "&")
+            (params: if params != "" then "?${params}" else "")
+          ];
+          # file: keeps the key out of ps but takes no parameters
+          authKey =
+            if params == "" then
+              "file:${cfg.authKeyFile}"
+            else
+              "$(cat ${escapeShellArg cfg.authKeyFile})${params}";
+        in
+        ''
+          getState() {
+            tailscale status --json --peers=false 2>/dev/null | jq -r '.BackendState'
+          }
+
+          # tailscaled may not be listening yet
+          lastState=""
+          while true; do
+            state="$(getState)"
+            if [[ "$state" != "$lastState" ]]; then
+              case "$state" in
+                NeedsLogin|NeedsMachineAuth|Stopped)
+                  echo "Server needs authentication, sending auth key"
+                  # launchd reruns this after a failed login
+                  tailscale up --auth-key "${authKey}" ${escapeShellArgs cfg.extraUpFlags} || exit 1
+                  ;;
+                Running)
+                  echo "Tailscale is running"
+                  exit 0
+                  ;;
+              esac
+              echo "State = $state"
+              lastState="$state"
+            fi
+            sleep 0.5
+          done
+        '';
+      serviceConfig = {
+        RunAtLoad = true;
+        KeepAlive.SuccessfulExit = false;
+        StandardOutPath = "/var/log/tailscaled-autoconnect.log";
+        StandardErrorPath = "/var/log/tailscaled-autoconnect.log";
       };
     };
 
