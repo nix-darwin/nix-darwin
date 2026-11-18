@@ -107,12 +107,14 @@ in {
   tests.nixpkgs-overlays = makeTestWith { useSharedPkgs = false; } ./tests/nixpkgs-overlays.nix;
   tests.nixpkgs-config-allow-unfree = makeTestWith { useSharedPkgs = false; } ./tests/nixpkgs-config-allow-unfree.nix;
   tests.programs-devenv = makeTest ./tests/programs-devenv.nix;
+  tests.programs-direnv = makeTest ./tests/programs-direnv.nix;
   tests.programs-gnupg = makeTest ./tests/programs-gnupg.nix;
   tests.programs-mas = makeTest ./tests/programs-mas.nix;
   tests.programs-mas-no-cleanup = makeTest ./tests/programs-mas-no-cleanup.nix;
   tests.programs-nh = makeTest ./tests/programs-nh.nix;
   tests.programs-ssh = makeTest ./tests/programs-ssh.nix;
   tests.programs-tmux = makeTest ./tests/programs-tmux.nix;
+  tests.programs-vim = makeTest ./tests/programs-vim.nix;
   tests.programs-zsh = makeTest ./tests/programs-zsh.nix;
   tests.programs-ssh-empty-known-hosts = makeTest ./tests/programs-ssh-empty-known-hosts.nix;
   tests.security-pki = makeTest ./tests/security-pki.nix;
