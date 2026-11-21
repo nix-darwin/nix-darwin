@@ -270,6 +270,14 @@ in {
       '';
     };
 
+    system.defaults.NSGlobalDomain.NSMenuEnableActionImages = mkOption {
+      type = types.nullOr types.bool;
+      default = null;
+      description = ''
+        Remove icons for action items in menu bars.
+      '';
+    };
+
     system.defaults.NSGlobalDomain.NSStatusItemSpacing = mkOption {
       type = types.nullOr types.int;
       default = null;
