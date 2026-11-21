@@ -65,6 +65,13 @@ in
       description = "Change history size.";
     };
 
+    programs.zsh.saveSize = mkOption {
+      type = types.int;
+      default = cfg.histSize;
+      defaultText = literalExpression "config.${opt.histSize}";
+      description = "Change the number of history entries to save.";
+    };
+
     programs.zsh.histFile = mkOption {
       type = types.str;
       default = "$HOME/.zsh_history";
@@ -203,7 +210,7 @@ in
 
       # Setup command line history.
       # Don't export these, otherwise other shells (bash) will try to use same HISTFILE.
-      SAVEHIST=${builtins.toString cfg.histSize}
+      SAVEHIST=${builtins.toString cfg.saveSize}
       HISTSIZE=${builtins.toString cfg.histSize}
       HISTFILE=${cfg.histFile}
 
