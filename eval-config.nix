@@ -17,6 +17,7 @@ in
 { lib
 , modules
 , baseModules ? import ./modules/module-list.nix
+, extraModules ? []
 , specialArgs ? { }
 , check ? true
 , enableNixpkgsReleaseCheck ? true
@@ -72,14 +73,14 @@ let
     _file = ./eval-config.nix;
     config = {
       _module.args = {
-        inherit baseModules modules;
+        inherit baseModules extraModules modules;
       };
     };
   };
 
-  eval = lib.evalModules (builtins.removeAttrs args [ "lib" "enableNixpkgsReleaseCheck" ] // {
+  eval = lib.evalModules (builtins.removeAttrs args [ "lib" "enableNixpkgsReleaseCheck" "extraModules" ] // {
     class = "darwin";
-    modules = modules ++ [ argsModule ] ++ baseModules;
+    modules = baseModules ++ extraModules ++ modules ++ [ argsModule ];
     specialArgs = { modulesPath = builtins.toString ./modules; } // specialArgs;
   });
   
