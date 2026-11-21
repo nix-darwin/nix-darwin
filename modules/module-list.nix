@@ -103,6 +103,7 @@
   ./services/tailscale.nix
   ./services/trezord.nix
   ./services/wg-quick.nix
+  ./services/xquartz.nix
   ./services/yabai
   ./services/nextdns
   ./services/jankyborders
