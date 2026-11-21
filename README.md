@@ -19,10 +19,10 @@ The installer you use doesn't affect which Nix interpreter your system will use 
 
 ## Getting started
 
-Despite being an experimental feature in Nix currently, nix-darwin recommends that beginners use flakes to manage their nix-darwin configurations.
+Despite being an experimental feature in Nix currently, nix-darwin recommends using flakes to manage nix-darwin configurations.
 
 <details>
-<summary>Flakes (Recommended for beginners)</summary>
+<summary>Flakes (Recommended)</summary>
 
 ### Step 1. Creating `flake.nix`
 
