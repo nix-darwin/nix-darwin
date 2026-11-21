@@ -80,6 +80,7 @@
   ./services/kwm
   ./services/lorri.nix
   ./services/mail/offlineimap.nix
+  ./services/mihomo.nix
   ./services/mopidy.nix
   ./services/monitoring/telegraf.nix
   ./services/monitoring/netdata.nix
