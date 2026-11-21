@@ -51,5 +51,13 @@ with lib;
       '';
     };
 
+    system.defaults.universalaccess.showWindowTitlebarIcons = mkOption {
+      type = types.nullOr types.bool;
+      default = null;
+      description = ''
+        Always show folder icon before title in the title bar
+      '';
+    };
+
   };
 }
