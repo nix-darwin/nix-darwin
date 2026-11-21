@@ -30,6 +30,7 @@ in
     cleanup = true;
     packages = {
       "1Password for Safari" = 1569813296;
+      Keynote = "com.apple.iWork.Keynote";
       Xcode = 497799835;
     };
   };
@@ -48,6 +49,7 @@ in
     echo "checking mas desired ids are present" >&2
     grep 'desiredIds=(' ${config.out}/activate
     grep '1569813296' ${config.out}/activate
+    grep 'com.apple.iWork.Keynote' ${config.out}/activate
     grep '497799835' ${config.out}/activate
 
     echo "checking mas install loop exists" >&2
@@ -56,9 +58,17 @@ in
     echo "checking mas update is triggered" >&2
     grep 'mas update' ${config.out}/activate
 
-    echo "checking mas parses installedApps from mas list" >&2
-    grep 'declare -A installedApps' ${config.out}/activate
-    grep 'installedApps\[' ${config.out}/activate
+    echo "checking mas parses JSON output" >&2
+    grep 'mas list --json' ${config.out}/activate
+    grep 'fromjson?' ${config.out}/activate
+    grep '\.adamID' ${config.out}/activate
+    grep '\.bundleID' ${config.out}/activate
+    grep '\.name' ${config.out}/activate
+
+    if grep 'list --json 2>&1' ${config.out}/activate; then
+      echo "mas list stderr must not be merged into JSON output" >&2
+      exit 1
+    fi
 
     echo "checking mas cleanup log and uninstall" >&2
     grep 'removing .* from App Store' ${config.out}/activate
