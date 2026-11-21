@@ -78,9 +78,9 @@
       let
         extraConfig = ''
 
-          # Keep terminfo database for root and %admin.
-          Defaults:root,%admin env_keep+=TERMINFO_DIRS
-          Defaults:root,%admin env_keep+=TERMINFO
+          # Keep terminfo database for root and %staff.
+          Defaults:root,%staff env_keep+=TERMINFO_DIRS
+          Defaults:root,%staff env_keep+=TERMINFO
         '';
       in
       lib.mkIf config.security.sudo.keepTerminfo {
