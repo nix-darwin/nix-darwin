@@ -8,6 +8,60 @@ let
 
   brewfileFile = pkgs.writeText "Brewfile" cfg.brewfile;
 
+  fastPathIdentity = pkgs.writeText "homebrew-activation-identity" (builtins.toJSON {
+    version = 1;
+    inherit (cfg) brewfile prefix user;
+    inherit (cfg.onActivation) cleanup extraEnv;
+  });
+
+  # Content identity of the masApps set; the ID validation check is skipped
+  # while the state file matches it, so validation reruns exactly when the
+  # declared set changes.
+  masAppsIdentity = builtins.hashString "sha256" (builtins.toJSON cfg.masApps);
+
+  # `mas info` as the Homebrew user, matching how `brew bundle` invokes mas.
+  masInfoCmd = concatStringsSep " " [
+    ''PATH="${lib.makeBinPath [ pkgs.mas ]}:$PATH"''
+    "sudo"
+    "--preserve-env=PATH"
+    "--user=${escapeShellArg cfg.user}"
+    "--set-home"
+    "mas info"
+  ];
+
+  # Deprecation gate helpers. `brew info --json=v2` carries deprecated/disabled
+  # plus reason, date, and brew's suggested replacement for every formula and
+  # cask; one invocation over the whole declared set costs ~1-2s from the
+  # local API cache, so the check runs unconditionally when enabled.
+  deprecationCheckTargets = map (b: b.name) cfg.brews ++ map (c: c.name) cfg.casks;
+
+  deprecationFilter = pkgs.writeText "brew-deprecation-filter.jq" ''
+    ((.formulae // [])[]
+     | select(.deprecated or .disabled)
+     | "formula \(.name): \(if .disabled then "DISABLED" else "deprecated" end)"
+       + (if (.disable_date // .deprecation_date) then " since \(.disable_date // .deprecation_date)" else "" end)
+       + (if (.disable_reason // .deprecation_reason) then " (\(.disable_reason // .deprecation_reason))" else "" end)
+       + (if .deprecation_replacement_formula then "; brew suggests: \(.deprecation_replacement_formula)" else "" end)),
+    ((.casks // [])[]
+     | select(.deprecated or .disabled)
+     | "cask \(.token): \(if .disabled then "DISABLED" else "deprecated" end)"
+       + (if (.disable_date // .deprecation_date) then " since \(.disable_date // .deprecation_date)" else "" end)
+       + (if (.disable_reason // .deprecation_reason) then " (\(.disable_reason // .deprecation_reason))" else "" end)
+       + (if .deprecation_replacement_cask then "; brew suggests: \(.deprecation_replacement_cask)" else "" end))
+  '';
+
+  brewInfoJsonCmd = concatStringsSep " " [
+    ''PATH="${cfg.prefix}/bin:$PATH"''
+    "sudo"
+    "--preserve-env=PATH"
+    "--user=${escapeShellArg cfg.user}"
+    "--set-home"
+    "env"
+    "HOMEBREW_NO_AUTO_UPDATE=1"
+    "brew info --json=v2 --"
+    (escapeShellArgs deprecationCheckTargets)
+  ];
+
   # Brewfile creation helper functions -------------------------------------------------------------
 
   mkBrewfileSectionString = heading: entries: optionalString (entries != [ ]) ''
@@ -172,7 +226,57 @@ let
         '';
       };
 
+      fastPath = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Whether to skip {command}`brew bundle` when the generated Brewfile, activation options,
+          and installed Homebrew inventory are unchanged since the last successful activation.
+
+          The inventory includes taps, formulae, casks, and Mac App Store applications. The fast
+          path requires [](#opt-homebrew.onActivation.autoUpdate) and
+          [](#opt-homebrew.onActivation.upgrade) to be disabled. It does not support arbitrary
+          Brewfile directives, extra flags, Visual Studio Code extensions, Go packages, Cargo
+          packages, or formula options that reconcile link, conflict, or service state.
+        '';
+      };
+
+      validateMasApps = mkOption {
+        type = types.bool;
+        default = true;
+        description = ''
+          Whether to verify, before activation mutates anything, that every
+          [](#opt-homebrew.masApps) ID still resolves in the Mac App Store
+          ({command}`mas info <id>`). App Store IDs rot silently (Apple retires
+          legacy IDs), and a dead ID fails {command}`brew bundle` with an error
+          buried hundreds of lines deep; this check fails early and names the
+          app and ID instead.
+
+          Only the definitive "No apps found" answer is fatal; network errors
+          are reported as warnings so offline activation still works. Results
+          are cached per ID set under {file}`/var/db/nix-darwin/homebrew`, so
+          the check costs nothing until the ID set changes.
+        '';
+      };
+
+      denyDeprecated = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Whether to refuse activation while any declared formula or cask is
+          deprecated or disabled upstream. Checked in the pre-mutation phase
+          from `brew info --json=v2` (local API cache, no network); the error
+          names each package with the reason, date, and brew's suggested
+          replacement.
+
+          A `brew info` failure (e.g. an untapped tap on a first run) is a
+          warning, not a failure: the bundle step is the authority on whether
+          the declaration is installable.
+        '';
+      };
+
       brewBundleCmd = mkInternalOption { type = types.functionTo types.str; };
+      inventoryCmd = mkInternalOption { type = types.str; };
     };
 
     config = {
@@ -197,6 +301,40 @@ let
             ++ optional (config.cleanup == "zap") "--zap --force-cleanup"
             ++ config.extraFlags
         )
+      );
+
+      inventoryCmd = concatStringsSep " " (
+        [
+          ''PATH="${cfg.prefix}/bin:${lib.makeBinPath [ pkgs.mas ]}:$PATH"''
+          "sudo"
+          "--preserve-env=PATH"
+          "--user=${escapeShellArg cfg.user}"
+          "--set-home"
+          "env"
+        ]
+        ++ mapAttrsToList (k: v: "${k}=${escapeShellArg v}") config.extraEnv
+        ++ [
+          "/bin/sh"
+          "-c"
+          (escapeShellArg ''
+            set -e
+            inventoryDir=$(mktemp -d)
+            trap 'rm -rf "$inventoryDir"' EXIT
+            brew tap > "$inventoryDir/taps"
+            brew list --formula -1 > "$inventoryDir/formulae"
+            brew list --cask -1 > "$inventoryDir/casks"
+            mas list > "$inventoryDir/mas"
+
+            printf '%s\n' '[taps]'
+            LC_ALL=C sort "$inventoryDir/taps"
+            printf '%s\n' '[formulae]'
+            LC_ALL=C sort "$inventoryDir/formulae"
+            printf '%s\n' '[casks]'
+            LC_ALL=C sort "$inventoryDir/casks"
+            printf '%s\n' '[mas]'
+            LC_ALL=C sort "$inventoryDir/mas"
+          '')
+        ]
       );
     };
   };
@@ -958,6 +1096,49 @@ in
       (mkIf (hasSuffix "/bin" cfg.prefix) "`homebrew.prefix` should be the Homebrew prefix directory (e.g., `/opt/homebrew`), not the bin directory. The value should match what `brew --prefix` returns. Did you mean to remove the trailing `/bin`?")
     ];
 
+    assertions = [
+      {
+        assertion = !cfg.onActivation.fastPath || !cfg.onActivation.autoUpdate;
+        message = "`homebrew.onActivation.fastPath` requires `homebrew.onActivation.autoUpdate = false`.";
+      }
+      {
+        assertion = !cfg.onActivation.fastPath || !cfg.onActivation.upgrade;
+        message = "`homebrew.onActivation.fastPath` requires `homebrew.onActivation.upgrade = false`.";
+      }
+      {
+        assertion = !cfg.onActivation.fastPath || cfg.onActivation.extraFlags == [ ];
+        message = "`homebrew.onActivation.fastPath` does not support `homebrew.onActivation.extraFlags`.";
+      }
+      {
+        assertion = !cfg.onActivation.fastPath || cfg.vscode == [ ];
+        message = "`homebrew.onActivation.fastPath` does not support `homebrew.vscode`.";
+      }
+      {
+        assertion = !cfg.onActivation.fastPath || cfg.goPackages == [ ];
+        message = "`homebrew.onActivation.fastPath` does not support `homebrew.goPackages`.";
+      }
+      {
+        assertion = !cfg.onActivation.fastPath || cfg.cargoPackages == [ ];
+        message = "`homebrew.onActivation.fastPath` does not support `homebrew.cargoPackages`.";
+      }
+      {
+        assertion = !cfg.onActivation.fastPath || cfg.extraConfig == "";
+        message = "`homebrew.onActivation.fastPath` does not support `homebrew.extraConfig`.";
+      }
+      {
+        assertion = !cfg.onActivation.fastPath
+          || !any
+          (brew:
+            brew.conflicts_with != null
+              || brew.link != null
+              || brew.restart_service != null
+              || brew.start_service != null
+          )
+          cfg.brews;
+        message = "`homebrew.onActivation.fastPath` does not support formula state options (`conflicts_with`, `link`, `restart_service`, or `start_service`).";
+      }
+    ];
+
     system.requiresPrimaryUser = mkIf (cfg.enable && options.homebrew.user.highestPrio == (mkOptionDefault {}).priority) [
       "homebrew.enable"
     ];
@@ -1005,7 +1186,52 @@ in
       '';
     };
 
-    system.checks.text = mkIf (cfg.enable && cfg.onActivation.cleanup == "check") ''
+    system.checks.text = mkMerge [
+      (mkIf (cfg.enable && cfg.onActivation.denyDeprecated && deprecationCheckTargets != [ ]) ''
+        echo >&2 "Checking declared Homebrew packages for deprecation..."
+        if brewInfoJson=$(${brewInfoJsonCmd}); then
+          deprecatedReport=$(printf '%s' "$brewInfoJson" | ${pkgs.jq}/bin/jq -r -f ${deprecationFilter})
+          if [ -n "$deprecatedReport" ]; then
+            printf >&2 '\e[1;31merror: declared Homebrew packages are deprecated or disabled upstream, aborting activation\e[0m\n'
+            printf >&2 '%s\n' "$deprecatedReport"
+            printf >&2 'Switch each to its replacement (or drop it) in the Homebrew declaration.\n'
+            exit 2
+          fi
+        else
+          printf >&2 'warning: brew info failed; skipping deprecation check (untapped tap on a first run?)\n'
+        fi
+      '')
+      (mkIf (cfg.enable && cfg.onActivation.validateMasApps && cfg.masApps != { }) ''
+        masIdsStateDir=/var/db/nix-darwin/homebrew
+        masIdsState="$masIdsStateDir/validated-mas-ids"
+        masIdsExpected=${masAppsIdentity}
+        if [ -f "$masIdsState" ] && [ "$(cat "$masIdsState")" = "$masIdsExpected" ]; then
+          : # this exact masApps set already validated
+        else
+          echo >&2 "Validating Mac App Store IDs..."
+          masIdsBad=
+          ${concatStringsSep "\n" (mapAttrsToList (n: id: ''
+            if ! masInfoOut=$(${masInfoCmd} ${toString id} 2>&1); then
+              case $masInfoOut in
+                *"No apps found"*)
+                  printf >&2 '\e[1;31merror: masApps entry %s (id %s) no longer resolves in the Mac App Store\e[0m\n' ${escapeShellArg n} ${toString id}
+                  masIdsBad=1
+                  ;;
+                *)
+                  printf >&2 'warning: could not verify masApps entry %s (id %s), continuing (offline?): %s\n' ${escapeShellArg n} ${toString id} "$masInfoOut"
+                  ;;
+              esac
+            fi
+          '') cfg.masApps)}
+          if [ -n "$masIdsBad" ]; then
+            printf >&2 'Find current IDs with `mas search <name>`, then update the masApps declaration.\n'
+            exit 2
+          fi
+          mkdir -p "$masIdsStateDir"
+          printf '%s' "$masIdsExpected" > "$masIdsState"
+        fi
+      '')
+      (mkIf (cfg.enable && cfg.onActivation.cleanup == "check") ''
       if [ -f "${cfg.prefix}/bin/brew" ]; then
         homebrewCleanupExitCode=0
         homebrewCleanupResult=$(${cfg.onActivation.brewBundleCmd { onlyCheck = true; }}) || homebrewCleanupExitCode=$?
@@ -1024,13 +1250,51 @@ in
           exit 2
         fi
       fi
-    '';
+    '')
+    ];
 
     system.activationScripts.homebrew.text = mkIf cfg.enable ''
       # Homebrew Bundle
       echo >&2 "Homebrew bundle..."
       if [ -f "${cfg.prefix}/bin/brew" ]; then
-        ${cfg.onActivation.brewBundleCmd { onlyCheck = false; }}
+        ${if cfg.onActivation.fastPath then ''
+          homebrewStateDir=/var/db/nix-darwin/homebrew
+          homebrewState="$homebrewStateDir/activation-state"
+          mkdir -p "$homebrewStateDir"
+          homebrewStateNext=$(mktemp "$homebrewStateDir/.activation-state.XXXXXX")
+          trap 'rm -f "$homebrewStateNext"' EXIT
+
+          writeHomebrewState() {
+            printf '%s\n' ${escapeShellArg fastPathIdentity} > "$homebrewStateNext"
+            homebrewInventory=$(${cfg.onActivation.inventoryCmd})
+            printf '%s\n' "$homebrewInventory" >> "$homebrewStateNext"
+          }
+
+          writeHomebrewState
+
+          if cmp -s "$homebrewState" "$homebrewStateNext"; then
+            echo >&2 "Homebrew inventory unchanged, skipping bundle."
+          elif ${cfg.onActivation.brewBundleCmd { onlyCheck = false; }}; then
+            writeHomebrewState
+            mv -f "$homebrewStateNext" "$homebrewState"
+          else
+            # Do not write the state file: the next activation must retry.
+            # Deferred rather than fatal so the activation still reaches the
+            # /run/current-system link; re-raised at the end of `activate`.
+            homebrewBundleFailed=$?
+            printf >&2 '\e[1;31merror: brew bundle failed (exit %s); deferring failure so activation can finish\e[0m\n' "$homebrewBundleFailed"
+          fi
+
+          rm -f "$homebrewStateNext"
+          trap - EXIT
+        '' else ''
+          if ${cfg.onActivation.brewBundleCmd { onlyCheck = false; }}; then
+            :
+          else
+            homebrewBundleFailed=$?
+            printf >&2 '\e[1;31merror: brew bundle failed (exit %s); deferring failure so activation can finish\e[0m\n' "$homebrewBundleFailed"
+          fi
+        ''}
       else
         echo -e "\e[1;31merror: Homebrew is not installed, skipping...\e[0m" >&2
       fi
