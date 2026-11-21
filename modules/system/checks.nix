@@ -7,20 +7,13 @@ let
   escapeDoubleQuote = arg: ''"${replaceStrings ["\""] ["\"\\\"\""] (toString arg)}"'';
 
   cfg = config.system.checks;
+  minMacOSVersion = pkgs.stdenv.hostPlatform.darwinMinVersion;
 
   macOSVersion = ''
     IFS=. read -ra osVersion <<<"$(sw_vers -productVersion)"
-    if (( osVersion[0] < 11 || (osVersion[0] == 11 && osVersion[1] < 3) )); then
-      printf >&2 '\e[1;31merror: macOS version is less than 11.3, aborting activation\e[0m\n'
-      printf >&2 'Nixpkgs 25.05 requires macOS Big Sur 11.3 or newer, and 25.11 will\n'
-      printf >&2 'require macOS Sonoma 14.\n'
-      printf >&2 '\n'
-      printf >&2 'For more information on your options going forward, see the 25.05\n'
-      printf >&2 'release notes:\n'
-      printf >&2 '<https://nixos.org/manual/nixos/unstable/release-notes#sec-release-25.05>\n'
-      printf >&2 '\n'
-      printf >&2 'Nixpkgs 24.11 and nix-darwin 24.11 continue to support down to macOS\n'
-      printf >&2 'Sierra 10.12, and will be supported through June 2025.\n'
+    IFS=. read -r minMajor minMinor _ <<<${escapeShellArg minMacOSVersion}
+    if (( osVersion[0] < minMajor || (osVersion[0] == minMajor && osVersion[1] < minMinor) )); then
+      printf >&2 '\e[1;31merror: macOS version is less than %s, aborting activation\e[0m\n' ${escapeShellArg minMacOSVersion}
       printf >&2 '\n'
       printf >&2 'You can override this check by setting:\n'
       printf >&2 '\n'
