@@ -1,13 +1,10 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
-  sketchybar = pkgs.runCommand "sketchybar-0.0.0" { meta.mainProgram = "sketchybar"; } ''
-    mkdir -p $out/bin
-    cat <<'EOF' > $out/bin/sketchybar
-    #!/bin/sh
-    exit 0
-    EOF
-    chmod +x $out/bin/sketchybar
+  runJob = import ./run-launchd-job.nix { inherit lib pkgs; };
+  sketchybar = pkgs.writeShellScriptBin "sketchybar" ''
+    [[ $# == 2 && $1 == --config ]] || exit 1
+    cat "$2"
   '';
 
   dummyPkg = pkgs.runCommand "dummy-tool-0.0.0" { } "mkdir -p $out/bin";
@@ -27,8 +24,9 @@ in
   test = ''
     echo "checking sketchybar user launch agent in ~/Library/LaunchAgents" >&2
     grep "<string>org.nixos.sketchybar</string>" ${config.out}/user/Library/LaunchAgents/org.nixos.sketchybar.plist
-    grep "<string>${sketchybar}/bin/sketchybar</string>" ${config.out}/user/Library/LaunchAgents/org.nixos.sketchybar.plist
-    grep "<string>--config</string>" ${config.out}/user/Library/LaunchAgents/org.nixos.sketchybar.plist
+    ${runJob config.launchd.user.agents.sketchybar} > sketchybarrc
+    grep -Fx 'sketchybar --bar height=24' sketchybarrc
+    grep -Fx 'sketchybar --update' sketchybarrc
     grep "${dummyPkg}/bin" ${config.out}/user/Library/LaunchAgents/org.nixos.sketchybar.plist
     grep "<key>KeepAlive</key>" ${config.out}/user/Library/LaunchAgents/org.nixos.sketchybar.plist
     grep "<key>RunAtLoad</key>" ${config.out}/user/Library/LaunchAgents/org.nixos.sketchybar.plist

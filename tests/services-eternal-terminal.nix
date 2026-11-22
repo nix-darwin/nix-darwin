@@ -1,9 +1,12 @@
-{ config, lib, pkgs, ... }:
+{ config, extendModules, lib, pkgs, ... }:
 
 with lib;
 
 let
   eternal-terminal = pkgs.runCommand "eternal-terminal-0.0.0" { } "mkdir $out";
+  withPackagePath = extendModules {
+    modules = [ { services.eternal-terminal.package = lib.mkForce eternal-terminal.outPath; } ];
+  };
 
 in {
   services.eternal-terminal.enable = true;
@@ -13,7 +16,10 @@ in {
 
   test = ''
     echo >&2 "checking eternal-terminal service in /Library/LaunchDaemons"
-    grep "org.nixos.eternal-terminal" ${config.out}/Library/LaunchDaemons/org.nixos.eternal-terminal.plist
-    grep "${eternal-terminal}/bin/etserver" ${config.out}/Library/LaunchDaemons/org.nixos.eternal-terminal.plist
+    for system in ${config.out} ${withPackagePath.config.out}; do
+      plist="$system/Library/LaunchDaemons/org.nixos.eternal-terminal.plist"
+      grep -F "org.nixos.eternal-terminal" "$plist"
+      grep -F "${lib.getExe' eternal-terminal "etserver"}" "$plist"
+    done
   '';
 }

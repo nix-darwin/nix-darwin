@@ -1,9 +1,12 @@
-{ config, lib, pkgs, ... }:
+{ config, extendModules, lib, pkgs, ... }:
 
 with lib;
 
 let
   spotifyd = pkgs.runCommand "spotifyd-0.0.0" {} "mkdir $out";
+  withPackagePath = extendModules {
+    modules = [ { services.spotifyd.package = lib.mkForce spotifyd.outPath; } ];
+  };
 in
 
 {
@@ -14,7 +17,10 @@ in
 
   test = ''
     echo >&2 "checking spotifyd service in ~/Library/LaunchAgents"
-    grep "org.nixos.spotifyd" ${config.out}/user/Library/LaunchAgents/org.nixos.spotifyd.plist
-    grep "${spotifyd}/bin/spotifyd" ${config.out}/user/Library/LaunchAgents/org.nixos.spotifyd.plist
+    for system in ${config.out} ${withPackagePath.config.out}; do
+      plist="$system/user/Library/LaunchAgents/org.nixos.spotifyd.plist"
+      grep -F "org.nixos.spotifyd" "$plist"
+      grep -F "${lib.getExe' spotifyd "spotifyd"}" "$plist"
+    done
   '';
 }
