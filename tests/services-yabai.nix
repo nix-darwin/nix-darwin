@@ -1,9 +1,16 @@
-{ config, lib, pkgs, ... }:
+{ config, extendModules, lib, pkgs, ... }:
 
 with lib;
 
 let
-  yabai = pkgs.runCommand "yabai-0.0.0" {} "mkdir $out";
+  runJob = import ./run-launchd-job.nix { inherit lib pkgs; };
+  yabai = pkgs.writeShellScriptBin "yabai" ''
+    [[ $# == 2 && $1 == -c ]] || exit 1
+    cat "$2"
+  '';
+  withPackagePath = extendModules {
+    modules = [ { services.yabai.package = lib.mkForce yabai.outPath; } ];
+  };
 in
 
 {
@@ -17,14 +24,15 @@ in
   test = ''
     echo >&2 "checking yabai service in ~/Library/LaunchAgents"
     grep "org.nixos.yabai" ${config.out}/user/Library/LaunchAgents/org.nixos.yabai.plist
-    grep "${yabai}/bin/yabai" ${config.out}/user/Library/LaunchAgents/org.nixos.yabai.plist
+    grep -F "${lib.getExe yabai}" ${config.out}/user/Library/LaunchAgents/org.nixos.yabai.plist
 
-    conf=`sed -En '/<string>-c<\/string>/{n; s/\s+?<\/?string>//g; p;}' \
-      ${config.out}/user/Library/LaunchAgents/org.nixos.yabai.plist`
+    ${runJob config.launchd.user.agents.yabai} > yabairc
+    diff -u - yabairc <<'CONFIG'
+    yabai -m config focus_follows_mouse autoraise
+    yabai -m rule --add app='System Preferences' manage=off
+    CONFIG
 
-    echo >&2 "checking config in $conf"
-    grep "yabai -m config focus_follows_mouse autoraise" $conf
-    grep "yabai -m rule --add app='System Preferences' manage=off" $conf
-    if [ `cat $conf | wc -l` -eq "2" ]; then echo "yabairc correctly contains 2 lines"; else return 1; fi
+    ${runJob withPackagePath.config.launchd.user.agents.yabai} > yabairc-from-path
+    cmp yabairc yabairc-from-path
   '';
 }
