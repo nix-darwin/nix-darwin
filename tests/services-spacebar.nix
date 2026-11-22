@@ -1,9 +1,16 @@
-{ config, lib, pkgs, ... }:
+{ config, extendModules, lib, pkgs, ... }:
 
 with lib;
 
 let
-  spacebar = pkgs.runCommand "spacebar-0.0.0" {} "mkdir $out";
+  runJob = import ./run-launchd-job.nix { inherit lib pkgs; };
+  spacebar = pkgs.writeShellScriptBin "spacebar" ''
+    [[ $# == 2 && $1 == -c ]] || exit 1
+    cat "$2"
+  '';
+  withPackagePath = extendModules {
+    modules = [ { services.spacebar.package = lib.mkForce spacebar.outPath; } ];
+  };
 in
 
 {
@@ -17,13 +24,13 @@ in
   test = ''
     echo >&2 "checking spacebar service in ~/Library/LaunchAgents"
     grep "org.nixos.spacebar" ${config.out}/user/Library/LaunchAgents/org.nixos.spacebar.plist
-    grep "${spacebar}/bin/spacebar" ${config.out}/user/Library/LaunchAgents/org.nixos.spacebar.plist
+    grep -F "${lib.getExe spacebar}" ${config.out}/user/Library/LaunchAgents/org.nixos.spacebar.plist
 
-    conf=`sed -En '/<string>-c<\/string>/{n; s/\s+?<\/?string>//g; p;}' \
-      ${config.out}/user/Library/LaunchAgents/org.nixos.spacebar.plist`
+    ${runJob config.launchd.user.agents.spacebar} > spacebarrc
+    grep -F "spacebar -m config background_color 0xff202020" spacebarrc
+    grep -F "spacebar config loaded..." spacebarrc
 
-    echo >&2 "checking config in $conf"
-    grep "spacebar -m config background_color 0xff202020" $conf
-    grep "spacebar config loaded..." $conf
+    ${runJob withPackagePath.config.launchd.user.agents.spacebar} > spacebarrc-from-path
+    cmp spacebarrc spacebarrc-from-path
   '';
 }
