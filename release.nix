@@ -129,6 +129,8 @@ in {
   tests.services-aerospace = makeTest ./tests/services-aerospace.nix;
   tests.services-dnsmasq = makeTest ./tests/services-dnsmasq.nix;
   tests.services-dnscrypt-proxy = makeTest ./tests/services-dnscrypt-proxy.nix;
+  tests.services-emacs = makeTest ./tests/services-emacs.nix;
+  tests.services-emacs-custom-executable = makeTest ./tests/services-emacs-custom-executable.nix;
   tests.services-eternal-terminal = makeTest ./tests/services-eternal-terminal.nix;
   tests.services-nix-gc = makeTest ./tests/services-nix-gc.nix;
   tests.services-nix-optimise = makeTest ./tests/services-nix-optimise.nix;
