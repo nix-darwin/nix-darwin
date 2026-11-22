@@ -183,10 +183,6 @@ in
       '';
 
       launchd.daemons.linux-builder = {
-        environment = {
-          inherit (config.environment.variables) NIX_SSL_CERT_FILE;
-        };
-
         # create-builder uses TMPDIR to share files with the builder, notably certs.
         # macOS will clean up files in /tmp automatically that haven't been accessed in 3+ days.
         # If we let it use /tmp, leaving the computer asleep for 3 days makes the certs vanish.

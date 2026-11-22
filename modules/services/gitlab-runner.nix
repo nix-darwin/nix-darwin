@@ -550,10 +550,9 @@ in
     environment.systemPackages = [ cfg.package ];
 
     launchd.daemons.gitlab-runner = {
-      environment = { #config.networking.proxy.envVars // {
+      environment = {
         HOME = "${config.users.users.gitlab-runner.home}";
         NIX_REMOTE = "daemon";
-        NIX_SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
       };
       path = with pkgs; [
         bash

@@ -1,10 +1,12 @@
 { config, lib, pkgs, ... }:
 
 let
-  environment = lib.concatStringsSep " "
-    [ "NIX_REMOTE=daemon"
-      "NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
-    ];
+  toShellAssignments = lib.mapAttrsToList
+    (name: value: "${name}=${lib.escapeShellArg value}");
+
+  environment = lib.concatStringsSep " " (
+    [ "NIX_REMOTE=daemon" ] ++ toShellAssignments config.security.pki.environment
+  );
 in
 
 {

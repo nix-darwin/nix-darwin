@@ -7,9 +7,43 @@ let
 
   cfg = config.launchd;
 
+  withCertificateEnvironment = serviceConfig:
+    let
+      args = if serviceConfig.ProgramArguments != null
+        then serviceConfig.ProgramArguments
+        else [ serviceConfig.Program ];
+      program = if serviceConfig.Program != null
+        then serviceConfig.Program
+        else head args;
+    in
+    serviceConfig // {
+      # Use Bash for exec -a, type -P, and positional argument slicing below.
+      # Use the system copy so it can run before /nix/store is mounted.
+      Program = "/bin/bash";
+      ProgramArguments = [
+        "/bin/bash"
+        "-c"
+        ''
+          if [ "''${NIX_SSL_CERT_FILE+x}" != x ] && [ "''${SSL_CERT_FILE+x}" != x ]; then
+            export NIX_SSL_CERT_FILE=${escapeShellArg config.security.pki.environment.NIX_SSL_CERT_FILE}
+          fi
+          ${optionalString (!(hasInfix "/" (toString program))) ''
+            # Match the _PATH_STDPATH lookup documented in launchd.plist(5).
+            set -- "$(PATH="$(/usr/bin/getconf PATH)" type -P -- "$1")" "''${@:2}"
+          ''}
+          exec -a "$0" "$@"
+        ''
+        # Program selects the executable; ProgramArguments includes argv[0],
+        # which can differ. Bash's exec -a preserves that distinction.
+        (head args)
+        program
+      ] ++ tail args;
+    };
+
   toEnvironmentText = name: value: {
     name = "${value.serviceConfig.Label}.plist";
-    value.text = generators.toPlist { escape = true; } value.serviceConfig;
+    value.text = generators.toPlist { escape = true; }
+      (withCertificateEnvironment value.serviceConfig);
   };
 
   launchdConfig = import ./launchd.nix;
@@ -29,7 +63,15 @@ let
           type = types.attrsOf (types.either types.str (types.listOf types.str));
           default = {};
           example = { PATH = "/foo/bar/bin"; LANG = "nl_NL.UTF-8"; };
-          description = "Environment variables passed to the service's processes.";
+          description = ''
+            Environment variables passed to the service's processes.
+
+            When neither {env}`NIX_SSL_CERT_FILE` nor {env}`SSL_CERT_FILE`
+            is set at startup, the service uses the configured
+            {option}`environment.variables.NIX_SSL_CERT_FILE`, or the filtered
+            Mozilla CA bundle if no system bundle is configured. Explicit and
+            inherited values, including empty values, are preserved.
+          '';
           apply = mapAttrs (n: v: if isList v then concatStringsSep ":" v else v);
         };
 

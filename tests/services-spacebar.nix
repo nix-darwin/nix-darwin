@@ -3,7 +3,12 @@
 with lib;
 
 let
-  spacebar = pkgs.runCommand "spacebar-0.0.0" {} "mkdir $out";
+  spacebar = pkgs.writeShellScriptBin "spacebar" ''
+    set -eu
+    test "$#" -eq 2
+    test "$1" = -c
+    ${pkgs.coreutils}/bin/cat "$2"
+  '';
 in
 
 {
@@ -19,11 +24,11 @@ in
     grep "org.nixos.spacebar" ${config.out}/user/Library/LaunchAgents/org.nixos.spacebar.plist
     grep "${spacebar}/bin/spacebar" ${config.out}/user/Library/LaunchAgents/org.nixos.spacebar.plist
 
-    conf=`sed -En '/<string>-c<\/string>/{n; s/\s+?<\/?string>//g; p;}' \
-      ${config.out}/user/Library/LaunchAgents/org.nixos.spacebar.plist`
+    echo >&2 "checking the config passed to spacebar"
+    ${pkgs.python3}/bin/python ${./run-launchd.py} \
+      ${config.out}/user/Library/LaunchAgents/org.nixos.spacebar.plist > actual-config
 
-    echo >&2 "checking config in $conf"
-    grep "spacebar -m config background_color 0xff202020" $conf
-    grep "spacebar config loaded..." $conf
+    grep "spacebar -m config background_color 0xff202020" actual-config
+    grep "spacebar config loaded..." actual-config
   '';
 }
