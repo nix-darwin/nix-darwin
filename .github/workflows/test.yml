@@ -27,6 +27,8 @@ jobs:
       with:
         install_url: https://releases.nixos.org/nix/nix-${{ env.NIX_VERSION }}/install
     - run: nix flake check --override-input nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
+    - name: Test flake-parts Darwin module composition
+      run: tests/test-darwin-modules.sh --override-input nix-darwin/nixpkgs nixpkgs/${{ env.NIXPKGS_BRANCH }}
 
   install-against-stable:
     runs-on: macos-14
