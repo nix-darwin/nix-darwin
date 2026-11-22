@@ -88,50 +88,6 @@ in
 
       activationScript = cfg.activationScripts.script.text;
 
-      # This is for compatibility with older `darwin-rebuild`s and
-      # third‐party deployment tools.
-      #
-      # TODO: Remove this in 25.11.
-      activationUserScript = ''
-        #! ${pkgs.stdenv.shell}
-        # nix-darwin: deprecated
-
-        # Hack to handle upgrades.
-        if
-          [[ -e /run/current-system/activate-user ]] \
-          && ! grep -q '^# nix-darwin: deprecated$' \
-            /run/current-system/activate-user
-        then
-          exit
-        fi
-
-        printf >&2 '\e[1;31mwarning: `activate-user` is deprecated and will be removed in 25.11\e[0m\n'
-        printf >&2 'This is usually due to the use of a non‐standard activation/deployment\n'
-        printf >&2 'tool. If you maintain one of these tools, our advice is:\n'
-        printf >&2 '\n'
-        printf >&2 '  You can identify a post‐user‐activation configuration by the absence\n'
-        printf >&2 '  of `activate-user` or the second line of the script being\n'
-        printf >&2 '  `# nix-darwin: deprecated`.\n'
-        printf >&2 '\n'
-        printf >&2 '  We recommend running `$systemConfig/sw/bin/darwin-rebuild activate`\n'
-        printf >&2 '  to activate built configurations; for a pre‐user‐activation\n'
-        printf >&2 '  configuration this should be run as a normal user, and for a\n'
-        printf >&2 '  post‐user‐activation configuration it should be run as `root`.\n'
-        printf >&2 '\n'
-        printf >&2 '  If you can’t or don’t want to use `darwin-rebuild activate`, then you\n'
-        printf >&2 '  should skip running `activate-user` for post‐user‐activation\n'
-        printf >&2 '  configurations and continue running `activate` as `root`.\n'
-        printf >&2 '\n'
-        printf >&2 '  In 25.11, `darwin-rebuild` will stop running `activate-user` and this\n'
-        printf >&2 '  transition script will be deleted; you should be able to safely\n'
-        printf >&2 '  remove all related logic by then.\n'
-        printf >&2 '\n'
-        printf >&2 'Otherwise, you should report this to the deployment tool developers. If\n'
-        printf >&2 'you don’t use a third‐party deployment tool, please open a bug report\n'
-        printf >&2 'at <https://github.com/nix-darwin/nix-darwin/issues/new> and include as much\n'
-        printf >&2 'detail about your setup as possible.\n'
-      '';
-
       inherit (cfg) darwinLabel;
 
       darwinVersionJson = (pkgs.formats.json {}).generate "darwin-version.json" (
@@ -166,14 +122,10 @@ in
         chmod u+x $out/activate
         unset activationScript
 
-        echo "$activationUserScript" > $out/activate-user
-        chmod u+x $out/activate-user
-        unset activationUserScript
-
         # We exclude the warnings for `…` in single‐quote strings and
         # non‐ASCII quotation marks as they are noisy and lead to a lot
         # of false positives in our user‐facing output:
-        shellcheck --exclude=SC2016,SC1112 $out/activate $out/activate-user
+        shellcheck --exclude=SC2016,SC1112 $out/activate
 
         echo -n "$systemConfig" > $out/systemConfig
 

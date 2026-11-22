@@ -215,36 +215,11 @@ fi
 
 if [ -z "$systemConfig" ]; then exit 0; fi
 
-# TODO: Remove this backwards‐compatibility hack in 25.11.
-
-if
-  [[ -x $systemConfig/activate-user ]] \
-  && ! grep -q '^# nix-darwin: deprecated$' "$systemConfig/activate-user"
-then
-  hasActivateUser=1
-else
-  hasActivateUser=
-fi
-
-runActivateUser() {
-  if [[ -n $SUDO_USER ]]; then
-    sudo --user="$SUDO_USER" --set-home -- "$systemConfig/activate-user"
-  else
-    printf >&2 \
-      '%s: $SUDO_USER not set, can’t run legacy `activate-user` script\n' \
-      "$0"
-    exit 1
-  fi
-}
-
 if [ "$action" = switch ]; then
   nix-env -p "$profile" --set "$systemConfig"
 fi
 
 if [ "$action" = switch ] || [ "$action" = activate ] || [ "$action" = rollback ]; then
-  if [[ -n $hasActivateUser ]]; then
-    runActivateUser
-  fi
   "$systemConfig/activate"
 fi
 
@@ -254,9 +229,5 @@ fi
 
 if [ "$action" = check ]; then
   export checkActivation=1
-  if [[ -n $hasActivateUser ]]; then
-    runActivateUser
-  else
-    "$systemConfig/activate"
-  fi
+  "$systemConfig/activate"
 fi
