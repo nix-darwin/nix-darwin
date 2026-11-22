@@ -136,9 +136,11 @@ in
 
     system.activationScripts.userLaunchd.text = let
       user = lib.escapeShellArg config.system.primaryUser;
-    in mkIf (config.launchd.user.envVariables != { } || userLaunchAgents != [ ]) ''
-      # Set up user launchd services in ~/Library/LaunchAgents
+    in ''
       echo "setting up user launchd services..."
+
+      ${optionalString (config.launchd.user.envVariables != { } || userLaunchAgents != [ ]) ''
+      # Set up user launchd services in ~/Library/LaunchAgents
 
       ${concatStringsSep "\n" (launchdVariables "sudo --user=${user} --" config.launchd.user.envVariables)}
 
@@ -146,6 +148,7 @@ in
       sudo --user=${user} -- mkdir -p ~${user}/Library/LaunchAgents
       ''}
       ${concatMapStringsSep "\n" (attr: userLaunchdActivation attr.target) userLaunchAgents}
+      ''}
 
       for f in /run/current-system/user/Library/LaunchAgents/*; do
         [[ -e "$f" ]] || break  # handle when directory is empty
