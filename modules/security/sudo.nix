@@ -30,7 +30,8 @@ in
   };
 
   config = {
-    security.sudo.extraConfig = mkIf (!cfg.adminNeedsPassword) "%admin ALL=(ALL) NOPASSWD: ALL";
+    # Early so later rules can override it, yet late enough for a user to `mkBefore` it.
+    security.sudo.extraConfig = mkIf (!cfg.adminNeedsPassword) (mkOrder 600 "%admin ALL=(ALL) NOPASSWD: ALL");
 
     environment.etc = {
       "sudoers.d/10-nix-darwin-extra-config" = mkIf (cfg.extraConfig != null) {
