@@ -106,6 +106,7 @@
   ./services/xquartz.nix
   ./services/yabai
   ./services/nextdns
+  ./services/container.nix
   ./services/jankyborders
   ./programs/_1password.nix
   ./programs/_1password-gui.nix
