@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
   system.primaryUser = "test-defaults-user";
@@ -6,10 +11,11 @@
   imports = [
     {
       system.defaults.CustomUserPreferences = {
-        "NSGlobalDomain" = { "TISRomanSwitchState" = 1; };
+        "NSGlobalDomain" = {
+          "TISRomanSwitchState" = 1;
+        };
         "com.apple.Safari" = {
-          "com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled" =
-            true;
+          "com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled" = true;
         };
       };
     }
@@ -21,6 +27,9 @@
       };
     }
   ];
+
+  system.resumeApps.enable = false;
+  system.defaults.loginwindow.SHOWFULLNAME = true;
 
   system.defaults.NSGlobalDomain.AppleShowAllFiles = true;
   system.defaults.NSGlobalDomain.AppleEnableMouseSwipeNavigateWithScrolls = false;
@@ -64,7 +73,8 @@
   system.defaults.NSGlobalDomain."com.apple.springing.enabled" = true;
   system.defaults.NSGlobalDomain."com.apple.springing.delay" = 0.0;
   system.defaults.NSGlobalDomain."com.apple.swipescrolldirection" = true;
-  system.defaults.".GlobalPreferences"."com.apple.sound.beep.sound" = "/System/Library/Sounds/Funk.aiff";
+  system.defaults.".GlobalPreferences"."com.apple.sound.beep.sound" =
+    "/System/Library/Sounds/Funk.aiff";
   system.defaults.menuExtraClock.FlashDateSeparators = false;
   system.defaults.menuExtraClock.Show24Hour = false;
   system.defaults.menuExtraClock.ShowDayOfWeek = true;
@@ -78,8 +88,16 @@
   system.defaults.dock.persistent-apps = [
     "/Applications/MyApp.app"
     { app = "/Applications/Cool.app"; }
-    { spacer = { small = true; }; }
-    { spacer = { small = false; }; }
+    {
+      spacer = {
+        small = true;
+      };
+    }
+    {
+      spacer = {
+        small = false;
+      };
+    }
     { folder = "/Applications/Utilities"; }
     { file = "/Users/example/Downloads/test.csv"; }
   ];
@@ -88,7 +106,14 @@
     "/file"
     { file = "/file"; }
     "/folder.d"
-    { folder = { path = "/folder.d"; arrangement="kind"; displayas="folder"; showas = "grid"; }; }
+    {
+      folder = {
+        path = "/folder.d";
+        arrangement = "kind";
+        displayas = "folder";
+        showas = "grid";
+      };
+    }
     { folder = "/folder"; }
   ];
   system.defaults.dock.scroll-to-open = false;
@@ -152,20 +177,22 @@
   system.defaults.controlcenter.Display = false;
   system.defaults.controlcenter.FocusModes = false;
   system.defaults.controlcenter.NowPlaying = true;
-  test = lib.strings.concatMapStringsSep "\n"
-    (x: ''
-      echo >&2 "checking ${x} defaults write in /activate"
-      ${pkgs.python3}/bin/python3 <<EOL
-      import sys
-      from pathlib import Path
-      fixture = '${./fixtures/system-defaults-write}/${x}.txt'
-      out = '${config.out}/activate'
-      if Path(fixture).read_text() not in Path(out).read_text():
-        print("Did not find content from %s in %s" % (fixture, out), file=sys.stderr)
-        sys.exit(1)
-      EOL
-    '') [
-    "system"
-    "user"
-  ];
+  test =
+    lib.strings.concatMapStringsSep "\n"
+      (x: ''
+        echo >&2 "checking ${x} defaults write in /activate"
+        ${pkgs.python3}/bin/python3 <<EOL
+        import sys
+        from pathlib import Path
+        fixture = '${./fixtures/system-defaults-write}/${x}.txt'
+        out = '${config.out}/activate'
+        if Path(fixture).read_text() not in Path(out).read_text():
+          print("Did not find content from %s in %s" % (fixture, out), file=sys.stderr)
+          sys.exit(1)
+        EOL
+      '')
+      [
+        "system"
+        "user"
+      ];
 }
