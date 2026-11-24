@@ -21,6 +21,8 @@ The installer you use doesn't affect which Nix interpreter your system will use 
 
 Despite being an experimental feature in Nix currently, nix-darwin recommends that beginners use flakes to manage their nix-darwin configurations.
 
+It is recommended to place your configuration in `/etc/nix-darwin` rather than your home directory as nix-darwin manages the entire system rather than just your personal user.
+
 <details>
 <summary>Flakes (Recommended for beginners)</summary>
 
