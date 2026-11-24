@@ -75,6 +75,7 @@ in
   homebrew.masApps = {
     "1Password for Safari" = 1569813296;
     Xcode = 497799835;
+    Fantastical = "com.flexibits.fantastical2.mac";
   };
 
   homebrew.vscode = [
