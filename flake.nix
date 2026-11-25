@@ -27,14 +27,20 @@
             ++ nixpkgs.lib.optional (args ? pkgs) ({ lib, ... }: {
               _module.args.pkgs = lib.mkForce args.pkgs;
             })
-            # Backwards compatibility shim; TODO: warn?
+            # Backwards compatibility shim
             ++ nixpkgs.lib.optional (args ? system) ({ lib, ... }: {
               nixpkgs.system = lib.mkDefault args.system;
+              warnings = [
+                "Passing 'system' to 'darwinSystem' is deprecated and will be removed in a future release. Please set 'nixpkgs.hostPlatform' in your system configuration instead."
+              ];
             })
-            # Backwards compatibility shim; TODO: warn?
-            ++ nixpkgs.lib.optional (args ? inputs) {
+            # Backwards compatibility shim
+            ++ nixpkgs.lib.optional (args ? inputs) ({ lib, ... }: {
               _module.args.inputs = args.inputs;
-            }
+              warnings = [
+                "Passing 'inputs' to 'darwinSystem' is deprecated and will be removed in a future release. Please use 'specialArgs' or define '_module.args' instead."
+              ];
+            })
             ++ [ ({ lib, ... }: {
               nixpkgs.source = lib.mkDefault nixpkgs;
               nixpkgs.flake.source = lib.mkDefault nixpkgs.outPath;
