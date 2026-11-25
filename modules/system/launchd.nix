@@ -11,41 +11,74 @@ let
     mkTextDerivation = pkgs.writeText;
   };
 
+  # The write-text file model plus the launchd-specific restartIfChanged
+  # flag, threaded in from launchd.*.restartIfChanged by the launchd module.
+  launchdFile = types.submodule [
+    text
+    {
+      options.restartIfChanged = mkOption {
+        type = types.bool;
+        default = true;
+        internal = true;
+        description = "See {option}`launchd.daemons.<name>.restartIfChanged`.";
+      };
+    }
+  ];
+
   launchdVariables = prefix: mapAttrsToList (name: value: ''
     ${prefix} launchctl setenv ${name} '${value}'
   '');
 
-  launchdActivation = basedir: target: ''
-    if ! diff '${cfg.build.launchd}/Library/${basedir}/${target}' '/Library/${basedir}/${target}' &> /dev/null; then
-      if test -f '/Library/${basedir}/${target}'; then
+  # restartIfChanged = false installs the new plist but leaves the running
+  # service on its old definition (no unload/load), so a service that
+  # triggers its own activation is never torn down mid-work; a not-yet-loaded
+  # service is still loaded, matching NixOS's initial-start behaviour.
+  launchdActivation = basedir: attr: let
+    target = attr.target;
+    new = "${cfg.build.launchd}/Library/${basedir}/${target}";
+    installed = "/Library/${basedir}/${target}";
+    load = "launchctl load -w '${installed}'";
+  in ''
+    if ! diff '${new}' '${installed}' &> /dev/null; then
+      svcExisted=0; test -f '${installed}' && svcExisted=1
+      if [ "$svcExisted" = 1 ]; then
+        ${if attr.restartIfChanged then ''
         echo "reloading service $(basename ${target} .plist)" >&2
-        launchctl unload '/Library/${basedir}/${target}' || true
+        launchctl unload '${installed}' || true'' else ''
+        echo "updating service $(basename ${target} .plist) without reload (restartIfChanged = false)" >&2''}
       else
         echo "creating service $(basename ${target} .plist)" >&2
       fi
-      if test -L '/Library/${basedir}/${target}'; then
-        rm '/Library/${basedir}/${target}'
+      if test -L '${installed}'; then
+        rm '${installed}'
       fi
-      cp -f '${cfg.build.launchd}/Library/${basedir}/${target}' '/Library/${basedir}/${target}'
-      launchctl load -w '/Library/${basedir}/${target}'
+      cp -f '${new}' '${installed}'
+      ${if attr.restartIfChanged then load else ''if [ "$svcExisted" = 0 ]; then ${load}; fi''}
     fi
   '';
 
-  userLaunchdActivation = target: let
+  userLaunchdActivation = attr: let
+    target = attr.target;
     user = lib.escapeShellArg config.system.primaryUser;
+    new = "${cfg.build.launchd}/user/Library/LaunchAgents/${target}";
+    installed = "~${user}/Library/LaunchAgents/${target}";
+    load = "launchctl asuser \"$(id -u -- ${user})\" sudo --user=${user} -- launchctl load -w ${installed}";
   in ''
-    if ! diff ${cfg.build.launchd}/user/Library/LaunchAgents/${target} ~${user}/Library/LaunchAgents/${target} &> /dev/null; then
-      if test -f ~${user}/Library/LaunchAgents/${target}; then
+    if ! diff ${new} ${installed} &> /dev/null; then
+      svcExisted=0; test -f ${installed} && svcExisted=1
+      if [ "$svcExisted" = 1 ]; then
+        ${if attr.restartIfChanged then ''
         echo "reloading user service $(basename ${target} .plist)" >&2
-        launchctl asuser "$(id -u -- ${user})" sudo --user=${user} -- launchctl unload ~${user}/Library/LaunchAgents/${target} || true
+        launchctl asuser "$(id -u -- ${user})" sudo --user=${user} -- launchctl unload ${installed} || true'' else ''
+        echo "updating user service $(basename ${target} .plist) without reload (restartIfChanged = false)" >&2''}
       else
         echo "creating user service $(basename ${target} .plist)" >&2
       fi
-      if test -L ~${user}/Library/LaunchAgents/${target}; then
-        sudo --user=${user} -- rm ~${user}/Library/LaunchAgents/${target}
+      if test -L ${installed}; then
+        sudo --user=${user} -- rm ${installed}
       fi
-      sudo --user=${user} -- cp -f '${cfg.build.launchd}/user/Library/LaunchAgents/${target}' ~${user}/Library/LaunchAgents/${target}
-      launchctl asuser "$(id -u -- ${user})" sudo --user=${user} -- launchctl load -w ~${user}/Library/LaunchAgents/${target}
+      sudo --user=${user} -- cp -f '${new}' ${installed}
+      ${if attr.restartIfChanged then load else ''if [ "$svcExisted" = 0 ]; then ${load}; fi''}
     fi
   '';
 
@@ -59,7 +92,7 @@ in
   options = {
 
     environment.launchAgents = mkOption {
-      type = types.attrsOf (types.submodule text);
+      type = types.attrsOf launchdFile;
       default = { };
       description = ''
         Set of files that have to be linked in {file}`/Library/LaunchAgents`.
@@ -67,7 +100,7 @@ in
     };
 
     environment.launchDaemons = mkOption {
-      type = types.attrsOf (types.submodule text);
+      type = types.attrsOf launchdFile;
       default = { };
       description = ''
         Set of files that have to be linked in {file}`/Library/LaunchDaemons`.
@@ -75,7 +108,7 @@ in
     };
 
     environment.userLaunchAgents = mkOption {
-      type = types.attrsOf (types.submodule text);
+      type = types.attrsOf launchdFile;
       default = { };
       description = ''
         Set of files that have to be linked in {file}`~/Library/LaunchAgents`.
@@ -104,8 +137,8 @@ in
 
       ${concatStringsSep "\n" (launchdVariables "" config.launchd.envVariables)}
 
-      ${concatMapStringsSep "\n" (attr: launchdActivation "LaunchAgents" attr.target) launchAgents}
-      ${concatMapStringsSep "\n" (attr: launchdActivation "LaunchDaemons" attr.target) launchDaemons}
+      ${concatMapStringsSep "\n" (attr: launchdActivation "LaunchAgents" attr) launchAgents}
+      ${concatMapStringsSep "\n" (attr: launchdActivation "LaunchDaemons" attr) launchDaemons}
 
       for f in /run/current-system/Library/LaunchAgents/*; do
         [[ -e "$f" ]] || break  # handle when directory is empty
@@ -145,7 +178,7 @@ in
       ${optionalString (builtins.length userLaunchAgents > 0) ''
       sudo --user=${user} -- mkdir -p ~${user}/Library/LaunchAgents
       ''}
-      ${concatMapStringsSep "\n" (attr: userLaunchdActivation attr.target) userLaunchAgents}
+      ${concatMapStringsSep "\n" (attr: userLaunchdActivation attr) userLaunchAgents}
 
       for f in /run/current-system/user/Library/LaunchAgents/*; do
         [[ -e "$f" ]] || break  # handle when directory is empty
