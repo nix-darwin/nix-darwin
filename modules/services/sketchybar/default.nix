@@ -5,7 +5,7 @@ let
 
   cfg = config.services.sketchybar;
 
-  configFile = pkgs.writeScript "sketchybarrc" cfg.config;
+  configFile = (if types.path.check cfg.config then cfg.config else (pkgs.writeScript "sketchybarrc" cfg.config));
 in
 
 {
@@ -29,7 +29,7 @@ in
     };
 
     config = mkOption {
-      type = types.lines;
+      type = types.either types.path types.lines;
       default = "";
       example = ''
         sketchybar --bar height=24
