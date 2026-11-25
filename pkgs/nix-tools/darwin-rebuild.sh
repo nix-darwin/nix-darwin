@@ -16,7 +16,7 @@ export NIX_PATH=${NIX_PATH:-@nixPath@}
 export NIX_REMOTE=${NIX_REMOTE:-daemon}
 
 showSyntax() {
-  echo "darwin-rebuild [--help] {edit | switch | activate | build | check | changelog}" >&2
+  echo "darwin-rebuild [--help] {edit | switch | activate | build | check | changelog | repl}" >&2
   echo "               [--list-generations] [{--profile-name | -p} name] [--rollback]" >&2
   echo "               [{--switch-generation | -G} generation] [--verbose...] [-v...]" >&2
   echo "               [-Q] [{--max-jobs | -j} number] [--cores number] [--dry-run]" >&2
@@ -49,7 +49,7 @@ while [ $# -gt 0 ]; do
     --help)
       showSyntax
       ;;
-    edit|switch|activate|build|check|changelog)
+    edit|switch|activate|build|check|changelog|repl)
       action=$i
       ;;
     --show-trace|--keep-going|--keep-failed|--verbose|-v|-vv|-vvv|-vvvv|-vvvvv|--fallback|--offline)
@@ -211,6 +211,16 @@ fi
 
 if [ "$action" = activate ]; then
   systemConfig=$(readlink -f "${0%*/sw/bin/darwin-rebuild}")
+fi
+
+if [ "$action" = repl ]; then
+  allReplFlags=("${flakeFlags[@]}" "${extraLockFlags[@]}" "${extraBuildFlags[@]}")
+  if [ -n "$flake"]; then;
+    nix repl "${allReplFlags[@]}" "$flake#$flakeAttr"
+  else
+    nix repl "${allReplFlags[@]}"
+  fi
+  unset allReplFlags
 fi
 
 if [ -z "$systemConfig" ]; then exit 0; fi
