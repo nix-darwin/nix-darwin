@@ -22,6 +22,11 @@ let
 
       env = config.environment // optionalAttrs (config.path != "") { PATH = config.path; };
 
+      commandArgs = command: [ "/bin/sh" "-c" "/bin/wait4path /nix/store && exec ${command}" ];
+      # Strip trailing newlines before appending "$@".
+      command = converge (removeSuffix "\n") "${config.command}";
+      forwardingArgs = commandArgs ''${command} "$@"'' ++ [ "/bin/sh" ]; # sh -c takes $0 here.
+
     in
 
     { options = {
@@ -47,7 +52,11 @@ let
         command = mkOption {
           type = types.either types.str types.path;
           default = "";
-          description = "Command executed as the service's main process.";
+          description = ''
+            Command executed as the service's main process.
+            For a simple command, append arguments with
+            `serviceConfig.ProgramArguments = lib.mkAfter [ ... ];`.
+          '';
         };
 
         script = mkOption {
@@ -67,6 +76,13 @@ let
 
         serviceConfig = mkOption {
           type = types.submodule launchdConfig;
+          apply = service: service // {
+            # Only keep "$@" when ProgramArguments has appended arguments.
+            ProgramArguments =
+              if config.command != "" && service.ProgramArguments == forwardingArgs
+              then commandArgs config.command
+              else service.ProgramArguments;
+          };
           example =
             { Program = "/run/current-system/sw/bin/nix-daemon";
               KeepAlive = true;
@@ -87,11 +103,7 @@ let
         '');
 
         serviceConfig.Label = mkDefault "${cfg.labelPrefix}.${name}";
-        serviceConfig.ProgramArguments = mkIf (config.command != "") [
-          "/bin/sh"
-          "-c"
-          "/bin/wait4path /nix/store && exec ${config.command}"
-        ];
+        serviceConfig.ProgramArguments = mkIf (config.command != "") forwardingArgs;
         serviceConfig.EnvironmentVariables = mkIf (env != {}) env;
       };
     };

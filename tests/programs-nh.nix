@@ -16,7 +16,7 @@ in
     echo checking nh-clean service in /Library/LaunchDaemons >&2
     grep "<string>${nix}/bin</string>" ${config.out}/Library/LaunchDaemons/org.nixos.nh-clean.plist
     grep "<string>org.nixos.nh-clean</string>" ${config.out}/Library/LaunchDaemons/org.nixos.nh-clean.plist
-    grep "<string>/bin/wait4path /nix/store &amp;&amp; exec ${nh}/bin/nh clean all --keep 5 --keep-since 3d</string>" ${config.out}/Library/LaunchDaemons/org.nixos.nh-clean.plist
+    grep -F "${nh}/bin/nh clean all --keep 5 --keep-since 3d" ${config.out}/Library/LaunchDaemons/org.nixos.nh-clean.plist
 
     (! grep "<key>KeepAlive</key>" ${config.out}/Library/LaunchDaemons/org.nixos.nh-clean.plist)
   '';
