@@ -65,6 +65,7 @@
   ./services/activate-system
   ./services/aerospace
   ./services/autossh.nix
+  ./services/bluebubbles-server
   ./services/buildkite-agents.nix
   ./services/chunkwm.nix
   ./services/cachix-agent.nix
