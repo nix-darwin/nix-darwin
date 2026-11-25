@@ -72,6 +72,7 @@
   ./services/dnscrypt-proxy.nix
   ./services/emacs.nix
   ./services/eternal-terminal.nix
+  ./services/freenet-core.nix
   ./services/github-runner
   ./services/gitlab-runner.nix
   ./services/hercules-ci-agent
