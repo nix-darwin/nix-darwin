@@ -103,9 +103,13 @@ in {
   tests.networking-hostname = makeTest ./tests/networking-hostname.nix;
   tests.networking-networkservices = makeTest ./tests/networking-networkservices.nix;
   tests.networking-networkservices-no-dhcp-client-id = makeTest ./tests/networking-networkservices-no-dhcp-client-id.nix;
+  tests.networking-shell-escape = makeTest ./tests/networking-shell-escape.nix;
+  tests.networking-wakeonlan = makeTest ./tests/networking-wakeonlan.nix;
   tests.nix-enable = makeTest ./tests/nix-enable.nix;
   tests.nixpkgs-overlays = makeTestWith { useSharedPkgs = false; } ./tests/nixpkgs-overlays.nix;
   tests.nixpkgs-config-allow-unfree = makeTestWith { useSharedPkgs = false; } ./tests/nixpkgs-config-allow-unfree.nix;
+  tests.power-restart = makeTest ./tests/power-restart.nix;
+  tests.power-sleep = makeTest ./tests/power-sleep.nix;
   tests.programs-1password = makeTest ./tests/programs-1password.nix;
   tests.programs-devenv = makeTest ./tests/programs-devenv.nix;
   tests.programs-direnv = makeTest ./tests/programs-direnv.nix;

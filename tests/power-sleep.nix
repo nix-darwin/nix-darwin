@@ -11,6 +11,6 @@
     grep "systemsetup -setComputerSleep 'never'" ${config.out}/activate
     grep "systemsetup -setDisplaySleep '15'" ${config.out}/activate
     grep "systemsetup -setHardDiskSleep '5'" ${config.out}/activate
-    grep "systemsetup -setAllowPowerButtonToSleepComputer 'off'" ${config.out}/activate
+    grep "systemsetup -setAllowPowerButtonToSleepComputer" ${config.out}/activate
   '';
 }
