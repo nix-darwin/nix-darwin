@@ -89,6 +89,7 @@
   ./services/nix-daemon.nix
   ./services/nix-gc
   ./services/nix-optimise
+  ./services/ntpd-rs.nix
   ./services/ofborg
   ./services/openssh.nix
   ./services/postgresql
