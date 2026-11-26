@@ -42,6 +42,7 @@
   ./system/defaults/WindowManager.nix
   ./system/etc.nix
   ./system/keyboard.nix
+  ./system/keyboard-shortcuts.nix
   ./system/launchd.nix
   ./system/newsyslog.nix
   ./system/nvram.nix
