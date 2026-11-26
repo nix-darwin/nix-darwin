@@ -136,7 +136,7 @@ in
 
     system.activationScripts.userLaunchd.text = let
       user = lib.escapeShellArg config.system.primaryUser;
-    in mkIf (config.launchd.user.envVariables != { } || userLaunchAgents != [ ]) ''
+    in optionalString (config.launchd.user.envVariables != { } || userLaunchAgents != [ ]) ''
       # Set up user launchd services in ~/Library/LaunchAgents
       echo "setting up user launchd services..."
 
@@ -146,7 +146,8 @@ in
       sudo --user=${user} -- mkdir -p ~${user}/Library/LaunchAgents
       ''}
       ${concatMapStringsSep "\n" (attr: userLaunchdActivation attr.target) userLaunchAgents}
-
+    '' + ''
+      # Remove user launchd services the new generation no longer has, even when it has none
       for f in /run/current-system/user/Library/LaunchAgents/*; do
         [[ -e "$f" ]] || break  # handle when directory is empty
         f=''${f#/run/current-system/user/Library/LaunchAgents/}
