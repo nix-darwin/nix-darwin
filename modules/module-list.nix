@@ -46,6 +46,7 @@
   ./system/newsyslog.nix
   ./system/nvram.nix
   ./system/patches.nix
+  ./system/resume-apps.nix
   ./system/shells.nix
   ./system/startup.nix
   ./system/version.nix
