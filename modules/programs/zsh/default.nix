@@ -93,6 +93,22 @@ in
       description = "Change history file.";
     };
 
+    programs.zsh.setOptions = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [
+        "HIST_IGNORE_DUPS"
+        "SHARE_HISTORY"
+        "HIST_FCNTL_LOCK"
+      ];
+      example = [
+        "EXTENDED_HISTORY"
+        "RM_STAR_WAIT"
+      ];
+      description = ''
+        Configure zsh options. See
+        {manpage}`zshoptions(1)`.
+      '';
+    };
     programs.zsh.enableCompletion = mkOption {
       type = types.bool;
       default = true;
@@ -231,7 +247,10 @@ in
       HISTSIZE=${builtins.toString cfg.histSize}
       HISTFILE=${cfg.histFile}
 
-      setopt HIST_IGNORE_DUPS SHARE_HISTORY HIST_FCNTL_LOCK
+      ${lib.optionalString (cfg.setOptions != [ ]) ''
+        # Set zsh options.
+        setopt ${builtins.concatStringsSep " " cfg.setOptions}
+      ''}
 
       bindkey -e
 
