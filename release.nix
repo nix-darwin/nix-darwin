@@ -119,6 +119,7 @@ in {
   tests.programs-vim = makeTest ./tests/programs-vim.nix;
   tests.programs-zsh = makeTest ./tests/programs-zsh.nix;
   tests.programs-ssh-empty-known-hosts = makeTest ./tests/programs-ssh-empty-known-hosts.nix;
+  tests.security-pam = makeTest ./tests/security-pam.nix;
   tests.security-pki = makeTest ./tests/security-pki.nix;
   tests.services-activate-system = makeTest ./tests/services-activate-system.nix;
   tests.services-activate-system-changed-label-prefix = makeTest ./tests/services-activate-system-changed-label-prefix.nix;
