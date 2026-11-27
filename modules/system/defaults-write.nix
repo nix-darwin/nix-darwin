@@ -157,7 +157,7 @@ in
 
         ${optionalString (length dock > 0) ''
           echo >&2 "restarting Dock..."
-          killall -qu ${escapeShellArg config.system.primaryUser} Dock || true
+          killall -u ${escapeShellArg config.system.primaryUser} Dock || true
         ''}
       '';
 
