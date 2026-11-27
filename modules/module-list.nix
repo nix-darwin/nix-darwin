@@ -4,6 +4,7 @@
   ./config/terminfo.nix
   ./documentation
   ./meta.nix
+  ./misc/extra-arguments.nix
   ./misc/ids.nix
   ./misc/lib.nix
   ./security/pam.nix
@@ -95,6 +96,7 @@
   ./services/postgresql
   ./services/privoxy
   ./services/redis
+  ./services/sing-box.nix
   ./services/sketchybar
   ./services/skhd
   ./services/spacebar
