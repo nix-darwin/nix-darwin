@@ -45,7 +45,11 @@ let
         sudo --user=${user} -- rm ~${user}/Library/LaunchAgents/${target}
       fi
       sudo --user=${user} -- cp -f '${cfg.build.launchd}/user/Library/LaunchAgents/${target}' ~${user}/Library/LaunchAgents/${target}
-      launchctl asuser "$(id -u -- ${user})" sudo --user=${user} -- launchctl load -w ~${user}/Library/LaunchAgents/${target}
+      if launchctl asuser "$(id -u -- ${user})" launchctl print "gui/$(id -u -- ${user})" &> /dev/null; then
+        launchctl asuser "$(id -u -- ${user})" sudo --user=${user} -- launchctl load -w ~${user}/Library/LaunchAgents/${target}
+      else
+        echo "warning: ${user}'s GUI domain unreachable from this session; user service $(basename ${target} .plist) will be picked up on next login" >&2
+      fi
     fi
   '';
 
