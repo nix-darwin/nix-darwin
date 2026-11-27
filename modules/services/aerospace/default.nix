@@ -8,6 +8,16 @@
 let
   cfg = config.services.aerospace;
 
+  # The new composable `if = "test …"` syntax — and the soft-deprecation of the
+  # legacy `if.*` syntax — were introduced in AeroSpace 0.21.0
+  # (https://github.com/nikitabobko/AeroSpace/releases/tag/v0.21.0-Beta). On
+  # older versions the legacy syntax is the only supported form, so the
+  # deprecation warning and the `null` default for `on-window-detected.*.if`
+  # only apply from 0.21.0 on.
+  aerospaceVersion = lib.getVersion cfg.package;
+  newSyntaxSupported =
+    aerospaceVersion != "" && lib.versionAtLeast aerospaceVersion "0.21.0";
+
   format = pkgs.formats.toml { };
   filterAttrsRecursive = pred: set:
     lib.listToAttrs (
@@ -99,37 +109,57 @@ in
               type = listOf (submodule {
                 options = {
                   "if" = lib.mkOption {
-                    type = submodule {
-                      options = {
-                        app-id = lib.mkOption {
-                          type = nullOr str;
-                          default = null;
-                          description = "The application ID to match (optional).";
+                    type = nullOr (oneOf [
+                      # The recommended form (version >= 0.21.0-Beta)
+                      str
+                      # The legacy attribute-set form (`if.*` keys)
+                      (submodule {
+                        options = {
+                          app-id = lib.mkOption {
+                            type = nullOr str;
+                            default = null;
+                            description = "The application ID to match (optional).";
+                          };
+                          workspace = lib.mkOption {
+                            type = nullOr str;
+                            default = null;
+                            description = "The workspace name to match (optional).";
+                          };
+                          window-title-regex-substring = lib.mkOption {
+                            type = nullOr str;
+                            default = null;
+                            description = "Substring to match in the window title (optional).";
+                          };
+                          app-name-regex-substring = lib.mkOption {
+                            type = nullOr str;
+                            default = null;
+                            description = "Regex substring to match the app name (optional).";
+                          };
+                          during-aerospace-startup = lib.mkOption {
+                            type = nullOr bool;
+                            default = null;
+                            description = "Whether to match during aerospace startup (optional).";
+                          };
                         };
-                        workspace = lib.mkOption {
-                          type = nullOr str;
-                          default = null;
-                          description = "The workspace name to match (optional).";
-                        };
-                        window-title-regex-substring = lib.mkOption {
-                          type = nullOr str;
-                          default = null;
-                          description = "Substring to match in the window title (optional).";
-                        };
-                        app-name-regex-substring = lib.mkOption {
-                          type = nullOr str;
-                          default = null;
-                          description = "Regex substring to match the app name (optional).";
-                        };
-                        during-aerospace-startup = lib.mkOption {
-                          type = nullOr bool;
-                          default = null;
-                          description = "Whether to match during aerospace startup (optional).";
-                        };
-                      };
-                    };
-                    default = { };
-                    description = "Conditions for detecting a window.";
+                      })
+                    ]);
+                    # On >= 0.21.0 an empty/missing `if` is rejected by AeroSpace,
+                    # so default to `null` (filtered out → no `if` key) there.
+                    # Older versions keep the historical `{}` default.
+                    default = if newSyntaxSupported then null else { };
+                    example = ''test %{app-bundle-id} = com.apple.systempreferences'';
+                    description = ''
+                      Condition that a detected window must match for the commands to run.
+
+                      The recommended form is a command string, for example
+                      `"test %{app-bundle-id} = com.apple.systempreferences"`. See
+                      <link xlink:href="https://nikitabobko.github.io/AeroSpace/guide#on-window-detected-callback"/>
+                      for details.
+
+                      The legacy attribute-set form is still supported but
+                      soft-deprecated by AeroSpace; using it emits a warning. See
+                      <link xlink:href="https://nikitabobko.github.io/AeroSpace/guide#legacy-on-window-detected-syntax"/>.
+                    '';
                   };
                   check-further-callbacks = lib.mkOption {
                     type = nullOr bool;
@@ -146,13 +176,7 @@ in
               default = [ ];
               example = [
                 {
-                  "if" = {
-                    app-id = "Another.Cool.App";
-                    workspace = "cool-workspace";
-                    window-title-regex-substring = "Title";
-                    app-name-regex-substring = "CoolApp";
-                    during-aerospace-startup = false;
-                  };
+                  "if" = ''test %{app-bundle-id} = com.apple.systempreferences'';
                   check-further-callbacks = false;
                   run = ["move-node-to-workspace m" "resize-node"];
                 }
@@ -234,6 +258,18 @@ in
 
   config = (
     lib.mkIf (cfg.enable) {
+      warnings =
+        let
+          # The legacy attribute-set form is in use iff any rule's `if` is an
+          # attrset (the string form is the modern one, and `null` is an omitted
+          # condition). Gated by `newSyntaxSupported` (see the top-level `let`)
+          # so that on AeroSpace < 0.21.0 — where the legacy syntax is the only
+          # option — no warning is emitted.
+          legacyIfUsed = lib.any (rule: builtins.isAttrs rule."if")
+            cfg.settings.on-window-detected;
+        in
+        lib.optional (newSyntaxSupported && legacyIfUsed) ''
+          The `if.*` condition syntax in `services.aerospace.settings.on-window-detected` (e.g. `if.app-id`, `if.workspace`, `if.window-title-regex-substring`, `if.app-name-regex-substring`, `if.during-aerospace-startup`) is soft-deprecated by AeroSpace (since 0.21.0). It still works, but prefer the string form, e.g. `if = "test %{app-bundle-id} = com.apple.systempreferences"`. See https://nikitabobko.github.io/AeroSpace/guide#legacy-on-window-detected-syntax'';
       assertions = [
         {
           assertion = !cfg.settings.start-at-login;

@@ -25,6 +25,17 @@ in
     };
     on-window-detected = [
       {
+        # New recommended form: a `test` command string.
+        "if" = ''test %{app-bundle-id} = org.alacritty'';
+        run = [ "layout floating" ];
+      }
+      {
+        # New form with a compound condition.
+        "if" = ''test %{app-bundle-id} = com.google.Chrome || test %{app-bundle-id} = org.mozilla.firefox'';
+        run = "move-node-to-workspace W";
+      }
+      {
+        # Legacy attribute-set form (soft-deprecated, still supported).
         "if" = {
           app-id = "Another.Cool.App";
           during-aerospace-startup = false;
@@ -71,6 +82,12 @@ in
     grep 'alt-j = "focus down"' $conf
     grep 'alt-k = "focus up"' $conf
     grep 'alt-l = "focus right"' $conf
+
+    # New (recommended) string form of `on-window-detected.*.if`.
+    grep 'if = "test %{app-bundle-id} = org.alacritty"' $conf
+    grep 'run = \["layout floating"\]' $conf
+    grep 'if = "test %{app-bundle-id} = com.google.Chrome || test %{app-bundle-id} = org.mozilla.firefox"' $conf
+    grep 'run = "move-node-to-workspace W"' $conf
 
     grep 'check-further-callbacks = false' $conf
     grep 'run = "move-node-to-workspace m"' $conf
