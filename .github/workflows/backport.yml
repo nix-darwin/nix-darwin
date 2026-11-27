@@ -1,0 +1,28 @@
+name: Backport
+
+on:
+  pull_request_target:
+    branches: [master]
+    types: [closed, labeled]
+
+permissions: {}
+
+jobs:
+  backport:
+    if: >
+      github.event.pull_request.merged == true
+      && (
+        (github.event.action == 'closed' && contains(toJSON(github.event.pull_request.labels.*.name), '"backport nix-darwin-'))
+        || (github.event.action == 'labeled' && startsWith(github.event.label.name, 'backport nix-darwin-'))
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          token: ${{ secrets.CI_PR_TOKEN }}
+      - name: Create backport PRs
+        uses: korthout/backport-action@ad272ff24e4a8593bf18a951a154ae6af93b26b8 # v5.0.0
+        with:
+          github_token: ${{ secrets.CI_PR_TOKEN }}
+          label_pattern: '^backport (nix-darwin-[0-9]{2}\.[0-9]{2})$'
