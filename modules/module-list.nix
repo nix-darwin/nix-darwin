@@ -122,6 +122,7 @@
   ./programs/nh.nix
   ./programs/nix-index
   ./programs/ssh.nix
+  ./programs/tailscale-gui.nix
   ./programs/tmux.nix
   ./programs/vim.nix
   ./programs/zsh
