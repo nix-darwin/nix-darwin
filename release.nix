@@ -145,6 +145,7 @@ in {
   tests.services-skhd = makeTest ./tests/services-skhd.nix;
   tests.services-spacebar = makeTest ./tests/services-spacebar.nix;
   tests.services-spotifyd = makeTest ./tests/services-spotifyd.nix;
+  tests.services-tor = makeTest ./tests/services-tor.nix;
   tests.services-synapse-bt = makeTest ./tests/services-synapse-bt.nix;
   tests.services-synergy = makeTest ./tests/services-synergy.nix;
   tests.services-synergy-client = makeTest ./tests/services-synergy-client.nix;

@@ -102,6 +102,7 @@
   ./services/synapse-bt.nix
   ./services/synergy
   ./services/tailscale.nix
+  ./services/tor.nix
   ./services/trezord.nix
   ./services/wg-quick.nix
   ./services/xquartz.nix
