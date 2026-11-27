@@ -75,6 +75,7 @@
   ./services/eternal-terminal.nix
   ./services/github-runner
   ./services/gitlab-runner.nix
+  ./services/harmonia.nix
   ./services/hercules-ci-agent
   ./services/ipfs.nix
   ./services/karabiner-elements
