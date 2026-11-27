@@ -131,5 +131,8 @@ in
 
     echo "checking that cleanup check is absent by default" >&2
     (! grep 'brew bundle cleanup --file=' ${config.out}/activate)
+
+    echo "checking that the fast path is absent by default" >&2
+    (! grep 'homebrewState=' ${config.out}/activate)
   '';
 }
