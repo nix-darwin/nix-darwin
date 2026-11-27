@@ -58,6 +58,7 @@
   ./nix/nixpkgs.nix
   ./nix/nixpkgs-flake.nix
   ./environment
+  ./environment/apple-developer-tools.nix
   ./fonts
   ./launchd
   ./power
