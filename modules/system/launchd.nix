@@ -15,6 +15,20 @@ let
     ${prefix} launchctl setenv ${name} '${value}'
   '');
 
+  # `launchctl load -w` records the service as enabled in launchd's override
+  # database, which takes precedence over the plist's `Disabled` key
+  # (launchd.plist(5)). So a service with `Disabled = true` is not loaded, and
+  # is instead disabled through that database, which also stops launchd from
+  # loading it at boot or login.
+  #
+  # System-wide agents are only unloaded, not disabled. Activation runs as
+  # root, so `load -w` put them in the system domain and wrote "enabled" only
+  # to the system override database. That domain never loads LaunchAgents at
+  # boot, and the per-user gui domains that load them at login have no
+  # override, so they respect the plist's `Disabled` key.
+  isDisabled = plist: ''[[ "$(plutil -extract Disabled raw -o - ${plist} 2> /dev/null)" == true ]]'';
+  plistLabel = plist: ''"$(plutil -extract Label raw -o - ${plist})"'';
+
   launchdActivation = basedir: target: ''
     if ! diff '${cfg.build.launchd}/Library/${basedir}/${target}' '/Library/${basedir}/${target}' &> /dev/null; then
       if test -f '/Library/${basedir}/${target}'; then
@@ -27,7 +41,17 @@ let
         rm '/Library/${basedir}/${target}'
       fi
       cp -f '${cfg.build.launchd}/Library/${basedir}/${target}' '/Library/${basedir}/${target}'
-      launchctl load -w '/Library/${basedir}/${target}'
+      if ! ${isDisabled "'/Library/${basedir}/${target}'"}; then
+        launchctl load -w '/Library/${basedir}/${target}'
+      fi
+    fi
+    if ${isDisabled "'/Library/${basedir}/${target}'"}; then
+      echo "service $(basename ${target} .plist) is disabled, not loading it" >&2
+      launchctl unload '/Library/${basedir}/${target}' &> /dev/null || true
+      ${optionalString (basedir == "LaunchDaemons") ''
+      launchctl disable system/${plistLabel "'/Library/${basedir}/${target}'"} \
+        || echo "warning: could not disable service $(basename ${target} .plist)" >&2
+      ''}
     fi
   '';
 
@@ -45,7 +69,15 @@ let
         sudo --user=${user} -- rm ~${user}/Library/LaunchAgents/${target}
       fi
       sudo --user=${user} -- cp -f '${cfg.build.launchd}/user/Library/LaunchAgents/${target}' ~${user}/Library/LaunchAgents/${target}
-      launchctl asuser "$(id -u -- ${user})" sudo --user=${user} -- launchctl load -w ~${user}/Library/LaunchAgents/${target}
+      if ! ${isDisabled "~${user}/Library/LaunchAgents/${target}"}; then
+        launchctl asuser "$(id -u -- ${user})" sudo --user=${user} -- launchctl load -w ~${user}/Library/LaunchAgents/${target}
+      fi
+    fi
+    if ${isDisabled "~${user}/Library/LaunchAgents/${target}"}; then
+      echo "user service $(basename ${target} .plist) is disabled, not loading it" >&2
+      launchctl asuser "$(id -u -- ${user})" sudo --user=${user} -- launchctl unload ~${user}/Library/LaunchAgents/${target} &> /dev/null || true
+      sudo --user=${user} -- launchctl disable "gui/$(id -u -- ${user})/"${plistLabel "~${user}/Library/LaunchAgents/${target}"} \
+        || echo "warning: could not disable user service $(basename ${target} .plist)" >&2
     fi
   '';
 
